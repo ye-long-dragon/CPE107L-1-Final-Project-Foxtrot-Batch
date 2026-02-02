@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TLA - Create Form</title>
+    <link rel="stylesheet" href="/public/css/sidebar.css">
+    <link rel="stylesheet" href="/public/css/form.css">
+</head>
+<body>
+    <div id="sidebar-container"></div>
+    
+    <main class="main-content">
+        <div class="background-overlay"></div>
+        
+        <div class="form-container">
+            <h1>COLLEGE TEACHING-LEARNING ACTIVITY</h1>
+            
+            <form id="tla-form">
+                <div class="form-section top-section">
+                    <div class="form-row two-col">
+                        <div class="form-group">
+                            <label>NAME</label>
+                            <input type="text" name="name">
+                        </div>
+                        <div class="form-group">
+                            <label>GRADEYR</label>
+                            <input type="text" name="gradeyr">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row two-col">
+                        <div class="form-group">
+                            <label>FACULTY MEMBER</label>
+                            <input type="text" name="faculty">
+                        </div>
+                        <div class="form-group">
+                            <label>SUBJECT</label>
+                            <input type="text" name="subject">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label>RETENTION/REFERENCES</label>
+                            <textarea name="retention" rows="2"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label>MOTIVATION/INSTRUCTIONAL/LECTURE/LEARNING ACTIVITIES (PRE-DIGITAL SESSION)</label>
+                            <textarea name="motivation" rows="5"></textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-sections-row">
+                    <div class="form-section half-section">
+                        <h3>PRE-DIGITAL SESSION</h3>
+                        <div class="form-group">
+                            <label>YOUTUBE CODE</label>
+                            <input type="text" name="pre_youtube">
+                        </div>
+                        <div class="form-group">
+                            <label>TLA</label>
+                            <input type="text" name="pre_tla">
+                        </div>
+                        <div class="form-group">
+                            <label>LAST TOOL</label>
+                            <input type="text" name="pre_last_tool">
+                        </div>
+                        <div class="form-group">
+                            <label>ASSESSMENT</label>
+                            <input type="text" name="pre_assessment">
+                        </div>
+                        <button type="button" class="attach-btn">ATTACH SIGNATURE</button>
+                    </div>
+                    
+                    <div class="form-section half-section">
+                        <h3>POST-DIGITAL SESSION</h3>
+                        <div class="form-group">
+                            <label>YOUTUBE CODE</label>
+                            <input type="text" name="post_youtube">
+                        </div>
+                        <div class="form-group">
+                            <label>PARTICIPANT TURNOUT</label>
+                            <input type="text" name="post_turnout">
+                        </div>
+                        <div class="form-group">
+                            <label>ASSESSMENT RESULTS</label>
+                            <input type="text" name="post_results">
+                        </div>
+                        <div class="form-group">
+                            <label>REMARKS</label>
+                            <input type="text" name="post_remarks">
+                        </div>
+                        <button type="button" class="attach-btn">ATTACH SIGNATURE</button>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" class="btn-save">SAVE AS DRAFT</button>
+                    <button type="submit" class="btn-submit">SUBMIT</button>
+                </div>
+            </form>
+        </div>
+    </main>
+    
+    <script src="/public/js/sidebar.js"></script>
+    <script src="/public/js/form.js"></script>
+</body>
+</html>
