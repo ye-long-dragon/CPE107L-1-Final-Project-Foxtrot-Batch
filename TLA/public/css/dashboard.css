@@ -19,16 +19,15 @@ body {
     background-attachment: fixed;
     position: relative;
     padding: 50px 40px;
+    z-index: 1;
 }
 
-.background-overlay {
+.main-content::before {
+    content: "";
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(255, 255, 255, 0.88);
-    z-index: 1;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.25); /* change color if needed */
+    z-index: -1;
 }
 
 .dashboard-header {
@@ -39,7 +38,7 @@ body {
 }
 
 .dashboard-header h1 {
-    font-size: 18px;
+    font-size: 3rem;
     color: #333;
     background-color: rgba(200, 200, 200, 0.7);
     padding: 15px 50px;
@@ -113,8 +112,80 @@ body {
     letter-spacing: 0.5px;
 }
 
+.weekly-rpt-wrapper {
+    display: block;
+    background-color: rgba(220, 220, 220, 0.25);
+    padding: 10px;
+    border-radius: 20px;
+    margin: 50px;
+}
+
+.week-buttons {
+    display: flex;
+    flex-direction: row;
+    margin: 10px 0px;
+}
+
+.week-buttons p {
+    display: flex;
+    flex-flow: row;
+    font-size: 2rem;
+}
+
+.week-btn {
+    display: flex;
+    width: 100%;
+    background: #ffffff;
+    border-radius: 171.5px;
+    border: #ffffff;
+    padding: 25px;
+    position: relative;
+    transition: 0.2s;
+}
+
+.week-label {
+    text-align: start;
+}
+
+.status-label {
+    position: absolute;
+    right: 5.5rem;
+    text-align: end;
+}
+
+.week-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.25);
+    background-color: rgba(255, 255, 255, 1);
+}
+
+.circle {
+    position: absolute;
+    right: 25px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+}
+
+/* color modifiers */
+.circle.pending {
+    background-color: #ffd1a2;
+}
+
+.circle.returned {
+    background-color: #ff7878;
+}
+
+.circle.archived {
+    background-color: #4caf50;
+}
+
+
 @media (max-width: 768px) {
     .main-content {
+        display: flex;
         margin-left: 0;
         padding: 40px 20px;
     }
