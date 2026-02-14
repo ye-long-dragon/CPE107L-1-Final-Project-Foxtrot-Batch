@@ -18,14 +18,16 @@ const app = express();
 const PORT = process.env.MAINPAGESPORT || 3000;
 
 // ========================
-// Middleware
+// View Engine Setup
 // ========================
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
 
 // ========================
 // Static Assets
 // ========================
+app.use(express.static(path.join(__dirname, "../public")));
+app.use(express.static(path.join(__dirname, "public")));
 
 // Global public (root/public)
 app.use(express.static(path.join(__dirname, "../public")));
