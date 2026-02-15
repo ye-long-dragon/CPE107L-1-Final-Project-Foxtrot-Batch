@@ -1,4 +1,3 @@
-
 function format(command) {
   document.execCommand(command, false, null);
 }
@@ -9,4 +8,3 @@ function handleFile(input) {
 
   alert("File attached: " + file.name);
 }
-

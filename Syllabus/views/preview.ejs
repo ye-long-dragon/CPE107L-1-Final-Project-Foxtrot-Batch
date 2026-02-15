@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Preview</title>
+    <link rel="stylesheet" href="/css/preview.css?v=<%= new Date().getTime() %>" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  </head>
+  <body>
+    <div class="dashboard">
+      <%- include('./partials/sidebar.ejs') %>
+
+      <main class="main-content">
+        <header class="top-header">
+          <img src="/images/MMCM logo.png" alt="College Logo" />
+          <h2>College of Engineering <br />and Architecture</h2>
+          <button class="cancel-btn" onclick="window.location.href='/syllabus'">CANCEL</button>
+        </header>
+
+        <section class="content-panel">
+          <div class="content-card preview-card">
+            <div class="content-label preview-label">PREVIEW</div>
+            <div class="content-body scrollable" id="previewContent">
+              <p>Preview content will be displayed here...</p>
+            </div>
+          </div>
+        </section>
+
+        <div class="home-bottom-wrapper">
+          <button class="back-circle" onclick="window.location.href='/syllabus'">
+            <img src="/images/arrowBack.png" alt="Back" />
+          </button>
+          <div class="preview-actions">
+            <button class="draft-btn" onclick="saveAsDraft()">SAVE AS DRAFT</button>
+            <button class="submit-btn" onclick="submitPreview()">SUBMIT</button>
+          </div>
+        </div>
+      </main>   
+    </div>
+    <script src="/landingPage.js?v=<%= new Date().getTime() %>"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        if (typeof loadPreviewAndShowPDF === 'function') loadPreviewAndShowPDF();
+      });
+      function submitPreview() {
+        if (typeof loadPreviewAndShowPDF === 'function') loadPreviewAndShowPDF();
+      }
+      function saveAsDraft() {
+        alert('Draft saved!');
+      }
+    </script>
+  </body>
+</html>
