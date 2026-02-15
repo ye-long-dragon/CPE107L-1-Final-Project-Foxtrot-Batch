@@ -37,11 +37,13 @@ app.use(express.static(path.join(__dirname, "public")));
 
 //Import Routes
 import loginRoutes from "./routes/loginRoutes.js"
+import institutionRoutes from "./routes/institutionRoutes.js"
 
 // ========================
 // Routes
 // ========================
 app.use("/login",loginRoutes)
+app.use("/institution",institutionRoutes)
 // ========================
 // 404 (LAST)
 // ========================
