@@ -7,7 +7,7 @@
 
     /* --- COLOR VARIETIES --- */
     --red-hover: #800100;
-    --blue-soft: #0024551a;
+    --blue-soft: #003a8c;
     --grey-lines: #3d3d3d;
     --grey-hover: #333333;
 
@@ -18,7 +18,9 @@
     --page-bg: var(--color-white);
     
     --accent-primary: var(--color-mapua-red);
+    --accent-primary-hover: var(--red-hover);
     --accent-secondary: var(--color-mapua-blue);
+    --accent-secondary-hover: var(--blue-soft);
     
     --text-on-dark: var(--color-white);
     --text-on-light: var(--color-charcoal);
