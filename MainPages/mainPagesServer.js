@@ -55,5 +55,5 @@ app.use((req, res) => {
 // Server
 // ========================
 app.listen(PORT, () => {
-    console.log(`MainPages listening on port ${PORT}`);
+    console.log(`MainPages listening on port http://localhost:${PORT}`);
 });

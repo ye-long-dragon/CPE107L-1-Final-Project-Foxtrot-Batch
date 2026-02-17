@@ -1,0 +1,37 @@
+:root{
+    /* --- THE OFFICIAL SCHOOL PALETTE --- */
+    --color-charcoal: #272727;
+    --color-white: #ffffff;
+    --color-mapua-red: #a00100;
+    --color-mapua-blue: #002455;
+
+    /* --- COLOR VARIETIES --- */
+    --red-hover: #800100;
+    --blue-soft: #0024551a;
+    --grey-lines: #3d3d3d;
+    --grey-hover: #333333;
+
+    /* --- DEFAULT COLORS (LIGHT MODE) --- */
+    --sidebar-bg: var(--color-charcoal);
+    --sidebar-line: var(--grey-lines);
+    --sidebar-hover: var(--grey-hover);
+    --page-bg: var(--color-white);
+    
+    --accent-primary: var(--color-mapua-red);
+    --accent-secondary: var(--color-mapua-blue);
+    
+    --text-on-dark: var(--color-white);
+    --text-on-light: var(--color-charcoal);
+    --text-muted: #a0a0a0;
+}
+
+/* --- DARK MODE --- */
+[data-theme="dark"] {
+    --page-bg: #121212;
+    --sidebar-bg: #000000;
+
+    --text-on-light: #e0e0e0;
+
+    --accent-primary: #c20100;
+
+}
