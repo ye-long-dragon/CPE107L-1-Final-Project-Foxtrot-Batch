@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        body {
+            background-color: #272727;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            font-family: 'Segoe UI', sans-serif;
+            color: white;
+        }
+
+        #logo img {
+            max-width: 350px;
+            margin-bottom: 50px;
+        }
+
+        #credentials {
+            width: 350px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-container {
+            position: relative;
+            margin-bottom: 35px;
+            border-bottom: 2px solid white;
+        }
+
+        .input-container input {
+            width: 100%;
+            padding: 10px 0;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: white;
+            font-size: 1.1rem;
+        }
+
+        .input-container label {
+            position: absolute;
+            top: 10px;
+            left: 0;
+            font-size: 1.1rem;
+            color: white;
+            pointer-events: none;   
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        /* Animation Trigger:*/
+        .input-container input:focus + label,
+        .input-container input:not(:placeholder-shown) + label {
+            top: -20px;
+            font-size: 0.85rem;
+            color: white;
+            font-weight: bold;
+        }
+
+        .input-container::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0%;
+            height: 2px;
+            background-color: #c173ce;
+            transition: width 0.3s ease;
+        }
+
+        .input-container:focus-within::after {
+            width: 100%;
+        }
+
+        #button {
+            margin-top: 20px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            cursor: pointer;
+            border: 2px solid white;
+            background-color: transparent;
+            color: white;
+            font-size: 1rem;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            background-color: #a00100;
+            color: white;
+        }
+
+        .footer-links {
+            margin-top: 15px;
+            text-align: right;
+        }
+
+        .footer-links a {
+            color: #3498db;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <section id="logo">
+        <img src="/img/mmcmLogo.png" alt="MMCM Logo">
+    </section>
+
+    <section id="credentials">
+        <form action="/login" method="POST">
+            <div class="input-container">
+                <input type="text" id="username" name="username" placeholder=" " required>
+                <label for="username">Username</label>
+            </div>
+            
+            <div class="input-container">
+                <input type="password" id="password" name="password" placeholder=" " required>
+                <label for="password">Password</label>
+            </div>
+
+            <div id="button">
+                <button type="submit">Sign In</button>
+            </div>
+        </form>
+
+        <div class="footer-links">
+            <a href="#">Forgot Password?</a>
+        </div>
+    </section>
+
+</body>
+</html>
