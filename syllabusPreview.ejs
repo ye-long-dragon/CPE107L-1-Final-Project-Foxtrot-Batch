@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Dashboard</title>
+    <title><%= pageTitle || "Dashboard" %></title>
     <link rel="stylesheet" href="syllabusPreview.css">
 </head>
 <body>
@@ -29,15 +29,14 @@
 
         <header class="top-header">
             <img src="images/MMCM logo.png" alt="College Logo">
-            <h2>College of Engineering
-                <br> and Architecture</h2>
+            <h2><%= collegeName %></h2>
         </header>
 
         <section class="content-panel">
 
             <!-- Course Syllabus Card -->
             <div class="content-card pdf-card">
-                <div class="content-label"></div>
+                <div class="content-label"><%= courseTitle %></div>
 
                 <!-- Toolbar inside the card -->
                 <div class="editor-toolbar">
@@ -54,8 +53,12 @@
 
                 <!-- Body area where PDFs will appear -->
                 <div id="editorBox" class="content-body scrollable centered">
+                    <% if (pdfFile) { %>
+                    <iframe src="<%= pdfFile %>" style="width:100%; height:100%; border:none;"></iframe>
+                    <% } else { %>
                     <img src="images/syllabus.png" alt="Syllabus Placeholder" class="placeholder-img">
                     <p class="placeholder-text">Syllabus Shown Here</p>
+                    <% } %>
                 </div>
 
                 <!-- Hidden file input -->
@@ -80,6 +83,7 @@
 </div>
 
 <script>
+    // Your existing JS logic stays the same
     function loadPDFFile(file) {
         if (file && file.type === "application/pdf") {
             const url = URL.createObjectURL(file);
@@ -91,19 +95,16 @@
 
             const editorBox = document.getElementById('editorBox');
 
-            // Hide placeholder
             const placeholderImg = editorBox.querySelector('.placeholder-img');
             const placeholderText = editorBox.querySelector('.placeholder-text');
             if (placeholderImg) placeholderImg.style.display = "none";
             if (placeholderText) placeholderText.style.display = "none";
 
-            // Remove any existing PDF iframe
             const oldIframe = editorBox.querySelector('iframe');
             if (oldIframe) {
                 editorBox.removeChild(oldIframe);
             }
 
-            // Append the new PDF iframe
             editorBox.appendChild(iframe);
         }
     }
@@ -120,28 +121,26 @@
             editorBox.removeChild(iframe);
         }
 
-        // Show placeholder again
         const placeholderImg = editorBox.querySelector('.placeholder-img');
         const placeholderText = editorBox.querySelector('.placeholder-text');
         if (placeholderImg) placeholderImg.style.display = "block";
         if (placeholderText) placeholderText.style.display = "block";
     }
 
-    // Enable drag-and-drop
     const editorBox = document.getElementById('editorBox');
     editorBox.addEventListener('dragover', function(e) {
         e.preventDefault();
-        editorBox.style.border = "2px dashed #666"; // visual feedback
+        editorBox.style.border = "2px dashed #666";
     });
 
     editorBox.addEventListener('dragleave', function(e) {
         e.preventDefault();
-        editorBox.style.border = "none"; // reset feedback
+        editorBox.style.border = "none";
     });
 
     editorBox.addEventListener('drop', function(e) {
         e.preventDefault();
-        editorBox.style.border = "none"; // reset feedback
+        editorBox.style.border = "none";
         const file = e.dataTransfer.files[0];
         loadPDFFile(file);
     });
