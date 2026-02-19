@@ -6,8 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node MainPages/mainPagesServer.js",
-    "dev": "nodemon MainPages/mainPagesServer.js"
+    "start": "nodemon TLA/tlaServer.js"
   },
   "repository": {
     "type": "git",
