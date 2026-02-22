@@ -1,71 +1,51 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TWS - Archived Teaching Workload Sheets</title>
   <link rel="stylesheet" href="/twa/public/twsStyle.css" />
 </head>
-
-<body>
+<body class="bg">
   <%- include("partials/twsNavBar") %>
 
-  <main class="main-content">
-    <div class="page-container">
+  <div class="main">
+    <div class="shell">
+      <div class="page-title">TWS - Archived Teaching Workload Sheets</div>
 
-      <div class="header-pill">
-        <h1>TWS - Archived Teaching Workload Sheets</h1>
+      <div class="panel">
+        <div class="panel-title">Archived Teaching Workload Sheets</div>
+
+        <div class="table">
+          <div class="row head">
+            <div>Academic Year</div>
+            <div>Term</div>
+            <div>Date Submitted</div>
+            <div class="right">Action</div>
+          </div>
+
+          <% if (!list.length) { %>
+            <div class="row">
+              <div style="grid-column: 1 / -1; opacity:.8;">No archived/submitted TWS yet.</div>
+            </div>
+          <% } %>
+
+          <% list.forEach((tws) => { %>
+            <div class="row">
+              <div><%= tws.faculty.acadYear || "2025 - 2026" %></div>
+              <div><%= tws.faculty.term || "1st" %></div>
+              <div><%= new Date(tws.createdAt).toLocaleDateString() %></div>
+              <div class="right">
+                <a class="pill" href="/twa/summary/<%= tws.id %>">View</a>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+
+        <div class="center">
+          <a class="btn btn-big" href="/twa/dashboard">OK</a>
+        </div>
       </div>
-
-      <section class="panel">
-        <div class="panel-header">
-          <h2>Archived Teaching Workload Sheets</h2>
-        </div>
-
-        <div class="archived-grid">
-          <div class="grid-head">Academic Year</div>
-          <div class="grid-head">Term</div>
-          <div class="grid-head">Date Submitted</div>
-          <div class="grid-head center">Action</div>
-          <div class="grid-head center"></div>
-
-          <div class="grid-cell">2025 - 2026</div>
-          <div class="grid-cell">1st</div>
-          <div class="grid-cell">04/22/2025</div>
-          <div class="grid-cell center">
-            <button class="action-btn">View</button>
-          </div>
-          <div class="grid-cell center">
-            <span class="dl-icon">⭳</span>
-          </div>
-
-          <div class="grid-cell">2025 - 2026</div>
-          <div class="grid-cell">2nd</div>
-          <div class="grid-cell">03/10/2025</div>
-          <div class="grid-cell center">
-            <button class="action-btn">View</button>
-          </div>
-          <div class="grid-cell center">
-            <span class="dl-icon">⭳</span>
-          </div>
-
-          <div class="grid-cell">2024 - 2025</div>
-          <div class="grid-cell">3rd</div>
-          <div class="grid-cell">02/10/2025</div>
-          <div class="grid-cell center">
-            <button class="action-btn">View</button>
-          </div>
-          <div class="grid-cell center">
-            <span class="dl-icon">⭳</span>
-          </div>
-        </div>
-
-        <div class="ok-wrapper">
-          <a href="/twa/dashboard" class="ok-btn">OK</a>
-        </div>
-      </section>
-
     </div>
-  </main>
+  </div>
 </body>
 </html>

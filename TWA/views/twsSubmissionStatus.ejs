@@ -1,74 +1,59 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TWS - Submission Status</title>
   <link rel="stylesheet" href="/twa/public/twsStyle.css" />
 </head>
-
-<body>
+<body class="bg">
   <%- include("partials/twsNavBar") %>
 
-  <main class="main-content">
-    <div class="page-container">
+  <div class="main">
+    <div class="shell">
+      <div class="page-title">TWS - Submission Status</div>
 
-      <div class="header-pill">
-        <h1>TWS - Submission Status</h1>
-      </div>
+      <div class="panel">
+        <div class="status-title">Your Teaching Workload Sheet has been <b><%= tws.status %></b>.</div>
 
-      <section class="panel">
-        <div class="panel-header">
-          <h2>Your Teaching Workload Sheet has been submitted.</h2>
-        </div>
-
-        <div class="status-wrap">
-          <div class="status-row">
-            <span class="status-dot done"></span>
-            <span class="status-text">Submitted</span>
+        <div class="status-grid">
+          <div class="step">
+            <div class="dot green">✔</div>
+            <div class="step-text">Submitted</div>
           </div>
 
-          <div class="status-row">
-            <span class="status-dot pending"></span>
-            <span class="status-text">Secretary Review</span>
+          <div class="line"></div>
+
+          <div class="step">
+            <div class="dot yellow"></div>
+            <div class="step-text">Secretary Review</div>
           </div>
 
-          <div class="status-row">
-            <span class="status-dot pending"></span>
-            <span class="status-text">Chair Endorsement</span>
+          <div class="line"></div>
+
+          <div class="step">
+            <div class="dot yellow"></div>
+            <div class="step-text">Chair Endorsement</div>
           </div>
 
-          <div class="status-row">
-            <span class="status-dot pending"></span>
-            <span class="status-text">Dean Approval</span>
-          </div>
+          <div class="line"></div>
 
-          <hr class="divider" />
-
-          <div class="summary-lines">
-            <div class="summary-line">
-              <span>Total Units:</span>
-              <span>14</span>
-            </div>
-            <div class="summary-line">
-              <span>Total Hours (Lec, Lab):</span>
-              <span>7</span>
-            </div>
-            <div class="summary-line">
-              <span>Equivalent Load:</span>
-              <span>14</span>
-            </div>
+          <div class="step">
+            <div class="dot gray"></div>
+            <div class="step-text">Dean Approval</div>
           </div>
         </div>
-      </section>
 
-      <div class="triple-actions">
-        <a href="/twa/teaching-load" class="pill-btn">Back</a>
-        <a href="#" class="pill-btn">Save Draft</a>
-        <a href="/twa/summary" class="pill-btn">Next</a>
+        <div class="metrics">
+          <div>Total Units:</div><div><%= tws.totals.totalUnits %></div>
+          <div>Equivalent Load:</div><div><%= tws.totals.equivLoad %></div>
+        </div>
+
+        <div class="bottom-btns">
+          <a class="btn btn-big" href="/twa/approval/<%= tws.id %>">Next</a>
+          <a class="btn btn-big" href="/twa/dashboard">Back to Dashboard</a>
+        </div>
       </div>
-
     </div>
-  </main>
+  </div>
 </body>
 </html>
