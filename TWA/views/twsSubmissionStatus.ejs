@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TWS - Submission Status</title>
+  <link rel="stylesheet" href="/twa/public/twsStyle.css" />
+</head>
+
+<body>
+  <%- include("partials/twsNavBar") %>
+
+  <main class="main-content">
+    <div class="page-container">
+
+      <div class="header-pill">
+        <h1>TWS - Submission Status</h1>
+      </div>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Your Teaching Workload Sheet has been submitted.</h2>
+        </div>
+
+        <div class="status-wrap">
+          <div class="status-row">
+            <span class="status-dot done"></span>
+            <span class="status-text">Submitted</span>
+          </div>
+
+          <div class="status-row">
+            <span class="status-dot pending"></span>
+            <span class="status-text">Secretary Review</span>
+          </div>
+
+          <div class="status-row">
+            <span class="status-dot pending"></span>
+            <span class="status-text">Chair Endorsement</span>
+          </div>
+
+          <div class="status-row">
+            <span class="status-dot pending"></span>
+            <span class="status-text">Dean Approval</span>
+          </div>
+
+          <hr class="divider" />
+
+          <div class="summary-lines">
+            <div class="summary-line">
+              <span>Total Units:</span>
+              <span>14</span>
+            </div>
+            <div class="summary-line">
+              <span>Total Hours (Lec, Lab):</span>
+              <span>7</span>
+            </div>
+            <div class="summary-line">
+              <span>Equivalent Load:</span>
+              <span>14</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="triple-actions">
+        <a href="/twa/teaching-load" class="pill-btn">Back</a>
+        <a href="#" class="pill-btn">Save Draft</a>
+        <a href="/twa/summary" class="pill-btn">Next</a>
+      </div>
+
+    </div>
+  </main>
+</body>
+</html>

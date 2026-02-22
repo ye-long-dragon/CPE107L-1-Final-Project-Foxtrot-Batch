@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TWS - Summary And Preview</title>
+  <link rel="stylesheet" href="/twa/public/twsStyle.css" />
+</head>
+
+<body>
+  <%- include("partials/twsNavBar") %>
+
+  <main class="main-content">
+    <div class="page-container">
+
+      <div class="header-pill">
+        <h1>TWS - Summary And Preview</h1>
+      </div>
+
+      <section class="panel">
+        <div class="summary-grid">
+          <div>
+            <h3 class="mini-title">Faculty Information</h3>
+            <div class="mini-lines">
+              <div>Faculty Name:</div>
+              <div>Employee ID:</div>
+              <div>Department:</div>
+              <div>Academic Year:</div>
+              <div>Term:</div>
+              <div>Employment Status:</div>
+            </div>
+
+            <h3 class="mini-title" style="margin-top:16px;">Teaching Load Summary</h3>
+            <div class="mini-lines">
+              <div>Total Units: <strong>14</strong></div>
+              <div>Equivalent Load: <strong>14</strong></div>
+            </div>
+          </div>
+
+          <div class="summary-actions">
+            <a href="/twa/dashboard" class="submit-btn">Submit TWS</a>
+            <a href="/twa/faculty-info" class="edit-btn">Edit</a>
+          </div>
+        </div>
+      </section>
+
+      <div class="triple-actions">
+        <a href="/twa/submission-status" class="pill-btn">Back</a>
+        <a href="#" class="pill-btn">Save Draft</a>
+        <a href="/twa/dashboard" class="pill-btn">Home</a>
+      </div>
+
+    </div>
+  </main>
+</body>
+</html>
