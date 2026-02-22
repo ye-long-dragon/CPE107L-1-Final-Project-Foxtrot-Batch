@@ -7,8 +7,10 @@
     <link rel="stylesheet" href="/public/css/sidebar.css">
     <link rel="stylesheet" href="/public/css/form.css">
 </head>
+
 <body>
-    <div id="sidebar-container"></div>
+
+    <%- include('../views/partials/sidebar.ejs') %>
     
     <main class="main-content">
         <div class="background-overlay"></div>
@@ -21,35 +23,35 @@
                     <div class="form-row two-col">
                         <div class="form-group">
                             <label>NAME</label>
-                            <input type="text" name="name">
+                            <input type="text" name="name" placeholder="Engr. Emmy Grace Requillo" disabled="disabled">
                         </div>
                         <div class="form-group">
-                            <label>GRADEYR</label>
+                            <label>Faculty Member Facilitating Digital Session</label>
                             <input type="text" name="gradeyr">
                         </div>
                     </div>
                     
                     <div class="form-row two-col">
                         <div class="form-group">
-                            <label>FACULTY MEMBER</label>
-                            <input type="text" name="faculty">
+                            <label>Section(s)</label>
+                            <input type="text" name="Section">
                         </div>
                         <div class="form-group">
-                            <label>SUBJECT</label>
-                            <input type="text" name="subject">
+                            <label>Date of Digital Day</label>
+                            <input type="text" name="date-of-digital-day">
                         </div>
                     </div>
                     
                     <div class="form-row">
                         <div class="form-group full-width">
-                            <label>RETENTION/REFERENCES</label>
-                            <textarea name="retention" rows="2"></textarea>
+                            <label>Course Outcome(s)</label>
+                            <textarea name="course-outcomes" rows="2"></textarea>
                         </div>
                     </div>
                     
                     <div class="form-row">
                         <div class="form-group full-width">
-                            <label>MOTIVATION/INSTRUCTIONAL/LECTURE/LEARNING ACTIVITIES (PRE-DIGITAL SESSION)</label>
+                            <label>MEDIATING/INTENDED LEARNING OUTCOME(S) AND CODES (ADD ROWS AS NEEDED)</label>
                             <textarea name="motivation" rows="5"></textarea>
                         </div>
                     </div>
@@ -59,15 +61,15 @@
                     <div class="form-section half-section">
                         <h3>PRE-DIGITAL SESSION</h3>
                         <div class="form-group">
-                            <label>YOUTUBE CODE</label>
+                            <label>MO/ILO CODE</label>
                             <input type="text" name="pre_youtube">
                         </div>
                         <div class="form-group">
-                            <label>TLA</label>
+                            <label>Teaching Learning Activity</label>
                             <input type="text" name="pre_tla">
                         </div>
                         <div class="form-group">
-                            <label>LAST TOOL</label>
+                            <label>LMS Tool/ Digital Tool used to Deliber the TLA</label>
                             <input type="text" name="pre_last_tool">
                         </div>
                         <div class="form-group">
@@ -80,7 +82,7 @@
                     <div class="form-section half-section">
                         <h3>POST-DIGITAL SESSION</h3>
                         <div class="form-group">
-                            <label>YOUTUBE CODE</label>
+                            <label>MO/ILO CODE</label>
                             <input type="text" name="post_youtube">
                         </div>
                         <div class="form-group">
@@ -101,6 +103,7 @@
                 
                 <div class="form-actions">
                     <button type="button" class="btn-save">SAVE AS DRAFT</button>
+                    <button type="button" class="btn-submit">PREVIEW PDF</button>
                     <button type="submit" class="btn-submit">SUBMIT</button>
                 </div>
             </form>
