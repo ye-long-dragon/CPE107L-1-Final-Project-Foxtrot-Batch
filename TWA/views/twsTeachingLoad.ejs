@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TWS - Teaching Load Details</title>
+  <link rel="stylesheet" href="/twa/public/twsStyle.css" />
+</head>
+
+<body>
+  <%- include("partials/twsNavBar") %>
+
+  <main class="main-content">
+    <div class="page-container">
+
+      <div class="header-pill">
+        <h1>TWS - Teaching Load Details</h1>
+      </div>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>My Teaching Workload Sheets</h2>
+          <a href="#" class="create-btn">+ Create New TWS</a>
+        </div>
+
+        <div class="table-grid load-grid">
+          <div class="grid-head">Course Code</div>
+          <div class="grid-head">Course Title</div>
+          <div class="grid-head center">Units</div>
+          <div class="grid-head center">Lecture Hours</div>
+          <div class="grid-head center">Lab Hours</div>
+          <div class="grid-head center">No. of Sections</div>
+
+          <div class="grid-cell">CE 101</div>
+          <div class="grid-cell">Intro to Engineers</div>
+          <div class="grid-cell center">3</div>
+          <div class="grid-cell center">2</div>
+          <div class="grid-cell center">2</div>
+          <div class="grid-cell center">1</div>
+
+          <div class="grid-cell">ME 202</div>
+          <div class="grid-cell">Thermodynamics</div>
+          <div class="grid-cell center">4</div>
+          <div class="grid-cell center">3</div>
+          <div class="grid-cell center">3</div>
+          <div class="grid-cell center">1</div>
+
+          <div class="grid-cell">CH 305</div>
+          <div class="grid-cell">Chemical Engineering</div>
+          <div class="grid-cell center">3</div>
+          <div class="grid-cell center">2</div>
+          <div class="grid-cell center">3</div>
+          <div class="grid-cell center">1</div>
+        </div>
+
+        <div class="row-actions">
+          <button class="action-btn">+ Add Row</button>
+          <button class="action-btn">Remove Row</button>
+        </div>
+      </section>
+
+      <div class="triple-actions">
+        <a href="/twa/faculty-info" class="pill-btn">Back</a>
+        <a href="#" class="pill-btn">Save Draft</a>
+        <a href="/twa/submission-status" class="pill-btn">Next</a>
+      </div>
+
+    </div>
+  </main>
+</body>
+</html>
