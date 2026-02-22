@@ -4,7 +4,7 @@ const loginRoutes = express.Router();
 
 // GET login page
 loginRoutes.get("/", (req, res) => {
-    res.render("login");   // renders views/login.ejs
+    res.render("MainPages/login");   // renders views/MainPages/login.ejs
 });
 
 export default loginRoutes;
