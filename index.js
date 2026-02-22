@@ -44,6 +44,9 @@ import dashBoardRoutes from "./routes/TLA/dashboardRoutes.js";
 import overviewRoutes from "./routes/TLA/overviewRoutes.js";
 import formRoutes from "./routes/TLA/formRoutes.js";
 
+//Syllabus
+import landingPageRouter from "./routes/Syllabus/landingPage.js";
+
 // ========================
 // Routes
 // ========================
@@ -55,6 +58,9 @@ app.use("/admin",adminRoutes)
 app.use("/tla", dashBoardRoutes)
 app.use("/tla/overview", overviewRoutes)
 app.use("/tla/form", formRoutes)
+
+//Syllabus
+app.use("/syllabus", landingPageRouter)
 
 // ========================
 // 404 (LAST)

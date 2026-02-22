@@ -3,7 +3,7 @@ import express from 'express';
 const landingPageRouter = express.Router();
 
 landingPageRouter.get('/', (req, res) => {
-    res.render('landingPage');
+    res.render('Syllabus/landingPage', {currentPageCategory: "syllabus"});
 });
 
-export { landingPageRouter as default };
+export default landingPageRouter;

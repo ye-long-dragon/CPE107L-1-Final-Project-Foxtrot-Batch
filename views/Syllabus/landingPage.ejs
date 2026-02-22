@@ -5,16 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
 
-    <link rel="stylesheet" href="/css/landingPage.css?v=<%= new Date().getTime() %>">
+    <!--inside the public file, for colors-->
+    <link rel="stylesheet" href="/common/css/variables.css">
+
+    <link rel="stylesheet" href="/Syllabus/css/landingPage.css">
 </head>
 <body>
     <div class="dashboard">
-        <%- include('./partials/sidebar.ejs') %>
+        <%- include('../partials/sideMenuBar') %>
 
         <main class="main-content">
         
             <header class="top-header">
-                <img src="/images/MMCM logo.png" alt="College Logo">
+                <img src="/Syllabus/img/MMCM_logo.png" alt="College Logo">
                 <h2>College of Engineering <br> and  Architecture</h2>
             </header>
 
@@ -46,6 +49,6 @@
 
         </main>
     </div>
-    <script src="/landingPage.js?v=<%= new Date().getTime() %>"></script>
+    <script src="/Syllabus/js/landingPage.js"></script>
 </body>
 </html>
