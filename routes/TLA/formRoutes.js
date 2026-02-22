@@ -4,7 +4,7 @@ const formRoutes = express.Router();
 
 // GET dashboard page
 formRoutes.get("/", (req, res) =>{
-    res.render("TLA/overview"); // renders the views/TLA/form.ejs
+    res.render("TLA/form", {currentPageCategory: "tla"}); // renders the views/TLA/form.ejs
 });
 
 export default formRoutes;

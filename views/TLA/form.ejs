@@ -3,14 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TLA - Create Form</title>
-    <link rel="stylesheet" href="/public/css/sidebar.css">
-    <link rel="stylesheet" href="/public/css/form.css">
-</head>
+    <title>TLA | Create Form</title>
+    
+    <!--inside the public file, for colors-->
+    <link rel="stylesheet" href="/common/css/variables.css">
 
+    <link rel="stylesheet" href="/TLA/css/form.css">
+</head>
 <body>
 
-    <%- include('../views/partials/sidebar.ejs') %>
+    <%- include('../partials/sideMenuBar') %>
     
     <main class="main-content">
         <div class="background-overlay"></div>
@@ -109,8 +111,6 @@
             </form>
         </div>
     </main>
-    
-    <script src="/public/js/sidebar.js"></script>
-    <script src="/public/js/form.js"></script>
+    <script src="/TLA/js/form.js"></script>
 </body>
 </html>
