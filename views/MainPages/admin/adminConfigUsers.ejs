@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MMCM Chalkboard | User Configuration</title>
+
+    <link rel="stylesheet" href="/common/css/variables.css">
+    <style>
+        /* Inherited Styles from Original Design */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--page-bg, #f4f4f4);
+            color: #333;
+        }
+
+        .page-layout {
+            display: grid;
+            grid-template-columns: 250px 1fr; 
+            min-height: 100vh;
+        }
+
+        .side-menu-container {
+            background-color: var(--sidebar-bg, #2c3e50);
+            height: 100vh;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            padding-bottom: 80px;
+            overflow-y: auto;
+        }
+
+        .admin-hero {
+            width: 100%;
+            min-height: 250px;
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
+                        url('/common/img/background.jpg') no-repeat center center/cover;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-on-dark, #fff);
+            text-align: center;
+            flex-shrink: 0; 
+        }
+
+        .admin-panel {
+            background-color: #fff;
+            padding: 40px; 
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-width: 900px;
+            width: 90%;
+            margin: -50px auto 30px auto; /* Overlap with hero */
+            z-index: 10;
+            position: relative;
+        }
+
+        .form-title {
+            color: var(--accent-primary, #a01a1e);
+            margin-bottom: 25px;
+            font-size: 1.4rem;
+            border-bottom: 2px solid #f8f8f8;
+            padding-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .admin-form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .form-group { margin-bottom: 20px; }
+        .full-width { grid-column: span 2; }
+
+        .admin-input-style label {
+            display: block;
+            font-weight: 700;
+            font-size: 0.75rem;
+            margin-bottom: 10px; 
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .admin-input-style input, 
+        .admin-input-style select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 0.9rem;
+            color: #444;
+            background-color: #fafafa;
+            box-sizing: border-box;
+            transition: all 0.2s ease;
+        }
+
+        .admin-input-style input:focus {
+            outline: none;
+            border-color: var(--accent-primary, #a01a1e);
+            background-color: #fff;
+            box-shadow: 0 0 0 4px rgba(160, 26, 30, 0.05);
+        }
+
+        .btn-submit {
+            background-color: var(--accent-primary, #a01a1e);
+            color: white;
+            padding: 14px 35px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--accent-primary-hover, #7d1417);
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(160, 26, 30, 0.3);
+        }
+
+        /* User List Specific Styles */
+        .user-list-box {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            max-width: 900px;
+            width: 90%;
+            margin: 20px auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th {
+            text-align: left;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #888;
+            padding: 15px;
+            border-bottom: 2px solid #eee;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            font-size: 0.9rem;
+        }
+
+        .role-badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            background: #eee;
+        }
+
+        .role-admin { background: #ffebee; color: #c62828; }
+        .role-faculty { background: #e3f2fd; color: #1565c0; }
+        .role-student { background: #e8f5e9; color: #2e7d32; }
+
+        .action-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-edit {
+            background: none;
+            border: 1px solid #002455;
+            color: #002455;
+            padding: 5px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .btn-edit:hover {
+            background: #002455;
+            color: white;
+        }
+
+        .btn-delete {
+            background-color: transparent;
+            color: #dc3545;
+            border: 1px solid #dc3545;
+            padding: 5px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .btn-delete:hover {
+            background-color: #dc3545;
+            color: white;
+        }
+    </style>
+</head>
+To align the interface with your Mongoose model, we need to expand the form to include fields like Employment Type, Program, Department, and split the name into First, Middle, and Last Name.
+
+I have also updated the Role selection to match your schema's enum values precisely (Professor, Program-Chair, etc.).
+
+Updated adminConfigUsers.ejs
+HTML
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MMCM Chalkboard | User Configuration</title>
+    <link rel="stylesheet" href="/common/css/variables.css">
+    <style>
+        /* ... keeping your existing styles ... */
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--page-bg, #f4f4f4); color: #333; }
+        .page-layout { display: grid; grid-template-columns: 250px 1fr; min-height: 100vh; }
+        .side-menu-container { background-color: var(--sidebar-bg, #2c3e50); height: 100vh; position: sticky; top: 0; z-index: 100; }
+        .main-content { display: flex; flex-direction: column; align-items: center; width: 100%; padding-bottom: 80px; overflow-y: auto; }
+        .admin-hero { width: 100%; min-height: 250px; background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('/common/img/background.jpg') no-repeat center center/cover; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-on-dark, #fff); text-align: center; flex-shrink: 0; }
+        .admin-panel { background-color: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); max-width: 950px; width: 90%; margin: -50px auto 30px auto; z-index: 10; position: relative; }
+        .form-title { color: var(--accent-primary, #a01a1e); margin-bottom: 25px; font-size: 1.4rem; border-bottom: 2px solid #f8f8f8; padding-bottom: 15px; font-weight: 700; }
+        .admin-form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .form-group { margin-bottom: 20px; }
+        .full-width { grid-column: span 3; }
+        .admin-input-style label { display: block; font-weight: 700; font-size: 0.75rem; margin-bottom: 10px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; }
+        .admin-input-style input, .admin-input-style select { width: 100%; padding: 12px 15px; border: 1px solid #e0e0e0; border-radius: 8px; font-family: inherit; font-size: 0.9rem; color: #444; background-color: #fafafa; box-sizing: border-box; transition: all 0.2s ease; }
+        .admin-input-style input:focus { outline: none; border-color: var(--accent-primary, #a01a1e); background-color: #fff; box-shadow: 0 0 0 4px rgba(160, 26, 30, 0.05); }
+        .btn-submit { background-color: var(--accent-primary, #a01a1e); color: white; padding: 14px 35px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; font-size: 1rem; transition: all 0.3s ease; }
+        .user-list-box { background-color: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); max-width: 950px; width: 90%; margin: 20px auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th { text-align: left; font-size: 0.75rem; text-transform: uppercase; color: #888; padding: 15px; border-bottom: 2px solid #eee; }
+        td { padding: 15px; border-bottom: 1px solid #eee; font-size: 0.85rem; }
+        .role-badge { padding: 4px 10px; border-radius: 20px; font-size: 0.7rem; font-weight: 700; background: #eee; text-transform: uppercase; }
+        .action-btns { display: flex; gap: 8px; }
+        .btn-edit, .btn-delete { padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 600; transition: 0.2s; background: none; }
+        .btn-edit { border: 1px solid #002455; color: #002455; }
+        .btn-delete { border: 1px solid #dc3545; color: #dc3545; }
+    </style>
+</head>
+<body>
+
+    <div class="page-layout">
+        <aside class="side-menu-container">
+            <%- include('partials/adminSideMenuBar') %>
+        </aside>
+
+        <main class="main-content">
+            <div class="admin-hero">
+                <h1>User Configuration</h1>
+                <p>Enterprise Resource Planning • Faculty & Staff Management</p>
+            </div>
+
+            <div class="admin-panel">
+                <h3 class="form-title">Register New Faculty/Staff</h3>
+                <form id="userConfigForm" action="/admin/users/add" method="POST">
+                    <div class="admin-form-grid">
+                        <div class="form-group admin-input-style">
+                            <label>First Name</label>
+                            <input type="text" name="firstName" required>
+                        </div>
+                        <div class="form-group admin-input-style">
+                            <label>Middle Name</label>
+                            <input type="text" name="middleName">
+                        </div>
+                        <div class="form-group admin-input-style">
+                            <label>Last Name</label>
+                            <input type="text" name="lastName" required>
+                        </div>
+
+                        <div class="form-group admin-input-style">
+                            <label>Email Address</label>
+                            <input type="email" name="email" required>
+                        </div>
+                        <div class="form-group admin-input-style">
+                            <label>Employee ID</label>
+                            <input type="text" name="employeeId" required>
+                        </div>
+                        <div class="form-group admin-input-style">
+                            <label>Password</label>
+                            <input type="password" name="password" required>
+                        </div>
+
+                        <div class="form-group admin-input-style">
+                            <label>Role</label>
+                            <select name="role">
+                                <option value="Professor">Professor</option>
+                                <option value="Program-Chair">Program-Chair</option>
+                                <option value="Dean">Dean</option>
+                                <option value="HR">HR</option>
+                                <option value="Admin">Admin</option>
+                            </select>
+                        </div>
+                        <div class="form-group admin-input-style">
+                            <label>Employment Type</label>
+                            <select name="employmentType">
+                                <option value="Full-Time">Full-Time</option>
+                                <option value="Part-Time">Part-Time</option>
+                            </select>
+                        </div>
+                        <div class="form-group admin-input-style">
+                            <label>Program</label>
+                            <select name="program">
+                                <option value="CpE">Computer Engineering</option>
+                                <option value="ECE">Electronics Engineering</option>
+                                <option value="EE">Electrical Engineering</option>
+                                <option value="IE">Industrial Engineering</option>
+                                <option value="CE">Civil Engineering</option>
+                                <option value="ChE">Chemical Engineering</option>
+                                <option value="ME">Mechanical Engineering</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-submit">Initialize Account</button>
+                </form>
+            </div>
+
+            <div class="user-list-box">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 style="margin: 0; color: #002455; font-size: 1.2rem;">Active Accounts</h2>
+                    <input type="text" placeholder="Filter by Name or ID..." style="padding: 8px; border-radius: 5px; border: 1px solid #ddd;">
+                </div>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User Name</th>
+                            <th>Role/Dept</th>
+                            <th>Employee ID</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (users && users.length > 0) { %>
+                            <% users.forEach(user => { %>
+                                <tr>
+                                    <td>
+                                        <strong><%= user.lastName %>, <%= user.firstName %></strong><br>
+                                        <small><%= user.email %></small>
+                                    </td>
+                                    <td>
+                                        <span class="role-badge"><%= user.role %></span><br>
+                                        <small><%= user.program %> | <%= user.department %></small>
+                                    </td>
+                                    <td><%= user.employeeId %></td>
+                                    <td class="action-btns">
+                                        <button class="btn-edit" onclick="editUser('<%= user._id %>')">Edit</button>
+                                        <form action="/admin/users/delete/<%= user._id %>" method="POST" style="margin:0;">
+                                            <button type="submit" class="btn-delete">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: #888;">No users found. Start by registering one above.</td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+    
+    <script src="/MainPages/js/adminConfigUsers.js"></script>
+</body>
+</html>
+</html>

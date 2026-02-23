@@ -38,6 +38,7 @@ app.use(express.static(path.join(__dirname, "public")));
 import loginRoutes from "./routes/MainPages/loginRoutes.js";
 import institutionRoutes from "./routes/MainPages/institutionRoutes.js";
 import adminRoutes from "./routes/MainPages/adminRoutes.js";
+import adminConfigUserRoutes from "./routes/MainPages/adminConfigUsers.js";
 
 // TLA
 import dashBoardRoutes from "./routes/TLA/dashboardRoutes.js";
@@ -53,6 +54,7 @@ import landingPageRouter from "./routes/Syllabus/landingPage.js";
 app.use("/login",loginRoutes)
 app.use("/institution",institutionRoutes)
 app.use("/admin",adminRoutes)
+app.use("/admin/users", adminConfigUserRoutes)
 
 //TLA
 app.use("/tla", dashBoardRoutes)

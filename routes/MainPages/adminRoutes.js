@@ -3,7 +3,10 @@ const adminRoutes = express.Router();
 
 // render admin dashboard
 adminRoutes.get("/", async (req, res) => {
-    res.render("MainPages/admin/adminDashboard", { announcements: [] });
+    res.render("MainPages/admin/adminDashboard", {
+        currentPageCategory: "institution",
+        announcements: [] 
+    });
 });
 
 export default adminRoutes;
