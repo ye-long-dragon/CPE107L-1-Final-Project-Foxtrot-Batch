@@ -148,6 +148,33 @@ coursesOverviewRouter.post('/:userId/add', upload.single('courseImage'), async (
     try {
         const userId = req.params.userId;
         const { courseCode, courseTitle, assignedInstructor } = req.body;
+
+        // Check for duplicate course code (case-insensitive)
+        const existingCode = await Syllabus.findOne({
+            userID: userId,
+            courseCode: { $regex: new RegExp(`^${courseCode}$`, 'i') }
+        });
+        if (existingCode) {
+            return res.status(409).json({ 
+                error: 'duplicate', 
+                field: 'courseCode', 
+                message: `A course with code "${courseCode}" already exists.` 
+            });
+        }
+
+        // Check for duplicate course title (case-insensitive)
+        const existingTitle = await Syllabus.findOne({
+            userID: userId,
+            courseTitle: { $regex: new RegExp(`^${courseTitle}$`, 'i') }
+        });
+        if (existingTitle) {
+            return res.status(409).json({ 
+                error: 'duplicate', 
+                field: 'courseTitle', 
+                message: `A course named "${courseTitle}" already exists.` 
+            });
+        }
+
         const syllabusData = { userID: userId, courseCode, courseTitle };
         
         // Only set instructor if a valid selection was made
@@ -163,10 +190,10 @@ coursesOverviewRouter.post('/:userId/add', upload.single('courseImage'), async (
         
         const newSyllabus = new Syllabus(syllabusData);
         await newSyllabus.save();
-        res.redirect(`/courses/${userId}`);
+        res.json({ success: true, redirect: `/courses/${userId}` });
     } catch (error) {
         console.error('Error adding course:', error);
-        res.status(500).send("Error adding course to database.");
+        res.status(500).json({ error: 'server', message: 'Error adding course to database.' });
     }
 });
 

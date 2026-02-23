@@ -487,6 +487,39 @@
   border-top: 1px solid #f0f0f0;
 }
 
+/* Form Error Message */
+.form-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  animation: shakeError 0.4s ease;
+}
+
+.form-error i {
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+@keyframes shakeError {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+/* Highlight input with error */
+.form-group input.input-error {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
 .cancel-btn {
   background: transparent;
   color: #666;

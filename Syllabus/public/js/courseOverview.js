@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Reset form fields when opening
             if (addCourseForm) addCourseForm.reset();
             resetImageUpload();
+            clearFormError();
 
             // Show modal with unfocused background
             modal.style.display = "flex";
@@ -39,6 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // =========================================
     function closeModal() {
         modal.style.display = "none";
+        clearFormError();
     }
 
     if (closeBtn) closeBtn.onclick = closeModal;
@@ -98,6 +100,86 @@ document.addEventListener('DOMContentLoaded', () => {
             instructorHint.textContent = "Could not load instructors — field is optional";
             instructorHint.className = "form-hint error";
         }
+    }
+
+    // =========================================
+    // Form Submit — AJAX with duplicate check
+    // =========================================
+    const formError = document.getElementById('formError');
+    const formErrorText = document.getElementById('formErrorText');
+    const courseTitleInput = document.getElementById('courseTitle');
+    const courseCodeInput = document.getElementById('courseCode');
+
+    if (addCourseForm) {
+        addCourseForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearFormError();
+
+            const formData = new FormData(addCourseForm);
+
+            try {
+                const response = await fetch(addCourseForm.action, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    // Success — redirect to the courses page
+                    window.location.href = result.redirect;
+                } else if (result.error === 'duplicate') {
+                    // Show duplicate error in modal
+                    showFormError(result.message, result.field);
+                } else {
+                    showFormError(result.message || 'An error occurred while adding the course.');
+                }
+            } catch (error) {
+                console.error('Form submission error:', error);
+                showFormError('An unexpected error occurred. Please try again.');
+            }
+        });
+    }
+
+    function showFormError(message, field) {
+        if (formError && formErrorText) {
+            formErrorText.textContent = message;
+            formError.style.display = 'flex';
+
+            // Re-trigger shake animation
+            formError.style.animation = 'none';
+            formError.offsetHeight; // force reflow
+            formError.style.animation = '';
+
+            // Highlight the offending input field
+            if (field === 'courseCode' && courseCodeInput) {
+                courseCodeInput.classList.add('input-error');
+                courseCodeInput.focus();
+            } else if (field === 'courseTitle' && courseTitleInput) {
+                courseTitleInput.classList.add('input-error');
+                courseTitleInput.focus();
+            }
+        }
+    }
+
+    function clearFormError() {
+        if (formError) formError.style.display = 'none';
+        if (courseTitleInput) courseTitleInput.classList.remove('input-error');
+        if (courseCodeInput) courseCodeInput.classList.remove('input-error');
+    }
+
+    // Clear error highlight when user starts typing in the errored field
+    if (courseTitleInput) {
+        courseTitleInput.addEventListener('input', () => {
+            courseTitleInput.classList.remove('input-error');
+            if (formError && formError.style.display !== 'none') clearFormError();
+        });
+    }
+    if (courseCodeInput) {
+        courseCodeInput.addEventListener('input', () => {
+            courseCodeInput.classList.remove('input-error');
+            if (formError && formError.style.display !== 'none') clearFormError();
+        });
     }
 
     // =========================================
