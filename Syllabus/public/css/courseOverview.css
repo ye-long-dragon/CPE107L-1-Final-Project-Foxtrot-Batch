@@ -1,0 +1,314 @@
+/* ============================
+   MAIN PANEL (BORDERS & SHADOWS)
+   ============================ */
+.overview-panel {
+    width: 100%;
+    max-width: 2500px;
+    background: #ffffff;
+    padding: 30px;
+    /* Thick rounded borders matching reference */
+    border: 2px solid #000; 
+    border-radius: 20px; 
+    /* Deep shadow to match new format */
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15); 
+    margin: 0 auto;
+    min-height: 80vh;
+}
+
+/* ============================
+   HEADER STYLES
+   ============================ */
+.courses-header {
+    display: flex;
+    justify-content: space-between; 
+    align-items: flex-end; 
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.header-left h1 {
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.top-header h2 {
+    font-size: 30px; 
+    line-height: 1.4; 
+    color: #000;
+}
+
+/* Hides the List and Grid view icons */
+.view-toggles {
+    display: none !important; 
+}
+
+/* ============================
+   RESTORED HEADER CONTROLS
+   ============================ */
+.header-controls {
+    display: flex;
+    align-items: flex-end;
+    gap: 15px;
+}
+
+.search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-container i {
+    position: absolute;
+    left: 12px;
+    color: #888;
+}
+
+.search-container input {
+    padding: 8px 12px 8px 35px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    width: 250px;
+    font-size: 13px;
+    outline: none;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.control-group label {
+    font-size: 11px;
+    color: #666;
+    font-weight: 600;
+}
+
+.control-group select {
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 13px;
+    background-color: #fff;
+    cursor: pointer;
+}
+
+/* ============================
+   RESULTS BAR & PILLS
+   ============================ */
+.results-bar {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.result-count {
+    font-size: 13px;
+    color: #555;
+}
+
+.filter-pill {
+    background-color: #333;
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ============================
+   AUTO-ADJUSTING GRID & CARDS
+   ============================ */
+.course-grid {
+    display: grid;
+    /* Dynamically fits as many cards as possible depending on screen width */
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
+    gap: 25px;
+}
+
+.course-card {
+    background: #ffffff;
+    border: 1px solid #eeeeee; 
+    border-radius: 14px; 
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); 
+    display: flex;
+    flex-direction: column;
+}
+
+.course-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+}
+
+.card-image img {
+    width: 100%;
+    height: 130px; 
+    object-fit: cover;
+    background-color: #f9f9f9; /* Fallback color */
+}
+
+.card-content {
+    padding: 15px; 
+    flex-grow: 1;
+}
+
+.course-code {
+    font-size: 10px; 
+    color: #999;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block; 
+}
+
+.course-title {
+    font-size: 14px; 
+    color: #222;
+    font-weight: 600;
+    margin: 6px 0;
+    line-height: 1.3;
+}
+
+.course-status {
+    font-size: 11px;
+    color: #555;
+    margin-top: auto;
+}
+
+.card-footer {
+    padding: 12px 15px; 
+    border-top: 1px solid #f5f5f5;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px; 
+    color: #777;
+}
+
+/* ============================
+   NEW: CRUD UI ELEMENTS
+   ============================ */
+
+/* Add Button in Header */
+.add-btn {
+    background: #000;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-left: 20px;
+    transition: 0.2s;
+}
+.add-btn:hover { background: #333; }
+
+/* NEW: Delete Header Toggle Button */
+.delete-header-btn {
+    background: #e74c3c;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: 0.2s;
+}
+.delete-header-btn:hover { background: #c0392b; }
+
+/* Delete Button on Card */
+.course-card { position: relative; } /* Ensure card anchors the delete button */
+.delete-form {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+    display: none; /* Hidden by default */
+}
+
+/* Show the trash cans when 'delete-mode' class is active */
+.course-grid.delete-mode .delete-form {
+    display: block;
+}
+
+.delete-btn {
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    color: #e74c3c;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: 0.2s;
+}
+.delete-btn:hover { background: #e74c3c; color: #fff; }
+
+/* Modal Overlay Panel */
+.modal-overlay {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Modal Content Box */
+.modal-content {
+    background: #fff;
+    padding: 30px;
+    border-radius: 16px;
+    width: 400px;
+    box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+    border: 2px solid #000;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+.modal-header h2 { font-size: 20px; margin: 0; }
+.close-modal { font-size: 24px; cursor: pointer; font-weight: bold; }
+
+/* Modal Form Styles */
+.add-course-form { display: flex; flex-direction: column; gap: 15px; }
+.add-course-form label { font-size: 12px; font-weight: 600; color: #555; margin-bottom: -10px; }
+.add-course-form input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+}
+.submit-btn {
+    margin-top: 10px;
+    background: #000;
+    color: #fff;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.submit-btn:hover { background: #333; }

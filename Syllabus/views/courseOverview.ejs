@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Courses</title>
+    <link rel="stylesheet" href="/css/landingPage.css">
+    <link rel="stylesheet" href="/css/courseOverview.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="dashboard">
+        <%- include('./partials/sidebar.ejs') %>
+
+        <main class="main-content" style="background: #ffffff !important;">
+            <header class="top-header">
+                <h2>College of Engineering <br> and Architecture</h2>
+            </header>
+
+            <section class="content-panel">
+                <div class="overview-panel">
+                    
+                    <div class="courses-header">
+                        <div class="header-left">
+                            <h1>Courses</h1>
+                            <button id="openAddModalBtn" class="add-btn"><i class="fas fa-plus"></i> Add Course</button>
+                            <button id="toggleDeleteBtn" class="delete-header-btn"><i class="fas fa-trash"></i> Delete Course</button>
+                        </div>
+
+                        <div class="header-controls">
+                            <form action="/coursesOverview/<%= typeof userId !== 'undefined' ? userId : '' %>" method="GET" class="search-container">
+                                <i class="fas fa-search"></i>
+                                <input type="text" name="search" placeholder="Search your Courses" value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>">
+                                <button type="submit" style="display: none;">Search</button>
+                            </form>
+                            
+                            <div class="control-group"><label>Terms</label><select><option>A.Y. 2025-2026 | COLLEGE</option></select></div>
+                            <div class="control-group"><label>Filters</label><select><option>All Courses</option></select></div>
+                            <div class="control-group"><label>Items per Page</label><select><option>25</option></select></div>
+                        </div>
+                    </div>
+
+                    <div class="results-bar">
+                        <span class="result-count"><%= typeof courses !== 'undefined' ? courses.length : 0 %> Results</span>
+                        <% if (typeof searchQuery !== 'undefined' && searchQuery) { %>
+                            <div class="filter-pill">Search: <%= searchQuery %> <a href="/coursesOverview/<%= typeof userId !== 'undefined' ? userId : '' %>" style="color: white;"><i class="fas fa-times-circle"></i></a></div>
+                        <% } %>
+                    </div>
+
+                    <div class="course-grid">
+                        <% if (typeof courses !== 'undefined' && courses.length > 0) { %>
+                            <% courses.forEach(course => { %>
+                                <div class="course-card">
+                                    <form action="/coursesOverview/<%= typeof userId !== 'undefined' ? userId : '' %>/delete/<%= course.id %>" method="POST" class="delete-form">
+                                        <button type="submit" class="delete-btn" title="Delete Course"><i class="fas fa-trash"></i></button>
+                                    </form>
+
+                                    <div class="card-image" onclick="window.location.href='/syllabus/<%= course.id %>'">
+                                        <img src="<%= course.img || 'https://picsum.photos/400/200?random=' + course.id %>" alt="Course Image">
+                                    </div>
+                                    <div class="card-content" onclick="window.location.href='/syllabus/<%= course.id %>'">
+                                        <span class="course-code"><%= course.code %></span>
+                                        <h3 class="course-title"><%= course.title %></h3>
+                                        <p class="course-status">Open</p>
+                                    </div>
+                                    <div class="card-footer">
+                                        <span class="instructor"><%= course.instructor %></span>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        <% } else { %>
+                            <p style="text-align: center; color: #777; grid-column: 1 / -1; padding: 40px 0;">No courses found.</p>
+                        <% } %>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="addCourseModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Course</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <form action="/coursesOverview/<%= typeof userId !== 'undefined' ? userId : '' %>/add" method="POST" class="add-course-form">
+                
+                <label>Course Code</label>
+                <input type="text" name="courseCode" placeholder="e.g. CPE101-4" required>
+                
+                <label>Course Title</label>
+                <input type="text" name="courseTitle" placeholder="e.g. Digital Electronics" required>
+                
+                <button type="submit" class="submit-btn">Save Course</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/sidebar.js"></script>
+    <script src="/js/courseOverview.js"></script>
+</body>
+</html>

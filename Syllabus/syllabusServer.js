@@ -1,34 +1,37 @@
 import express from 'express';
+import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import dotenv from 'dotenv';
+import coursesOverviewRouter from './routes/pages/coursesOverviewRouter.js';
 import landingPageRouter from './routes/pages/landingPage.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config({ path: path.join(__dirname, '.env') });
+dotenv.config();
 
 const app = express();
-const PORT = process.env.SYLLABUSPORT || 3000;
+const PORT = process.env.SYLLABUSPORT || 8300; // Updated to match your terminal port
 
-app.set('views', path.join(__dirname, 'views'));
+// Set views directory and engine
+app.set('views', path.join(__dirname, 'views')); 
 app.set('view engine', 'ejs');
 
-// In development, disable caching so you always see file changes
-if (process.env.NODE_ENV !== 'production') {
-  app.use((req, res, next) => {
-    res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
-    next();
-  });
-}
+// Serve static files from public folder
+app.use(express.static(path.join(__dirname, 'public'))); 
 
-app.use(express.static(path.join(__dirname, 'public')));
-app.use('/', landingPageRouter);
+// Redirect root to /courses to show the Overview page immediately
+app.get('/', (req, res) => {
+    res.redirect('/courses');
+});
 
-// Main page as index: / and /index both serve the landing page
-app.get('/index', (req, res) => res.redirect('/'));
+// Routing for the new Courses Overview page
+app.use('/courses', coursesOverviewRouter); 
 
+// Landing page moved to /home
+app.use('/home', landingPageRouter);
+
+// Original syllabus form route
 app.get('/syllabus', (req, res) => {
   res.render('syllabus');
 });
@@ -37,6 +40,7 @@ app.get('/preview', (req, res) => {
   res.render('preview');
 });
 
+// Handle 404 errors
 app.use((req, res) => {
   res.status(404).send('404 Not Found');
 });

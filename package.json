@@ -32,14 +32,14 @@
   },
   "homepage": "https://github.com/ye-long-dragon/CPE107L-1-Final-Project-Foxtrot-Batch#readme",
   "dependencies": {
-    "dotenv": "^17.2.3",
+    "dotenv": "^17.3.1",
     "ejs": "^4.0.1",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
-    "mongodb": "^7.0.0",
-    "mongoose": "^9.1.5"
+    "mongodb": "^7.1.0",
+    "mongoose": "^9.2.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.11"
+    "nodemon": "^3.1.14"
   }
 }
