@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "This will be the final project for the Foxtrot Batch for the Software Design Laboratory (CPE107L-1) wherein students will create a Syllabus, ATA, TWS, and TLA Systems for MMCM CEA Department",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
