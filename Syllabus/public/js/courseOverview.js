@@ -205,4 +205,99 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
     }
+
+    // =========================================
+    // Delete Confirmation Dialog
+    // =========================================
+    function attachDeleteConfirmation() {
+        const deleteForms = document.querySelectorAll('.delete-form');
+        deleteForms.forEach(form => {
+            form.addEventListener('submit', (e) => {
+                const confirmed = confirm('Are you sure you want to delete this course? This action cannot be undone.');
+                if (!confirmed) {
+                    e.preventDefault();
+                }
+            });
+        });
+    }
+
+    // Attach to initial cards
+    attachDeleteConfirmation();
+
+    // =========================================
+    // Live Search — keystroke by keystroke
+    // =========================================
+    const searchInput = document.getElementById('searchInput');
+    const searchContainer = document.querySelector('.search-container');
+    const resultCount = document.getElementById('resultCount');
+    const userId = searchContainer ? searchContainer.dataset.userid : '';
+
+    let searchTimeout = null;
+
+    if (searchInput && courseGrid) {
+        searchInput.addEventListener('input', () => {
+            const query = searchInput.value.trim();
+
+            // Debounce — wait 200ms after last keystroke
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                fetchCourses(query);
+            }, 200);
+        });
+    }
+
+    async function fetchCourses(query) {
+        try {
+            const response = await fetch(`/courses/api/search?q=${encodeURIComponent(query)}&userId=${encodeURIComponent(userId)}`);
+            const courses = await response.json();
+
+            // Update result count
+            if (resultCount) {
+                resultCount.textContent = `${courses.length} Results`;
+            }
+
+            // Rebuild course grid
+            renderCourseGrid(courses);
+        } catch (error) {
+            console.error('Search error:', error);
+        }
+    }
+
+    function renderCourseGrid(courses) {
+        if (!courseGrid) return;
+
+        // Check if currently in delete mode
+        const isDeleteMode = courseGrid.classList.contains('delete-mode');
+
+        if (courses.length > 0) {
+            courseGrid.innerHTML = courses.map(course => `
+                <div class="course-card">
+                    <form action="/courses/${userId}/delete/${course.id}" method="POST" class="delete-form">
+                        <button type="submit" class="delete-btn" title="Delete Course"><i class="fas fa-trash"></i></button>
+                    </form>
+                    <div class="card-image" onclick="window.location.href='/syllabus/${course.id}'">
+                        <img src="${course.img}" alt="Course Image">
+                    </div>
+                    <div class="card-content" onclick="window.location.href='/syllabus/${course.id}'">
+                        <span class="course-code">${course.code}</span>
+                        <h3 class="course-title">${course.title}</h3>
+                        <p class="course-status">Open</p>
+                    </div>
+                    <div class="card-footer">
+                        <span class="instructor">${course.instructor}</span>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            courseGrid.innerHTML = '<p style="text-align: center; color: #777; grid-column: 1 / -1; padding: 40px 0;">No courses found.</p>';
+        }
+
+        // Preserve delete mode if it was active
+        if (isDeleteMode) {
+            courseGrid.classList.add('delete-mode');
+        }
+
+        // Re-attach delete confirmation to new cards
+        attachDeleteConfirmation();
+    }
 });

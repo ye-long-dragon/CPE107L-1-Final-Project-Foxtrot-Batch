@@ -50,6 +50,51 @@ coursesOverviewRouter.get('/api/users', async (req, res) => {
     }
 });
 
+/*
+ * Searches courseTitle and courseCode, case-insensitive
+ * Must be defined BEFORE /:userId to prevent route conflict
+ */
+coursesOverviewRouter.get('/api/search', async (req, res) => {
+    try {
+        const query = req.query.q || '';
+        const userId = req.query.userId || '';
+
+        // Build the filter — match userID and search in title or code
+        const filter = { userID: userId };
+        if (query) {
+            const regex = new RegExp(query, 'i'); // case-insensitive
+            filter.$or = [
+                { courseTitle: { $regex: regex } },
+                { courseCode: { $regex: regex } }
+            ];
+        }
+
+        let courses = await Syllabus.find(filter);
+
+        // Populate instructor if User model exists
+        if (mongoose.models.User) {
+            await Syllabus.populate(courses, { path: 'assignedInstructor' });
+        }
+
+        const formatted = courses.map(c => ({
+            id: c._id.toString(),
+            code: c.courseCode,
+            title: c.courseTitle,
+            instructor: c.assignedInstructor
+                ? `${c.assignedInstructor.firstName} ${c.assignedInstructor.lastName}`
+                : "TBA",
+            img: (c.courseImage && c.courseImage.startsWith('data:'))
+                ? c.courseImage
+                : `https://picsum.photos/seed/${c._id}/400/200`
+        }));
+
+        res.json(formatted);
+    } catch (error) {
+        console.error('Error searching courses:', error);
+        res.json([]);
+    }
+});
+
 /**
  * 1. READ & SEARCH
  * Fetches syllabus entries tied to the Professor (User)
@@ -122,6 +167,18 @@ coursesOverviewRouter.post('/:userId/add', upload.single('courseImage'), async (
     } catch (error) {
         console.error('Error adding course:', error);
         res.status(500).send("Error adding course to database.");
+    }
+});
+
+// 3. DELETE — Remove a course from the database
+coursesOverviewRouter.post('/:userId/delete/:courseId', async (req, res) => {
+    try {
+        const { userId, courseId } = req.params;
+        await Syllabus.findByIdAndDelete(courseId);
+        res.redirect(`/courses/${userId}`);
+    } catch (error) {
+        console.error('Error deleting course:', error);
+        res.status(500).send("Error deleting course from database.");
     }
 });
 

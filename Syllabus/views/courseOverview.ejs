@@ -28,11 +28,10 @@
                         </div>
 
                         <div class="header-controls">
-                            <form action="/coursesOverview/<%= typeof userId !== 'undefined' ? userId : '' %>" method="GET" class="search-container">
+                            <div class="search-container" data-userid="<%= typeof userId !== 'undefined' ? userId : '' %>">
                                 <i class="fas fa-search"></i>
-                                <input type="text" name="search" placeholder="Search your Courses" value="<%= typeof searchQuery !== 'undefined' ? searchQuery : '' %>">
-                                <button type="submit" style="display: none;">Search</button>
-                            </form>
+                                <input type="text" id="searchInput" placeholder="Search your Courses" autocomplete="off">
+                            </div>
                             
                             <div class="control-group"><label>Terms</label><select><option>A.Y. 2025-2026 | COLLEGE</option></select></div>
                             <div class="control-group"><label>Filters</label><select><option>All Courses</option></select></div>
@@ -41,17 +40,14 @@
                     </div>
 
                     <div class="results-bar">
-                        <span class="result-count"><%= typeof courses !== 'undefined' ? courses.length : 0 %> Results</span>
-                        <% if (typeof searchQuery !== 'undefined' && searchQuery) { %>
-                            <div class="filter-pill">Search: <%= searchQuery %> <a href="/coursesOverview/<%= typeof userId !== 'undefined' ? userId : '' %>" style="color: white;"><i class="fas fa-times-circle"></i></a></div>
-                        <% } %>
+                        <span class="result-count" id="resultCount"><%= typeof courses !== 'undefined' ? courses.length : 0 %> Results</span>
                     </div>
 
                     <div class="course-grid">
                         <% if (typeof courses !== 'undefined' && courses.length > 0) { %>
                             <% courses.forEach(course => { %>
                                 <div class="course-card">
-                                    <form action="/coursesOverview/<%= typeof userId !== 'undefined' ? userId : '' %>/delete/<%= course.id %>" method="POST" class="delete-form">
+                                    <form action="/courses/<%= typeof userId !== 'undefined' ? userId : '' %>/delete/<%= course.id %>" method="POST" class="delete-form">
                                         <button type="submit" class="delete-btn" title="Delete Course"><i class="fas fa-trash"></i></button>
                                     </form>
 
@@ -91,7 +87,7 @@
             <form action="/courses/<%= typeof userId !== 'undefined' ? userId : '' %>/add" method="POST" enctype="multipart/form-data" class="add-course-form" id="addCourseForm">
                 
                 <div class="form-group">
-                    <label><i class="fas fa-image"></i> Course Image</label>
+                    <label>Course Image</label>
                     <div class="image-upload-zone" id="imageUploadZone">
                         <div class="upload-placeholder" id="uploadPlaceholder">
                             <i class="fas fa-cloud-upload-alt"></i>
@@ -111,17 +107,17 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="courseTitle"><i class="fas fa-heading"></i> Course Name</label>
+                    <label for="courseTitle">Course Name</label>
                     <input type="text" id="courseTitle" name="courseTitle" placeholder="e.g. Software Design" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="courseCode"><i class="fas fa-hashtag"></i> Course ID</label>
+                    <label for="courseCode">Course ID</label>
                     <input type="text" id="courseCode" name="courseCode" placeholder="e.g. CPE107L-1" required>
                 </div>
 
                 <div class="form-group">
-                    <label for="assignedInstructor"><i class="fas fa-chalkboard-teacher"></i> Assigned Instructor</label>
+                    <label for="assignedInstructor">Assigned Instructor</label>
                     <div class="select-wrapper">
                         <select id="assignedInstructor" name="assignedInstructor">
                             <option value="">— Select an Instructor —</option>
@@ -134,7 +130,7 @@
 
                 <div class="modal-actions">
                     <button type="button" class="cancel-btn" id="cancelModalBtn">Cancel</button>
-                    <button type="submit" class="submit-btn"><i class="fas fa-plus-circle"></i> Save Course</button>
+                    <button type="submit" class="submit-btn">Save Course</button>
                 </div>
             </form>
         </div>
