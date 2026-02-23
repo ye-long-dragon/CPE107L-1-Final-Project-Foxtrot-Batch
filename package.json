@@ -13,7 +13,14 @@
     "type": "git",
     "url": "git+https://github.com/ye-long-dragon/CPE107L-1-Final-Project-Foxtrot-Batch.git"
   },
-  "keywords": [ "ATA", "TLA", "Syllabus", "TWA", "Mapua", "CPE" ],
+  "keywords": [
+    "ATA",
+    "TLA",
+    "Syllabus",
+    "TWA",
+    "Mapua",
+    "CPE"
+  ],
   "author": "A361 - Foxtrot Batch - Computer Engineering",
   "license": "ISC",
   "dependencies": {
