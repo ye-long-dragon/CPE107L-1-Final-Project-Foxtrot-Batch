@@ -1,5 +1,24 @@
 import express from 'express';
-import Syllabus from '../../models/syllabus.js'; 
+import mongoose from 'mongoose';
+import multer from 'multer';
+import Syllabus from '../../models/syllabus.js';
+
+// Multer config — store in memory so we can convert to base64 for MongoDB
+const storage = multer.memoryStorage();
+
+const upload = multer({
+    storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max
+    fileFilter: (req, file, cb) => {
+        const allowed = /jpeg|jpg|png|gif|webp/;
+        const mimeOk = allowed.test(file.mimetype);
+        if (mimeOk) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only image files (jpg, png, gif, webp) are allowed'));
+        }
+    }
+});
 
 const coursesOverviewRouter = express.Router();
 
@@ -10,6 +29,25 @@ const coursesOverviewRouter = express.Router();
  */
 coursesOverviewRouter.get('/', (req, res) => {
     res.redirect('/courses/507f1f77bcf86cd799439011');
+});
+
+/**
+ * API: Fetch Users for Instructor Dropdown
+ * Must be defined BEFORE /:userId to prevent route conflict
+ */
+coursesOverviewRouter.get('/api/users', async (req, res) => {
+    try {
+        // Dynamically check if the User model exists (will be available after main branch merge)
+        const User = mongoose.models.User;
+        if (!User) {
+            return res.json([]);
+        }
+        const users = await User.find({}, 'firstName lastName email role');
+        res.json(users);
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        res.json([]);
+    }
 });
 
 /**
@@ -31,12 +69,21 @@ coursesOverviewRouter.get('/:userId', async (req, res) => {
             );
         }
 
+        // Populate instructor names only if the User model exists (comes from main branch)
+        if (mongoose.models.User) {
+            await Syllabus.populate(userCourses, { path: 'assignedInstructor' });
+        }
+
         const formattedCourses = userCourses.map(c => ({
-            id: c._id.toString(), // The syllabusID foreign key for other tables
+            id: c._id.toString(),
             code: c.courseCode,
             title: c.courseTitle,
-            instructor: "TBA", 
-            img: `https://picsum.photos/seed/${c._id}/400/200`
+            instructor: c.assignedInstructor 
+                ? `${c.assignedInstructor.firstName} ${c.assignedInstructor.lastName}` 
+                : "TBA", 
+            img: (c.courseImage && c.courseImage.startsWith('data:')) 
+                ? c.courseImage 
+                : `https://picsum.photos/seed/${c._id}/400/200`
         }));
 
         res.render('courseOverview', { 
@@ -51,15 +98,29 @@ coursesOverviewRouter.get('/:userId', async (req, res) => {
     }
 });
 
-// 2. CREATE logic for the Add Course Popup
-coursesOverviewRouter.post('/:userId/add', async (req, res) => {
+// 2. CREATE logic for the Add Course Popup (with image upload)
+coursesOverviewRouter.post('/:userId/add', upload.single('courseImage'), async (req, res) => {
     try {
         const userId = req.params.userId;
-        const { courseCode, courseTitle } = req.body;
-        const newSyllabus = new Syllabus({ userID: userId, courseCode, courseTitle });
+        const { courseCode, courseTitle, assignedInstructor } = req.body;
+        const syllabusData = { userID: userId, courseCode, courseTitle };
+        
+        // Only set instructor if a valid selection was made
+        if (assignedInstructor && assignedInstructor !== '') {
+            syllabusData.assignedInstructor = assignedInstructor;
+        }
+
+        // Convert uploaded image to base64 data URI and store in MongoDB
+        if (req.file) {
+            const base64 = req.file.buffer.toString('base64');
+            syllabusData.courseImage = `data:${req.file.mimetype};base64,${base64}`;
+        }
+        
+        const newSyllabus = new Syllabus(syllabusData);
         await newSyllabus.save();
         res.redirect(`/courses/${userId}`);
     } catch (error) {
+        console.error('Error adding course:', error);
         res.status(500).send("Error adding course to database.");
     }
 });

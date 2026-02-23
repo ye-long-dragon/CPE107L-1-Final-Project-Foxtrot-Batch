@@ -13,6 +13,15 @@ const syllabusSchema = new Schema({
   courseTitle: {
     type: String,
     required: true // e.g., "Software Design"
+  },
+  assignedInstructor: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    default: null
+  },
+  courseImage: {
+    type: String,
+    default: null // Stores the file path of the uploaded image
   }
 }, { timestamps: true });
 
