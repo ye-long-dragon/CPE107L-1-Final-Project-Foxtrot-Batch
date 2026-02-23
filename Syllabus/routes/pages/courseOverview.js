@@ -197,15 +197,21 @@ coursesOverviewRouter.post('/:userId/add', upload.single('courseImage'), async (
     }
 });
 
-// 3. DELETE — Remove a course from the database
-coursesOverviewRouter.post('/:userId/delete/:courseId', async (req, res) => {
+// 3. BULK DELETE — Remove multiple courses from the database
+coursesOverviewRouter.post('/:userId/delete-bulk', express.json(), async (req, res) => {
     try {
-        const { userId, courseId } = req.params;
-        await Syllabus.findByIdAndDelete(courseId);
-        res.redirect(`/courses/${userId}`);
+        const { userId } = req.params;
+        const { courseIds } = req.body;
+
+        if (!courseIds || !Array.isArray(courseIds) || courseIds.length === 0) {
+            return res.status(400).json({ error: 'No courses selected for deletion.' });
+        }
+
+        await Syllabus.deleteMany({ _id: { $in: courseIds }, userID: userId });
+        res.json({ success: true, redirect: `/courses/${userId}` });
     } catch (error) {
-        console.error('Error deleting course:', error);
-        res.status(500).send("Error deleting course from database.");
+        console.error('Error deleting courses:', error);
+        res.status(500).json({ error: 'Error deleting courses from database.' });
     }
 });
 
