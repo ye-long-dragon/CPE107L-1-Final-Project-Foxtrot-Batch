@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 import connectDB from "./database/mongo-dbconnect.js";
+import session from 'express-session';
 
 
 // ========================
@@ -21,8 +22,20 @@ console.log("MONGO_URI:", process.env.MONGO_URI);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// JSON
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: true }));
+
+// Session
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: { 
+        maxAge: 1000 * 60 * 60 * 12,
+        secure: false 
+    }
+}));
 
 // ========================
 // View Engine Setup

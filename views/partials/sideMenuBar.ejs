@@ -156,9 +156,19 @@
     </ul>
 
     <div class="sidebar-footer">
-        <button class="sign-out-btn">
+        <button class="sign-out-btn" id="btn-signout">
             <span class="material-symbols-outlined">exit_to_app</span>
             <span class="sign-out-text">Sign out</span>
         </button>
     </div>
 </nav>
+
+<script>
+    const signOutBtn = document.getElementById('btn-signout');
+    
+    signOutBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        localStorage.clear();
+        window.location.href = '/login/logout';
+    });
+</script>
