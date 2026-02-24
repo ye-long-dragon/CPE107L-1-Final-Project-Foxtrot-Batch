@@ -1,100 +1,44 @@
 import express from 'express';
-import User from './user.js';
+import { mainDB, backup1, backup2 } from "../../database/mongo-dbconnect.js"; 
+import userSchema from "../../models/user.js";
 
+const MainUser = mainDB.model("User", userSchema);
+const Backup1User = backup1.model("User", userSchema);
+const Backup2User = backup2.model("User", userSchema);
 const router = express.Router();
 
 // ==========================================
 // CREATE - POST /api/users
 // ==========================================
 
-router.post('/', async (req, res) => {
-    const {
-        email,
-        password,
-        firstName,
-        lastName,
-        middleName,
-        employeeId,
-        phoneNumber,
-        birthdate,
-        gender,
-        address,
-        role,
-        employmentType,
-        employmentStatus,
-        employmentFromOutside,
-        program,
-        department
-    } = req.body;
-
+router.post('/add', async (req, res) => {
     try {
-        // Check if email already exists
-        const existingEmail = await User.findOne({ email });
-        if (existingEmail) {
-            return res.status(409).json({ 
-                message: "Email already registered" 
-            });
-        }
+        const userData = req.body;
 
-        // Check if employeeId already exists
-        if (employeeId) {
-            const existingEmployeeId = await User.findOne({ employeeId });
-            if (existingEmployeeId) {
-                return res.status(409).json({ 
-                    message: "Employee ID already registered" 
-                });
-            }
-        }
+        // Create the save promises for all three databases
+        const savePromises = [
+            new MainUser(userData).save(),
+            new Backup1User(userData).save(),
+            new Backup2User(userData).save()
+        ];
 
-        // Create new user
-        const newUser = new User({
-            email,
-            password,
-            firstName,
-            lastName,
-            middleName,
-            employeeId,
-            phoneNumber,
-            birthdate,
-            gender,
-            address,
-            role,
-            employmentType,
-            employmentStatus,
-            employmentFromOutside,
-            program,
-            department
+        // Execute all saves in parallel
+        await Promise.all(savePromises);
+
+        res.status(201).json({ 
+            message: "Success: User created in MainDB, Backup1, and Backup2!" 
         });
 
-        const savedUser = await newUser.save();
-
-        // Remove password from response
-        const userResponse = savedUser.toObject();
-        delete userResponse.password;
-
-        res.status(201).json(userResponse);
     } catch (error) {
-        // Handle duplicate key error
+        console.error("Triple Save Error:", error);
+        
         if (error.code === 11000) {
-            const field = Object.keys(error.keyPattern)[0];
-            return res.status(409).json({ 
-                message: `${field} already exists` 
-            });
-        }
-
-        // Handle validation errors
-        if (error.name === "ValidationError") {
-            const errors = Object.values(error.errors).map(err => ({
-                field: err.path,
-                message: err.message
-            }));
             return res.status(400).json({ 
-                message: "Validation error", 
-                errors 
+                message: "Error: Email or Employee ID already exists in the system." 
             });
         }
 
-        res.status(500).json({ message: error.message });
+        res.status(500).json({ message: "Server Error: " + error.message });
     }
 });
 

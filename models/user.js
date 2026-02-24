@@ -32,17 +32,28 @@ const userSchema = new Schema({
 		default: "Professor"
 	},
 
-	phoneNumber: { type: String },
-
-	program: {
-		type: String,
-		enum: ["CpE","ECE","EE","IE","CE","ChE","ME"]
-	},
-
 	department: {
-		type: String,
-		default: "CEA"
-	},
+        type: String,
+        enum: ["ATYCB", "CAS", "CCIS", "CEA", "CHS"],
+        required: true
+    },
+
+    program: {
+        type: String,
+        required: true,
+        enum: [
+            // ATYCB
+            "ENTREP", "MA", "REM", "TM", "BSA", "AIS",
+            // CAS
+            "COMM", "MMA",
+            // CCIS
+            "CS", "EMC", "IS",
+            // CEA
+            "AR", "ChE", "CE", "CpE", "EE", "ECE", "IE", "ME",
+            // CHS
+            "BIO", "PHARM", "PSYCH", "PT", "MEDTECH"
+        ]
+    },
 
 	email: {
 		type: String,
@@ -61,5 +72,4 @@ const userSchema = new Schema({
 
 	}, { timestamps: true });
 
-const User = model("User", userSchema);
-export default User;
+export default userSchema;

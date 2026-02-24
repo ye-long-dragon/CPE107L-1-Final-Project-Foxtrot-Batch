@@ -21,6 +21,9 @@ console.log("MONGO_URI:", process.env.MONGO_URI);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.use(express.json()); 
+app.use(express.urlencoded({ extended: true }));
+
 // ========================
 // View Engine Setup
 // ========================
@@ -35,10 +38,11 @@ app.use(express.static(path.join(__dirname, "public")));
 // ========================
 // Import Routes
 // ========================
+// Main Pages
 import loginRoutes from "./routes/MainPages/loginRoutes.js";
 import institutionRoutes from "./routes/MainPages/institutionRoutes.js";
 import adminRoutes from "./routes/MainPages/adminRoutes.js";
-import adminConfigUserRoutes from "./routes/MainPages/adminConfigUsers.js";
+import userRoutes from './routes/APIs/userRoutes.js';
 
 // TLA
 import dashBoardRoutes from "./routes/TLA/dashboardRoutes.js";
@@ -51,10 +55,11 @@ import landingPageRouter from "./routes/Syllabus/landingPage.js";
 // ========================
 // Routes
 // ========================
+// Main Pages
 app.use("/login",loginRoutes)
 app.use("/institution",institutionRoutes)
+app.use("/admin/users", userRoutes); //admin user API
 app.use("/admin",adminRoutes)
-app.use("/admin/users", adminConfigUserRoutes)
 
 //TLA
 app.use("/tla", dashBoardRoutes)
