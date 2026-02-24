@@ -24,6 +24,9 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.use('/scripts', express.static(path.join(__dirname, 'routes', 'pages')));
+
 app.use('/', landingPageRouter);
 
 // Main page as index: / and /index both serve the landing page
@@ -35,6 +38,10 @@ app.get('/syllabus', (req, res) => {
 
 app.get('/preview', (req, res) => {
   res.render('preview');
+});
+
+app.get('/syllabusInfo', (req, res) => {
+  res.render('syllabusInfo');
 });
 
 app.use((req, res) => {

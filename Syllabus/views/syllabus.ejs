@@ -1,244 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Dashboard</title>
+    <title>Syllabus Form</title>
     <link rel="stylesheet" href="/css/syllabus.css?v=<%= new Date().getTime() %>" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-  </head>
-  <body>
+</head>
+<body>
     <div class="dashboard">
-      <%- include('./partials/sidebar.ejs') %>
+        <%- include('./partials/sidebar.ejs') %>
 
-      <main class="main-content">
-        <header class="top-header">
-          <img src="/images/MMCM logo.png" alt="College Logo" />
-          <h2>College of Engineering <br />and Architecture</h2>
-        </header>
-
-        <section class="content-panel">
-          <div class="content-card">
-            <div class="content-label">Mission</div>
-            <div class="content-body">
-              <p>
-                A. The institute shall provide a learning environment in order for its
-                students to acquire the attributes that will make them globally
-                competitive & locally in-demand.<br />
-                B. The institute shall engage in cutting edge and economically viable
-                research, development and innovation that is relevant locally and
-                beyond.<br />
-                C. The institute shall provide state-of-the-art solutions to problems
-                of industries and communities locally and beyond.
-              </p>
-            </div>
-          </div>
-
-          <div class="content-card">
-            <div class="content-label">Vision</div>
-            <div class="content-body centered">
-              <p>
-                Mapúa Malayan Colleges Mindanao stands among the world’s leading
-                educational institutions.
-              </p>
-            </div>
-          </div>
-
-          <div class="content-card">
-            <div class="content-label">PROGRAM EDUCATION OBJECTIVES</div>
-            <div class="editor-toolbar">
-              <label class="icon-select" title="Text Style">
-                <img src="/images/textStyle.png" />
-                <select onchange="formatDoc('formatBlock', this.value)">
-                  <option value="p">Normal</option>
-                  <option value="h1">Heading 1</option>
-                  <option value="h2">Heading 2</option>
-                  <option value="h3">Heading 3</option>
-                </select>
-              </label>
-
-              <label class="icon-select" title="Font Family">
-                <img src="/images/font.png" />
-                <select onchange="setFont(this.value)">
-                  <option value="Arial">Arial</option>
-                  <option value="Times New Roman">Times</option>
-                  <option value="Courier New">Courier</option>
-                  <option value="Georgia">Georgia</option>
-                </select>
-              </label>
-
-              <label class="icon-select" title="Font Size">
-                <img src="/images/fontSize.png" />
-                <select onchange="formatDoc('fontSize', this.value)">
-                  <option value="2">Small</option>
-                  <option value="3">Normal</option>
-                  <option value="4">Large</option>
-                  <option value="5">X-Large</option>
-                  <option value="6">Huge</option>
-                </select>
-              </label>
-
-              <div class="divider"></div>
-
-              <label class="icon-color" title="Text Color">
-                <img src="/images/colorPicker.png" />
-                <input type="color" onchange="setColor(this.value)" />
-              </label>
-
-              <div class="divider"></div>
-
-              <button onclick="formatDoc('bold')" title="Bold">
-                <img src="/images/boldText.png" />
-              </button>
-              <button onclick="formatDoc('italic')" title="Italic">
-                <img src="/images/italic-font.png" />
-              </button>
-              <button onclick="formatDoc('underline')" title="Underline">
-                <img src="/images/underline-text.png" />
-              </button>
-
-              <div class="divider"></div>
-
-              <div class="dropdown" title="Alignment Options">
-                <button class="dropbtn">
-                  <img src="/images/alignmentOptions.png" />
+        <main class="main-content">
+            <div class="syllabus-top-bar">
+                <button type="button" class="back-btn" onclick="window.history.back()">
+                    <img src="/images/arrowBack.png" alt="Back" class="back-btn-icon" />
+                    <span>Back</span>
                 </button>
-                <div class="dropdown-content">
-                  <button onclick="formatDoc('justifyLeft')">Align Left</button>
-                  <button onclick="formatDoc('justifyCenter')">Align Center</button>
-                  <button onclick="formatDoc('justifyRight')">Align Right</button>
+            </div>
+
+            <div class="syllabus-scroll-area">
+                <div class="syllabus-banner">
+                    <img src="/images/defaultImage.png" alt="Banner" class="syllabus-banner-img" />
+                    <span class="syllabus-banner-title">SYLLABUS FORM</span>
                 </div>
-              </div>
 
-              <div class="divider"></div>
+                <div class="syllabus-content-section">
+                    <h2 class="college-header-outside">COLLEGE OF ENGINEERING AND ARCHITECTURE</h2>
 
-              <button onclick="formatDoc('insertUnorderedList')" title="Bullet List">
-                <img src="/images/list.png" />
-              </button>
+                    <section class="content-panel-transparent">
+                        <div class="content-card-transparent">
+                            <div class="content-label-simple">Vision</div>
+                            <div class="content-body-simple">
+                                <p>Malayan Colleges Mindanao shall be a school of global standards and of great significance locally and beyond.</p>
+                            </div>
+                            <br />
+                            <div class="content-label-simple">Mission</div>
+                            <div class="content-body-simple">
+                                <p>
+                                    A. The institute shall provide a learning environment in order for its students to acquire the attributes that will make them globally competitive & locally in-demand.<br />
+                                    B. The institute shall engage in cutting edge and economically viable research, development and innovation that is relevant locally and beyond.<br />
+                                    C. The institute shall provide state-of-the-art solutions to problems of industries and communities locally and beyond.
+                                </p>
+                            </div>
+                        </div>
+                    </section>
 
-              <div class="dropdown" title="Insert Table">
-                <button class="dropbtn">
-                  <img src="/images/table.png" alt="Insert Table" />
+                    <section class="content-panel-transparent">
+                        <div class="content-card-transparent">
+                            <div class="content-label-simple">PROGRAM EDUCATIONAL OBJECTIVES (PEO)</div>
+                            
+                            <div class="peo-grid-container" id="peo-container">
+                                <div class="peo-top-header">
+                                    <p class="peo-intro">Three years after graduation, graduates of the Engineering Program shall:</p>
+                                    <div class="mission-column-header">
+                                        <span class="mission-main-text">MISSION</span>
+                                        <div class="mission-labels">
+                                            <span>A</span><span>B</span><span>C</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="peo-row">
+                                    <div class="peo-text-side">
+                                        <span class="peo-number">1.</span>
+                                        <div class="peo-editable-text" contenteditable="true" data-placeholder="Edit text"></div>
+                                    </div>
+                                    <div class="peo-checkbox-side">
+                                        <input type="checkbox"><input type="checkbox"><input type="checkbox">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="add-row-wrapper">
+                                <button type="button" class="btn-add-peo" onclick="addPeoRow()">
+                                    <img src="/images/addRow.png" alt="Add" class="add-row-icon"> Add Row
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="content-panel-transparent">
+                        <div class="content-card-transparent">
+                            <div class="content-label-simple">STUDENT OUTCOMES (SO)</div>
+                            
+                            <div class="peo-grid-container" id="so-container">
+                                <div class="peo-top-header">
+                                    <p class="peo-intro">By the time of graduation, the students of the program shall have the ability to:</p>
+                                    <div class="mission-column-header">
+                                        <span class="mission-main-text">PEO</span>
+                                        <div class="mission-labels">
+                                            <span>1</span><span>2</span><span>3</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="peo-row">
+                                    <div class="peo-text-side">
+                                        <span class="peo-number">a.</span>
+                                        <div class="peo-editable-text" contenteditable="true" data-placeholder="Edit text"></div>
+                                    </div>
+                                    <div class="peo-checkbox-side">
+                                        <input type="checkbox"><input type="checkbox"><input type="checkbox">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="add-row-wrapper">
+                                <button type="button" class="btn-add-peo" onclick="addSoRow()">
+                                    <img src="/images/addRow.png" alt="Add" class="add-row-icon"> Add Row
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+            <div class="home-bottom-wrapper">
+                <button class="home-circle" onclick="window.location.href=  '/'">
+                    <img src="images/home.png" alt="Home" />
                 </button>
-                <div class="dropdown-content" id="tableDropdown">
-                  <div id="tableSelector" class="table-grid"></div>
-                  <div id="tableSizeText" class="table-size">0 x 0</div>
-                </div>
-              </div>
-
-              <div class="divider"></div>
-
-              <button onclick="formatDoc('undo')" title="Undo">
-                <img src="/images/undo.png" />
-              </button>
-              <button onclick="formatDoc('removeFormat')" title="Clear Formatting">
-                <img src="/images/clearFormat.png" />
-              </button>
-
-              <div class="divider"></div>
-
-              <button onclick="addLink()" title="Insert Link">
-                <img src="/images/link.png" />
-              </button>
-              <label class="attach-btn" title="Attach File">
-                <img src="/images/attachment.png" />
-                <input type="file" hidden onchange="attachFile(event)" />
-              </label>
-              <label class="attach-btn" title="Insert Image">
-                <img src="/images/image.png" />
-                <input type="file" accept="image/*" hidden onchange="insertImage(event)" />
-              </label>
-              <button onclick="formatDoc('insertHorizontalRule')" title="Insert Line">
-                <img src="/images/insertContent.png" />
-              </button>
             </div>
-
-            <div class="content-body scrollable editor-area" contenteditable="true">
-              <p>Type your content here...</p>
+            <div class="button-footer-outer">
+                <button class="next-btn-rect" onclick="window.location.href='/syllabusInfo'" type="button">
+                    <span>NEXT</span>
+                    <img src="/images/arrowNext.png" alt="Next" class="next-icon-img" />
+                </button>
             </div>
-          </div>
-
-          <div class="content-card">
-            <div class="content-label">STUDENT OUTCOMES</div>
-            <div class="content-body scrollable">
-              <p>Announcement 1...</p>
-            </div>
-          </div>
-
-          <div class="content-card">
-            <div class="content-label">COURSE SYLLABUS (SO)</div>
-            <div class="content-body scrollable">
-              <p>Announcement 1...</p>
-            </div>
-          </div>
-
-          <div class="content-card">
-            <div class="content-label">COURSE DESCRIPTION</div>
-            <div class="content-body scrollable">
-              <p>Announcement 1...</p>
-            </div>
-          </div>
-
-          <div class="content-card">
-            <div class="content-label">COURSE OUTCOMES</div>
-            <div class="content-body scrollable">
-              <p>Announcement 1...</p>
-            </div>
-          </div>
-
-          <div class="content-card">
-            <div class="content-label">TEXTBOOK</div>
-            <div class="content-body scrollable">
-              <p>Announcement 1...</p>
-            </div>
-          </div>
-
-          <div class="content-card">
-            <div class="content-label">REFERENCES</div>
-            <div class="content-body scrollable">
-              <p>Announcement 1...</p>
-            </div>
-          </div>
-
-          <div class="content-card">
-            <div class="content-label">COURSE SCHEDULE</div>
-            <div class="content-body scrollable">
-              <p>Announcement 1...</p>
-            </div>
-          </div>
-
-          <div class="content-card">
-            <div class="content-label">COURSE EVALUATION</div>
-            <div class="content-body scrollable">
-              <p>Announcement 1...</p>
-            </div>
-          </div>
-
-          <div class="content-card">
-            <div class="content-label">OTHER COURSE POLICIES</div>
-            <div class="content-body scrollable">
-              <p>Announcement 1...</p>
-            </div>
-          </div>
-
-          <div class="content-card">
-            <div class="content-label">COURSE DESIGN</div>
-            <div class="content-body scrollable">
-              <p>Announcement 1...</p>
-            </div>
-          </div>
-        </section>
-
-        <div class="home-bottom-wrapper">
-          <button class="home-circle" onclick="window.location.href='/'">
-            <img src="/images/home.png" alt="Home" />
-          </button>
-          <button class="next-circle" onclick="(typeof saveSyllabusAndGoToPreview === 'function' ? saveSyllabusAndGoToPreview() : (window.location.href='/preview'))">
-            <img src="/images/arrowNext.png" alt="Next" />
-          </button>
-        </div>
-      </main>   
+        </main>     
     </div>
+
     <script src="/landingPage.js?v=<%= new Date().getTime() %>"></script>
-  </body>
- </html>
+    <script src="/scripts/syllabus.js?v=<%= new Date().getTime() %>"></script>
+</body>
+</html>

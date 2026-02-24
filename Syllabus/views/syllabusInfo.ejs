@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Course Syllabus</title>
+    <link rel="stylesheet" href="/css/syllabusInfo.css?v=<%= new Date().getTime() %>" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+    <div class="dashboard">
+        <%- include('./partials/sidebar.ejs') %>
+
+        <main class="main-content">
+            <div class="syllabus-top-bar">  
+                <button type="button" class="back-btn" onclick="window.history.back()">
+                    <img src="/images/arrowBack.png" alt="Back" class="back-btn-icon" />
+                    <span>Back</span>
+                </button>
+            </div>
+
+            <div class="syllabus-scroll-area">
+                <div class="syllabus-banner">
+                    <img src="/images/defaultImage.png" alt="Banner" class="syllabus-banner-img" />
+                    <span class="syllabus-banner-title">SYLLABUS FORM</span>
+                </div>
+
+                <div class="syllabus-content-section">
+                    <h2 class="college-header-outside">COURSE SYLLABUS</h2>
+
+                    <section class="content-panel-transparent">
+                        <div class="course-info-container">
+                            <div class="info-row">
+                                <div class="info-item small">
+                                    <label>COURSE CODE</label>
+                                    <div class="course-editable-text" contenteditable="true" data-placeholder="e.g. CPE144L"></div>
+                                </div>
+                                <div class="info-item large">
+                                    <label>COURSE TITLE</label>
+                                    <div class="course-editable-text" contenteditable="true" data-placeholder="Enter course title..."></div>
+                                </div>
+                            </div>
+
+                            <div class="info-row">
+                                <div class="info-item">
+                                    <label>PRE-REQUISITE</label>
+                                    <div class="course-editable-text" contenteditable="true" data-placeholder="None"></div>
+                                </div>
+                                <div class="info-item">
+                                    <label>CO-REQUISITE</label>
+                                    <div class="course-editable-text" contenteditable="true" data-placeholder="None"></div>
+                                </div>
+                                <div class="info-item">
+                                    <label>CREDIT UNIT(S)</label>
+                                    <div class="course-editable-text" contenteditable="true" data-placeholder="e.g. 2 units"></div>
+                                </div>
+                            </div>
+
+                            <div class="info-row">
+                                <div class="info-item">
+                                    <label>CLASS SCHEDULE</label>
+                                    <div class="course-editable-text" contenteditable="true" data-placeholder="Enter schedule..."></div>
+                                </div>
+                                <div class="info-item">
+                                    <label>COURSE DESIGN</label>
+                                    <div class="course-editable-text" contenteditable="true" data-placeholder="Enter design..."></div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="content-panel-transparent">
+                        <div class="info-item">
+                            <label>COURSE DESCRIPTION</label>
+                            <div class="course-editable-text multiline" 
+                                contenteditable="true" 
+                                data-placeholder="Enter the full course description here..."></div>
+                        </div>
+                </div>
+            </div>
+
+            <div class="home-bottom-wrapper">
+                <button class="home-circle" onclick="window.location.href=  '/'">
+                    <img src="images/home.png" alt="Home" />
+                </button>
+            </div>
+            <div class="button-footer-outer">
+                <button class="next-btn-rect" onclick="window.location.href='/syllabusInfo'" type="button">
+                    <span>NEXT</span>
+                    <img src="/images/arrowNext.png" alt="Next" class="next-icon-img" />
+                </button>
+            </div>
+        </main>     
+    </div>
+
+    <script src="/landingPage.js?v=<%= new Date().getTime() %>"></script>
+    <script src="/scripts/syllabus.js?v=<%= new Date().getTime() %>"></script>
+</body>
+</html>
