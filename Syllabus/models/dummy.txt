@@ -1,0 +1,17 @@
+import { Schema, model } from "mongoose";
+
+const humanSchema = new Schema({
+    name: {
+        type: String,   
+    },
+    age: {
+        type: Number,
+    },
+    occupation: {
+        type: String,
+    },
+});
+
+const Human = model('Human', humanSchema);
+
+export default Human;
