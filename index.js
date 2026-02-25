@@ -45,7 +45,8 @@ import overviewRoutes from "./routes/TLA/overviewRoutes.js";
 import formRoutes from "./routes/TLA/formRoutes.js";
 
 //Syllabus
-import landingPageRouter from "./routes/Syllabus/landingPage.js";
+import newSyllabusRoutes from "./routes/Syllabus/newSyllabusRoutes.js";
+import infoSyllabusRoutes from "./routes/Syllabus/infoSyllabusRoutes.js";
 
 // ========================
 // Routes
@@ -60,8 +61,8 @@ app.use("/tla/overview", overviewRoutes)
 app.use("/tla/form", formRoutes)
 
 //Syllabus
-app.use("/syllabus", landingPageRouter)
-
+app.use("/syllabus", newSyllabusRoutes)
+app.use("/syllabus/info", infoSyllabusRoutes)
 // ========================
 // 404 (LAST)
 // ========================
