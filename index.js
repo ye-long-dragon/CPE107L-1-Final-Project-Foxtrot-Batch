@@ -55,6 +55,7 @@ app.use(express.static(path.join(__dirname, "public")));
 import loginRoutes from "./routes/MainPages/loginRoutes.js";
 import institutionRoutes from "./routes/MainPages/institutionRoutes.js";
 import adminRoutes from "./routes/MainPages/adminRoutes.js";
+import progChairRoutes from "./routes/MainPages/progChairRoutes.js";
 import userRoutes from './routes/APIs/userRoutes.js';
 
 // TLA
@@ -69,18 +70,19 @@ import landingPageRouter from "./routes/Syllabus/landingPage.js";
 // Routes
 // ========================
 // Main Pages
-app.use("/login",loginRoutes)
-app.use("/institution",institutionRoutes)
+app.use("/login",loginRoutes);
+app.use("/institution",institutionRoutes);
 app.use("/admin/users", userRoutes); //admin user API
-app.use("/admin",adminRoutes)
+app.use("/admin",adminRoutes);
+app.use("/progChair", progChairRoutes);
 
 //TLA
-app.use("/tla", dashBoardRoutes)
-app.use("/tla/overview", overviewRoutes)
-app.use("/tla/form", formRoutes)
+app.use("/tla", dashBoardRoutes);
+app.use("/tla/overview", overviewRoutes);
+app.use("/tla/form", formRoutes);
 
 //Syllabus
-app.use("/syllabus", landingPageRouter)
+app.use("/syllabus", landingPageRouter);
 
 // ========================
 // 404 (LAST)
