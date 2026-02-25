@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 import connectDB from "./database/mongo-dbconnect.js";
+import session from 'express-session';
 
 
 // ========================
@@ -21,6 +22,21 @@ console.log("MONGO_URI:", process.env.MONGO_URI);
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// JSON
+app.use(express.json()); 
+app.use(express.urlencoded({ extended: true }));
+
+// Session
+app.use(session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    cookie: { 
+        maxAge: 1000 * 60 * 60 * 12,
+        secure: false 
+    }
+}));
+
 // ========================
 // View Engine Setup
 // ========================
@@ -35,9 +51,12 @@ app.use(express.static(path.join(__dirname, "public")));
 // ========================
 // Import Routes
 // ========================
+// Main Pages
 import loginRoutes from "./routes/MainPages/loginRoutes.js";
 import institutionRoutes from "./routes/MainPages/institutionRoutes.js";
 import adminRoutes from "./routes/MainPages/adminRoutes.js";
+import progChairRoutes from "./routes/MainPages/progChairRoutes.js";
+import userRoutes from './routes/APIs/userRoutes.js';
 
 // TLA
 import dashBoardRoutes from "./routes/TLA/dashboardRoutes.js";
@@ -50,17 +69,20 @@ import landingPageRouter from "./routes/Syllabus/landingPage.js";
 // ========================
 // Routes
 // ========================
-app.use("/login",loginRoutes)
-app.use("/institution",institutionRoutes)
-app.use("/admin",adminRoutes)
+// Main Pages
+app.use("/login",loginRoutes);
+app.use("/institution",institutionRoutes);
+app.use("/admin/users", userRoutes); //admin user API
+app.use("/admin",adminRoutes);
+app.use("/progChair", progChairRoutes);
 
 //TLA
-app.use("/tla", dashBoardRoutes)
-app.use("/tla/overview", overviewRoutes)
-app.use("/tla/form", formRoutes)
+app.use("/tla", dashBoardRoutes);
+app.use("/tla/overview", overviewRoutes);
+app.use("/tla/form", formRoutes);
 
 //Syllabus
-app.use("/syllabus", landingPageRouter)
+app.use("/syllabus", landingPageRouter);
 
 // ========================
 // 404 (LAST)
