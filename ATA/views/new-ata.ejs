@@ -9,17 +9,14 @@
 </head>
 <body>
 
-    <!-- HAMBURGER MENU -->
     <div class="hamburger-menu" id="hamburgerMenu">
         <span></span>
         <span></span>
         <span></span>
     </div>
 
-    <!-- Sidebar Overlay -->
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-    <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-logo">
             <img src="/images/mapua_logo.png" alt="Mapúa Logo" class="logo-image">
@@ -46,35 +43,29 @@
         <div class="sidebar-year">2015</div>
     </div>
 
-    <!-- MAIN CONTENT - MULTI-STEP FORM SECTION -->
     <main class="form-bg-fixed" id="multiStepSection">
 
-        <!-- Form Title in separate roundbox - Changes based on step -->
         <div class="form-title-box" id="formTitle">
             <h1>ATA form: Personal Details</h1>
         </div>
 
-        <!-- Progress Indicator - Only circles, no label -->
         <div class="progress-container">
             <div class="progress-steps">
-                <span class="progress-dot filled" id="step1Dot">●</span>
-                <span class="progress-dot" id="step2Dot">○</span>
-                <span class="progress-dot" id="step3Dot">○</span>
-                <span class="progress-dot" id="step4Dot">○</span>
-                <span class="progress-dot" id="step5Dot">○</span>
-                <span class="progress-dot" id="step6Dot">○</span>
-                <span class="progress-dot" id="step7Dot">○</span>
+              <span class="progress-dot filled" id="step1Dot" data-label="Personal Details">●</span>
+                <span class="progress-dot" id="step2Dot" data-label="Teaching Load">○</span>
+                <span class="progress-dot" id="step3Dot" data-label="Admin & Practicum">○</span>
+                <span class="progress-dot" id="step4Dot" data-label="Outside Employment">○</span>
+                <span class="progress-dot" id="step5Dot" data-label="Remedial Modules">○</span>
+                <span class="progress-dot" id="step6Dot" data-label="Review">○</span>
+                <span class="progress-dot" id="step7Dot" data-label="Approval">○</span>
             </div>
         </div>
 
-        <!-- Scrollable Form Cards Container -->
         <div class="form-cards-container">
             
-            <!-- FORM 1: Personal Details (Step 1) -->
             <div class="form-card-scrollable" id="form1">
                 <div class="ata-form">
                     
-                    <!-- NAME OF FACULTY MEMBER -->
                     <div class="form-row">
                         <div class="form-label">NAME OF FACULTY MEMBER:</div>
                         <div class="form-field">
@@ -82,7 +73,6 @@
                         </div>
                     </div>
 
-                    <!-- POSITION -->
                     <div class="form-row">
                         <div class="form-label">POSITION:</div>
                         <div class="form-field">
@@ -90,7 +80,6 @@
                         </div>
                     </div>
 
-                    <!-- COLLEGE -->
                     <div class="form-row">
                         <div class="form-label">COLLEGE:</div>
                         <div class="form-field">
@@ -98,7 +87,6 @@
                         </div>
                     </div>
 
-                    <!-- EMPLOYMENT STATUS with Radio Buttons -->
                     <div class="form-row">
                         <div class="form-label">EMPLOYMENT STATUS:</div>
                         <div class="form-field radio-group">
@@ -111,7 +99,6 @@
                         </div>
                     </div>
 
-                    <!-- ADDRESS -->
                     <div class="form-row">
                         <div class="form-label">ADDRESS:</div>
                         <div class="form-field">
@@ -119,34 +106,31 @@
                         </div>
                     </div>
 
-                    <!-- Section divider -->
-                    <div class="form-section-divider">
-                        (A) TOTAL TEACHING UNITS SERVED FOR A.Y.<br>
-                        <span class="sub-text">(For Admin and Faculty with Admin Only)</span>
-                    </div>
+                    <div id="sectionA_Container">
+                        <div class="form-section-divider">
+                            (A) TOTAL TEACHING UNITS SERVED FOR A.Y.<br>
+                            <span class="sub-text">(For Admin and Faculty with Admin Only)</span>
+                        </div>
 
-                    <!-- Two input fields for Total Teaching Units -->
-                    <div class="form-row units-row">
-                        <div class="form-label"></div>
-                        <div class="form-field units-field">
-                            <input type="text" class="form-input units-input" placeholder="" id="teachingUnits1">
-                            <input type="text" class="form-input units-input" placeholder="" id="teachingUnits2">
+                        <div class="form-row units-row">
+                            <div class="form-label"></div>
+                            <div class="form-field units-field">
+                                <input type="text" class="form-input units-input" placeholder="" id="teachingUnits1">
+                                <input type="text" class="form-input units-input" placeholder="" id="teachingUnits2">
+                            </div>
                         </div>
                     </div>
 
                 </div>
             </div>
 
-            <!-- FORM 2: Teaching Assignments (Step 2) -->
             <div class="form-card-scrollable" id="form2" style="display: none;">
                 <div class="ata-form">
                     
-                    <!-- Section B: COURSES WITHIN ASSIGNED COLLEGE -->
                     <div class="form-section-header">
                         (B) COURSES WITHIN ASSIGNED COLLEGE
                     </div>
 
-                    <!-- Table Headers -->
                     <div class="table-header">
                         <div class="table-col">Course</div>
                         <div class="table-col">Section</div>
@@ -155,7 +139,6 @@
                         <div class="table-col">Actions</div>
                     </div>
 
-                    <!-- Course Entry Row 1 -->
                     <div class="course-row">
                         <div class="table-col"><input type="text" class="table-input" placeholder="Course code"></div>
                         <div class="table-col"><input type="text" class="table-input" placeholder="Section"></div>
@@ -170,7 +153,6 @@
                         </div>
                     </div>
 
-                    <!-- Course Entry Row 2 (example) -->
                     <div class="course-row">
                         <div class="table-col"><input type="text" class="table-input" placeholder="Course code"></div>
                         <div class="table-col"><input type="text" class="table-input" placeholder="Section"></div>
@@ -185,26 +167,21 @@
                         </div>
                     </div>
 
-                    <!-- Add Course Button -->
                     <div class="add-course-btn">
                         <button class="secondary-btn small-btn">+ Add Course</button>
                     </div>
 
-                    <!-- Total Units B -->
                     <div class="total-units-row">
                         <span class="total-label">Total Units (B):</span>
                         <span class="total-value">0</span>
                     </div>
 
-                    <!-- Divider -->
                     <div class="form-divider"></div>
 
-                    <!-- Section C: COURSES FROM OTHER COLLEGE -->
                     <div class="form-section-header">
                         (C) COURSES FROM OTHER COLLEGE
                     </div>
 
-                    <!-- Table Headers -->
                     <div class="table-header">
                         <div class="table-col">Course</div>
                         <div class="table-col">Section</div>
@@ -213,7 +190,6 @@
                         <div class="table-col">Dean Sig.</div>
                     </div>
 
-                    <!-- Course Entry Row 1 -->
                     <div class="course-row">
                         <div class="table-col"><input type="text" class="table-input" placeholder="Course code"></div>
                         <div class="table-col"><input type="text" class="table-input" placeholder="Section"></div>
@@ -228,12 +204,10 @@
                         </div>
                     </div>
 
-                    <!-- Add Course Button -->
                     <div class="add-course-btn">
                         <button class="secondary-btn small-btn">+ Add Course</button>
                     </div>
 
-                    <!-- Total Units C -->
                     <div class="total-units-row">
                         <span class="total-label">Total Units (C):</span>
                         <span class="total-value">0</span>
@@ -242,62 +216,54 @@
                 </div>
             </div>
 
-            <!-- FORM 3: Administrative & Practicum Work (Step 3) -->
             <div class="form-card-scrollable" id="form3" style="display: none;">
                 <div class="ata-form">
                     
-                    <!-- Section D: ADMINISTRATIVE/RESEARCH WORK -->
-                    <div class="form-section-header">
-                        (D) ADMINISTRATIVE/ RESEARCH WORK
-                    </div>
-
-                    <!-- Table Headers for Section D -->
-                    <div class="admin-header">
-                        <div class="admin-col work-desc">Work Description</div>
-                        <div class="admin-col units">Units</div>
-                        <div class="admin-col date">Effective Date</div>
-                        <div class="admin-col actions">Actions</div>
-                    </div>
-
-                    <!-- Admin Work Row 1 -->
-                    <div class="admin-row">
-                        <div class="admin-col work-desc">
-                            <input type="text" class="table-input" placeholder="Work description">
+                    <div id="sectionD_Container">
+                        <div class="form-section-header">
+                            (D) ADMINISTRATIVE/ RESEARCH WORK
                         </div>
-                        <div class="admin-col units">
-                            <input type="text" class="table-input" placeholder="Units">
+
+                        <div class="admin-header">
+                            <div class="admin-col work-desc">Work Description</div>
+                            <div class="admin-col units">Units</div>
+                            <div class="admin-col date">Effective Date</div>
+                            <div class="admin-col actions">Actions</div>
                         </div>
-                        <div class="admin-col date">
-                            <div class="date-input-group">
-                                <input type="text" class="table-input date-input" placeholder="DD/MM/YYYY">
-                                <button class="dropdown-btn">▼</button>
+
+                        <div class="admin-row">
+                            <div class="admin-col work-desc">
+                                <input type="text" class="table-input" placeholder="Work description">
+                            </div>
+                            <div class="admin-col units">
+                                <input type="text" class="table-input" placeholder="Units">
+                            </div>
+                            <div class="admin-col date">
+                                <div class="date-input-group">
+                                    <input type="text" class="table-input date-input" placeholder="DD/MM/YYYY">
+                                    <button class="dropdown-btn">▼</button>
+                                </div>
+                            </div>
+                            <div class="admin-col actions">
+                                <button class="action-btn remove-btn"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
-                        <div class="admin-col actions">
-                            <button class="action-btn remove-btn"><i class="fas fa-trash"></i></button>
+
+                        <div class="add-course-btn">
+                            <button class="secondary-btn small-btn">+ Add Work</button>
                         </div>
+
+                        <div class="total-units-row">
+                            <span class="total-label">Total Units (D):</span>
+                            <span class="total-value">0</span>
+                        </div>
+
+                        <div class="form-divider"></div>
                     </div>
-
-                    <!-- Add Work Button -->
-                    <div class="add-course-btn">
-                        <button class="secondary-btn small-btn">+ Add Work</button>
-                    </div>
-
-                    <!-- Total Units D -->
-                    <div class="total-units-row">
-                        <span class="total-label">Total Units (D):</span>
-                        <span class="total-value">0</span>
-                    </div>
-
-                    <!-- Divider -->
-                    <div class="form-divider"></div>
-
-                    <!-- Section E: PRACTICUM ADVISING -->
                     <div class="form-section-header">
                         (E) PRACTICUM ADVISING
                     </div>
 
-                    <!-- Table Headers for Section E -->
                     <div class="practicum-header">
                         <div class="practicum-col">Course Code</div>
                         <div class="practicum-col">No. of Students</div>
@@ -305,7 +271,6 @@
                         <div class="practicum-col">Actions</div>
                     </div>
 
-                    <!-- Practicum Row 1 -->
                     <div class="practicum-row">
                         <div class="practicum-col">
                             <input type="text" class="table-input" placeholder="Course code">
@@ -324,7 +289,6 @@
                         </div>
                     </div>
 
-                    <!-- Add Practicum Button -->
                     <div class="add-course-btn">
                         <button class="secondary-btn small-btn">+ Add Practicum</button>
                     </div>
@@ -332,21 +296,17 @@
                 </div>
             </div>
 
-            <!-- FORM 4: External Employment (Step 4) -->
             <div class="form-card-scrollable" id="form4" style="display: none;">
                 <div class="ata-form">
                     
-                    <!-- Section F: EMPLOYMENT OUTSIDE MAPUA MCM -->
                     <div class="form-section-header">
                         (F) EMPLOYMENT OUTSIDE MAPUA MCM
                     </div>
 
-                    <!-- Subtitle for Part-Time Only -->
                     <div class="form-subtitle">
                         (Part-Time Only)
                     </div>
 
-                    <!-- Table Headers for Section F -->
                     <div class="employment-header">
                         <div class="employment-col employer">Employer University</div>
                         <div class="employment-col position">Position/Status</div>
@@ -355,7 +315,6 @@
                         <div class="employment-col actions">Actions</div>
                     </div>
 
-                    <!-- Employment Row 1 -->
                     <div class="employment-row">
                         <div class="employment-col employer">
                             <input type="text" class="table-input" placeholder="University name">
@@ -374,26 +333,6 @@
                         </div>
                     </div>
 
-                    <!-- Employment Row 2 (example) -->
-                    <div class="employment-row">
-                        <div class="employment-col employer">
-                            <input type="text" class="table-input" placeholder="University name">
-                        </div>
-                        <div class="employment-col position">
-                            <input type="text" class="table-input" placeholder="Position">
-                        </div>
-                        <div class="employment-col course">
-                            <input type="text" class="table-input" placeholder="Course/Units">
-                        </div>
-                        <div class="employment-col hours">
-                            <input type="text" class="table-input" placeholder="Hours">
-                        </div>
-                        <div class="employment-col actions">
-                            <button class="action-btn remove-btn"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>
-
-                    <!-- Add Employment Button -->
                     <div class="add-course-btn">
                         <button class="secondary-btn small-btn">+ Add Employment</button>
                     </div>
@@ -401,16 +340,13 @@
                 </div>
             </div>
 
-            <!-- FORM 5: Remedial Module Assignments (Step 5) -->
             <div class="form-card-scrollable" id="form5" style="display: none;">
                 <div class="ata-form">
                     
-                    <!-- Section G: REMEDIAL MODULE TEACHING ASSIGNMENT -->
                     <div class="form-section-header">
                         (G) REMEDIAL MODULE TEACHING ASSIGNMENT
                     </div>
 
-                    <!-- Table Headers for Section G -->
                     <div class="remedial-header">
                         <div class="remedial-col">Course ID</div>
                         <div class="remedial-col">Module Code</div>
@@ -420,7 +356,6 @@
                         <div class="remedial-col">Actions</div>
                     </div>
 
-                    <!-- Remedial Row 1 -->
                     <div class="remedial-row">
                         <div class="remedial-col">
                             <input type="text" class="table-input" placeholder="Course ID">
@@ -442,34 +377,10 @@
                         </div>
                     </div>
 
-                    <!-- Remedial Row 2 (example) -->
-                    <div class="remedial-row">
-                        <div class="remedial-col">
-                            <input type="text" class="table-input" placeholder="Course ID">
-                        </div>
-                        <div class="remedial-col">
-                            <input type="text" class="table-input" placeholder="Module Code">
-                        </div>
-                        <div class="remedial-col">
-                            <input type="text" class="table-input" placeholder="Section">
-                        </div>
-                        <div class="remedial-col">
-                            <input type="text" class="table-input" placeholder="Units">
-                        </div>
-                        <div class="remedial-col">
-                            <input type="text" class="table-input" placeholder="#">
-                        </div>
-                        <div class="remedial-col action-col">
-                            <button class="action-btn remove-btn"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>
-
-                    <!-- Add Module Button -->
                     <div class="add-course-btn">
                         <button class="secondary-btn small-btn">+ Add Module</button>
                     </div>
 
-                    <!-- Note about remedial units -->
                     <div class="remedial-note">
                         Note: Remedial units are not included in bonus/summer pay
                     </div>
@@ -477,14 +388,11 @@
                 </div>
             </div>
 
-            <!-- FORM 6: Review & Submit (Step 6) -->
             <div class="form-card-scrollable" id="form6" style="display: none;">
                 <div class="ata-form review-form">
                     
-                    <!-- Review Title -->
                     <div class="review-title">REVIEW & SUBMIT</div>
 
-                    <!-- Summary Table -->
                     <div class="summary-table">
                         <div class="summary-header">
                             <div class="summary-col section">SECTION</div>
@@ -529,12 +437,6 @@
                         </div>
                     </div>
 
-                    <!-- Within Limits Message -->
-                    <div class="limits-message">
-                        All units are within limits
-                    </div>
-
-                    <!-- Acceptance Checkbox -->
                     <div class="acceptance-row">
                         <input type="checkbox" id="acceptCheckbox" class="acceptance-checkbox">
                         <label for="acceptCheckbox" class="acceptance-label">
@@ -542,7 +444,6 @@
                         </label>
                     </div>
 
-                    <!-- Signature Row -->
                     <div class="signature-row">
                         <div class="signature-label">SIGNATURE OF FACULTY:</div>
                         <div class="signature-field">
@@ -550,7 +451,6 @@
                         </div>
                     </div>
 
-                    <!-- Date Row -->
                     <div class="signature-row">
                         <div class="signature-label">DATE:</div>
                         <div class="signature-field">
@@ -564,16 +464,13 @@
                 </div>
             </div>
 
-            <!-- FORM 7: Admin Approval Section (Step 7) - NO BUTTONS INSIDE -->
             <div class="form-card-scrollable" id="form7" style="display: none;">
                 <div class="ata-form admin-form">
                     
-                    <!-- Section H: RECOMMENDING APPROVAL -->
                     <div class="form-section-header">
                         (H) RECOMMENDING APPROVAL
                     </div>
 
-                    <!-- Justification for overload -->
                     <div class="justification-row">
                         <div class="justification-label">Justification for overload (if applicable):</div>
                         <div class="justification-field">
@@ -581,7 +478,6 @@
                         </div>
                     </div>
 
-                    <!-- SIGNATURE OF PROGRAM CHAIR -->
                     <div class="admin-signature-row">
                         <div class="admin-signature-label">SIGNATURE OF PROGRAM CHAIR:</div>
                         <div class="admin-signature-field">
@@ -589,7 +485,6 @@
                         </div>
                     </div>
 
-                    <!-- DATE for Program Chair -->
                     <div class="admin-signature-row">
                         <div class="admin-signature-label">DATE:</div>
                         <div class="admin-signature-field">
@@ -600,82 +495,33 @@
                         </div>
                     </div>
 
-                    <!-- Divider -->
                     <div class="form-divider-light"></div>
 
-                    <!-- RECEIVED BY HR -->
                     <div class="admin-signature-row">
                         <div class="admin-signature-label">RECEIVED BY HR</div>
                         <div class="admin-signature-field"></div>
                     </div>
 
-                    <!-- DATE for HR -->
-                    <div class="admin-signature-row">
-                        <div class="admin-signature-label">DATE:</div>
-                        <div class="admin-signature-field">
-                            <div class="date-input-group">
-                                <input type="text" class="table-input date-input" placeholder="DD/MM/YYYY">
-                                <button class="dropdown-btn">▼</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Divider -->
-                    <div class="form-divider-light"></div>
-
-                    <!-- NOTED BY VPAA -->
                     <div class="admin-signature-row">
                         <div class="admin-signature-label">NOTED BY VPAA</div>
                         <div class="admin-signature-field"></div>
                     </div>
 
-                    <!-- DATE for VPAA -->
-                    <div class="admin-signature-row">
-                        <div class="admin-signature-label">DATE:</div>
-                        <div class="admin-signature-field">
-                            <div class="date-input-group">
-                                <input type="text" class="table-input date-input" placeholder="DD/MM/YYYY">
-                                <button class="dropdown-btn">▼</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Divider -->
-                    <div class="form-divider-light"></div>
-
-                    <!-- APPROVED BY DEAN -->
                     <div class="admin-signature-row">
                         <div class="admin-signature-label">APPROVED BY DEAN</div>
                         <div class="admin-signature-field"></div>
                     </div>
 
-                    <!-- DATE for DEAN -->
-                    <div class="admin-signature-row">
-                        <div class="admin-signature-label">DATE:</div>
-                        <div class="admin-signature-field">
-                            <div class="date-input-group">
-                                <input type="text" class="table-input date-input" placeholder="DD/MM/YYYY">
-                                <button class="dropdown-btn">▼</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- NO BUTTONS INSIDE THE CARD -->
-
                 </div>
             </div>
 
-        </div> <!-- End of form-cards-container -->
-
-        <!-- STEP 7 SPECIAL BUTTONS - OUTSIDE THE CARD (only visible on step 7) -->
-        <div class="step7-buttons-container" id="step7Buttons" style="display: none;">
+        </div> <div class="step7-buttons-container" id="step7Buttons" style="display: none;">
             <div class="step7-buttons-wrapper">
                 <button class="form-btn approval-routing-btn" id="goToApprovalBtn">Go to Approval Routing</button>
                 <button class="form-btn primary-btn" id="viewApprovedBtn">View Approved Form (Read-Only)</button>
             </div>
         </div>
 
-        <!-- Form Navigation Buttons - OUTSIDE the card -->
         <div class="form-navigation-outside">
             <button class="form-btn secondary-btn" id="backBtn">Return to Dashboard</button>
             <button class="form-btn primary-btn" id="nextBtn">Next</button>
@@ -683,485 +529,53 @@
 
     </main>
 
-    <!-- SEPARATE APPROVAL ROUTING SECTION (initially hidden) - UPDATED WITHOUT VIEW APPROVED BUTTON -->
     <main class="form-bg-fixed" id="approvalSection" style="display: none;">
-
-        <!-- Approval Title -->
         <div class="form-title-box">
             <h1>APPROVAL ROUTING</h1>
         </div>
-
-        <!-- Scrollable Container -->
         <div class="form-cards-container">
-            
-            <!-- Approval Card -->
             <div class="form-card-scrollable">
-                
-                <!-- DEAN Approval -->
                 <div class="approval-item-simple">
                     <div class="approval-role-simple">APPROVED BY:</div>
                     <div class="approval-name-simple">DEAN</div>
-                    
-                    <div class="form-row">
-                        <div class="form-label">Signature:</div>
-                        <div class="form-field">
-                            <button class="upload-btn">Upload File</button>
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-label">Date:</div>
-                        <div class="form-field">
-                            <div class="date-input-group">
-                                <input type="text" class="form-input" placeholder="DD/MM/YYYY">
-                                <button class="dropdown-btn">▼</button>
-                            </div>
-                        </div>
-                    </div>
+                    <div class="form-row"><div class="form-label">Signature:</div><div class="form-field"><button class="upload-btn">Upload File</button></div></div>
                 </div>
-
-                <div class="form-divider-light"></div>
-
-                <!-- VPAA Approval -->
-                <div class="approval-item-simple">
-                    <div class="approval-role-simple">NOTED BY:</div>
-                    <div class="approval-name-simple">VICE PRESIDENT FOR ACADEMIC AFFAIRS (VPAA)</div>
-                    
-                    <div class="form-row">
-                        <div class="form-label">Signature:</div>
-                        <div class="form-field">
-                            <button class="upload-btn">Upload File</button>
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-label">Date:</div>
-                        <div class="form-field">
-                            <div class="date-input-group">
-                                <input type="text" class="form-input" placeholder="DD/MM/YYYY">
-                                <button class="dropdown-btn">▼</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-divider-light"></div>
-
-                <!-- HRMO Approval -->
-                <div class="approval-item-simple">
-                    <div class="approval-role-simple">RECEIVED BY:</div>
-                    <div class="approval-name-simple">HRMO MANAGER</div>
-                    
-                    <div class="form-row">
-                        <div class="form-label">Signature:</div>
-                        <div class="form-field">
-                            <button class="upload-btn">Upload File</button>
-                        </div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div class="form-label">Date:</div>
-                        <div class="form-field">
-                            <div class="date-input-group">
-                                <input type="text" class="form-input" placeholder="DD/MM/YYYY">
-                                <button class="dropdown-btn">▼</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- FORM STATUS Section -->
-                <div class="form-status-section-simple">
-                    <div class="form-section-header">FORM STATUS</div>
-                    
-                    <div class="status-options-simple">
-                        <label class="radio-label">
-                            <input type="radio" name="formStatus" value="draft"> Draft
-                        </label>
-                        <label class="radio-label">
-                            <input type="radio" name="formStatus" value="submitted"> Submitted
-                        </label>
-                        <label class="radio-label">
-                            <input type="radio" name="formStatus" value="approved"> Approved
-                        </label>
-                        <label class="radio-label">
-                            <input type="radio" name="formStatus" value="archived"> Archived
-                        </label>
-                    </div>
-
-                    <div class="tracking-id-simple">
-                        Tracking ID: <span class="tracking-value-simple">[Auto-Generated]</span>
-                    </div>
-                </div>
-
-                <!-- Action Buttons - UPDATED: Removed View Approved Button -->
                 <div class="form-action-buttons-simple">
                     <button class="form-btn secondary-btn" id="printPdfBtn">Print PDF</button>
                     <button class="form-btn secondary-btn" id="exportCsvBtn">Export CSV</button>
                     <button class="form-btn primary-btn" id="closeApprovalBtn">Close Form</button>
                 </div>
-
-                <!-- Back to Forms Button -->
                 <div class="back-to-forms-container">
                     <button class="form-btn secondary-btn" id="backToFormsBtn">Back to Forms</button>
                 </div>
-                
-                <!-- NO VIEW APPROVED BUTTON HERE - REMOVED -->
-
             </div>
-
         </div>
-
     </main>
 
-    <!-- APPROVED VIEW (READ-ONLY) SECTION -->
     <main class="form-bg-fixed" id="approvedViewSection" style="display: none;">
-
-        <!-- Form Title -->
-        <div class="form-title-box">
-            <h1>ATA FORM: APPROVED VIEW (READ-ONLY)</h1>
-        </div>
-
-        <!-- Scrollable Container -->
+        <div class="form-title-box"><h1>ATA FORM: APPROVED VIEW</h1></div>
         <div class="form-cards-container">
-            
-            <!-- Main Card -->
             <div class="form-card-scrollable">
-                
-                <!-- Header Info with Tracking ID and Term -->
-                <div class="approved-header">
-                    <div class="approved-header-item">
-                        <span class="approved-header-label">Form:</span>
-                        <span class="approved-header-value">ATA-2025-00123</span>
-                    </div>
-                    <div class="approved-header-item">
-                        <span class="approved-header-label">Term:</span>
-                        <span class="approved-header-value">1st Semester 2025-2026</span>
-                    </div>
-                </div>
-                
-                <!-- Status and Dates -->
-                <div class="approved-status-bar">
-                    <div class="approved-status-item">
-                        <span class="approved-status-label">Status:</span>
-                        <span class="approved-badge">APPROVED</span>
-                    </div>
-                    <div class="approved-status-item">
-                        <span class="approved-status-label">Submitted:</span>
-                        <span class="approved-status-value">June 15, 2025</span>
-                    </div>
-                    <div class="approved-status-item">
-                        <span class="approved-status-label">Approved:</span>
-                        <span class="approved-status-value">June 22, 2025</span>
-                    </div>
-                </div>
-
-                <!-- SUMMARY OF UNITS (FINAL) -->
-                <div class="form-section-header" style="margin-top: 20px;">SUMMARY OF UNITS (FINAL)</div>
-
-                <!-- Summary Table -->
-                <div class="approved-summary-table">
-                    <div class="approved-summary-header">
-                        <div class="approved-summary-col">SECTION</div>
-                        <div class="approved-summary-col">UNITS</div>
-                        <div class="approved-summary-col">EFFECTIVE UNITS</div>
-                    </div>
-
-                    <div class="approved-summary-row">
-                        <div class="approved-summary-col">(B) Courses Within College</div>
-                        <div class="approved-summary-col">15</div>
-                        <div class="approved-summary-col">15</div>
-                    </div>
-
-                    <div class="approved-summary-row">
-                        <div class="approved-summary-col">(C) Courses Other Colleges</div>
-                        <div class="approved-summary-col">6</div>
-                        <div class="approved-summary-col">3</div>
-                    </div>
-
-                    <div class="approved-summary-row">
-                        <div class="approved-summary-col">(D) Administrative Work</div>
-                        <div class="approved-summary-col">3</div>
-                        <div class="approved-summary-col">3</div>
-                    </div>
-
-                    <div class="approved-summary-row">
-                        <div class="approved-summary-col">(E) Practicum Advising</div>
-                        <div class="approved-summary-col">2</div>
-                        <div class="approved-summary-col">2</div>
-                    </div>
-
-                    <div class="approved-summary-row">
-                        <div class="approved-summary-col">(G) Remedial Modules</div>
-                        <div class="approved-summary-col">3</div>
-                        <div class="approved-summary-col">0</div>
-                    </div>
-
-                    <div class="approved-summary-total">
-                        <div class="approved-summary-col"><strong>TOTAL</strong></div>
-                        <div class="approved-summary-col"><strong>29</strong></div>
-                        <div class="approved-summary-col"><strong>23</strong></div>
-                    </div>
-                </div>
-
-                <!-- APPROVAL TRAIL -->
-                <div class="form-section-header" style="margin-top: 30px;">APPROVAL TRAIL</div>
-
-                <div class="approval-trail-container">
-                    
-                    <!-- Program Chair -->
-                    <div class="approval-trail-item">
-                        <div class="approval-trail-left">
-                            <span class="approval-trail-dot"></span>
-                            <span class="approval-trail-role">Program Chair:</span>
-                        </div>
-                        <div class="approval-trail-right">
-                            <span class="approval-trail-signed">✓ Signed</span>
-                            <span class="approval-trail-date">on June 18, 2025</span>
-                        </div>
-                    </div>
-
-                    <!-- Dean -->
-                    <div class="approval-trail-item">
-                        <div class="approval-trail-left">
-                            <span class="approval-trail-dot"></span>
-                            <span class="approval-trail-role">Dean:</span>
-                        </div>
-                        <div class="approval-trail-right">
-                            <span class="approval-trail-signed">✓ Signed</span>
-                            <span class="approval-trail-date">on June 19, 2025</span>
-                        </div>
-                    </div>
-
-                    <!-- VPAA -->
-                    <div class="approval-trail-item">
-                        <div class="approval-trail-left">
-                            <span class="approval-trail-dot"></span>
-                            <span class="approval-trail-role">VPAA:</span>
-                        </div>
-                        <div class="approval-trail-right">
-                            <span class="approval-trail-signed">✓ Noted</span>
-                            <span class="approval-trail-date">on June 20, 2025</span>
-                        </div>
-                    </div>
-
-                    <!-- HRMO -->
-                    <div class="approval-trail-item">
-                        <div class="approval-trail-left">
-                            <span class="approval-trail-dot"></span>
-                            <span class="approval-trail-role">HRMO:</span>
-                        </div>
-                        <div class="approval-trail-right">
-                            <span class="approval-trail-signed">✓ Received</span>
-                            <span class="approval-trail-date">on June 21, 2025</span>
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- Close Button -->
+                <div class="approved-header"><div class="approved-header-item"><span class="approved-header-label">Form:</span><span>ATA-2025-001</span></div></div>
                 <div class="back-to-forms-container" style="margin-top: 30px;">
                     <button class="form-btn primary-btn" id="closeApprovedViewBtn">Close</button>
                 </div>
-                
-                <div class="back-to-forms-container" style="margin-top: 10px;">
-                    <button class="form-btn secondary-btn" id="backFromApprovedToApprovalBtn">Back to Approval</button>
-                </div>
-
             </div>
-
         </div>
-
-    </main>
-
-    <!-- =============================== -->
-    <!-- HRMO ATA FORMS MANAGEMENT - NEW SECTION -->
-    <!-- =============================== -->
-    <main class="form-bg-fixed" id="hrmoManagementSection" style="display: none;">
-
-        <!-- Form Title -->
-        <div class="form-title-box">
-            <h1>HRMO - ATA FORMS MANAGEMENT</h1>
-        </div>
-
-        <!-- Scrollable Container -->
-        <div class="form-cards-container">
-            
-            <!-- Main Card -->
-            <div class="form-card-scrollable">
-                
-                <!-- Stats Cards Row -->
-                <div class="hrmo-stats-row">
-                    <div class="hrmo-stat-card">
-                        <div class="hrmo-stat-value">0</div>
-                        <div class="hrmo-stat-label">Pending</div>
-                    </div>
-                    <div class="hrmo-stat-card">
-                        <div class="hrmo-stat-value">0</div>
-                        <div class="hrmo-stat-label">Approved</div>
-                    </div>
-                    <div class="hrmo-stat-card">
-                        <div class="hrmo-stat-value">0</div>
-                        <div class="hrmo-stat-label">Overloaded</div>
-                    </div>
-                    <div class="hrmo-stat-card">
-                        <div class="hrmo-stat-value">0</div>
-                        <div class="hrmo-stat-label">Archived</div>
-                    </div>
-                </div>
-
-                <!-- Recent Submissions Header -->
-                <div class="form-section-header" style="margin-top: 25px;">RECENT SUBMISSIONS</div>
-
-                <!-- Table Headers -->
-                <div class="hrmo-table-header">
-                    <div class="hrmo-header-col">Faculty</div>
-                    <div class="hrmo-header-col">College</div>
-                    <div class="hrmo-header-col">Units</div>
-                    <div class="hrmo-header-col">Status</div>
-                    <div class="hrmo-header-col">Date</div>
-                </div>
-
-                <!-- Sample Row 1 -->
-                <div class="hrmo-table-row">
-                    <div class="hrmo-row-col">Dr. Juan Dela Cruz</div>
-                    <div class="hrmo-row-col">College of Engineering</div>
-                    <div class="hrmo-row-col">21</div>
-                    <div class="hrmo-row-col"><span class="status-badge status-pending">Pending</span></div>
-                    <div class="hrmo-row-col">2025-02-15</div>
-                </div>
-
-                <!-- Sample Row 2 -->
-                <div class="hrmo-table-row">
-                    <div class="hrmo-row-col">Prof. Maria Santos</div>
-                    <div class="hrmo-row-col">College of Science</div>
-                    <div class="hrmo-row-col">18</div>
-                    <div class="hrmo-row-col"><span class="status-badge status-pending">Pending</span></div>
-                    <div class="hrmo-row-col">2025-02-14</div>
-                </div>
-
-                <!-- Sample Row 3 (Approved) -->
-                <div class="hrmo-table-row">
-                    <div class="hrmo-row-col">Dr. Roberto Reyes</div>
-                    <div class="hrmo-row-col">College of Business</div>
-                    <div class="hrmo-row-col">24</div>
-                    <div class="hrmo-row-col"><span class="status-badge status-approved">Approved</span></div>
-                    <div class="hrmo-row-col">2025-02-13</div>
-                </div>
-
-                <!-- Sample Row 4 (Overloaded) -->
-                <div class="hrmo-table-row">
-                    <div class="hrmo-row-col">Prof. Ana Lopez</div>
-                    <div class="hrmo-row-col">College of Engineering</div>
-                    <div class="hrmo-row-col">30</div>
-                    <div class="hrmo-row-col"><span class="status-badge status-overload">Overloaded</span></div>
-                    <div class="hrmo-row-col">2025-02-12</div>
-                </div>
-
-                <!-- Filter and Action Bar -->
-                <div class="hrmo-filter-bar">
-                    <div class="hrmo-filter-left">
-                        <select class="hrmo-filter-select">
-                            <option>Filter by Term</option>
-                            <option>1st Sem 2025-2026</option>
-                            <option>2nd Sem 2025-2026</option>
-                            <option>Summer 2025</option>
-                        </select>
-                        
-                        <div class="hrmo-search-box">
-                            <input type="text" class="hrmo-search-input" placeholder="Search Faculty">
-                            <i class="fas fa-search hrmo-search-icon"></i>
-                        </div>
-                    </div>
-                    
-                    <div class="hrmo-filter-right">
-                        <button class="hrmo-action-btn">
-                            <i class="fas fa-download"></i> Export All
-                        </button>
-                        <button class="hrmo-action-btn">
-                            <i class="fas fa-chart-bar"></i> Reports by Dept
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Actions Section -->
-                <div class="hrmo-actions-section">
-                    <div class="form-section-header" style="margin-top: 15px;">Actions</div>
-                    
-                    <div class="hrmo-actions-buttons">
-                        <button class="hrmo-action-btn">
-                            <i class="fas fa-check-circle"></i> Approve Selected
-                        </button>
-                        <button class="hrmo-action-btn">
-                            <i class="fas fa-archive"></i> Archive Selected
-                        </button>
-                        <button class="hrmo-action-btn">
-                            <i class="fas fa-print"></i> Print Summary
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Close Button -->
-                <div class="back-to-forms-container" style="margin-top: 25px;">
-                    <button class="form-btn primary-btn" id="closeHrmoBtn">Close</button>
-                </div>
-                
-                <div class="back-to-forms-container" style="margin-top: 10px;">
-                    <button class="form-btn secondary-btn" id="backFromHrmoBtn">Back</button>
-                </div>
-
-            </div>
-
-        </div>
-
     </main>
 
     <script>
-        // Wait for DOM to load
         document.addEventListener('DOMContentLoaded', function() {
-            // Multi-step form navigation
-            let currentStep = 1;
+            // Global Step Tracker
+            window.currentStep = 1;
+            
             const totalSteps = 7;
-
-            const form1 = document.getElementById('form1');
-            const form2 = document.getElementById('form2');
-            const form3 = document.getElementById('form3');
-            const form4 = document.getElementById('form4');
-            const form5 = document.getElementById('form5');
-            const form6 = document.getElementById('form6');
-            const form7 = document.getElementById('form7');
             const formTitle = document.getElementById('formTitle').querySelector('h1');
             const backBtn = document.getElementById('backBtn');
             const nextBtn = document.getElementById('nextBtn');
-            const goToApprovalBtn = document.getElementById('goToApprovalBtn');
-            const backToFormsBtn = document.getElementById('backToFormsBtn');
-            const closeApprovalBtn = document.getElementById('closeApprovalBtn');
-            const viewApprovedBtn = document.getElementById('viewApprovedBtn');
-            const closeApprovedViewBtn = document.getElementById('closeApprovedViewBtn');
-            const backFromApprovedToApprovalBtn = document.getElementById('backFromApprovedToApprovalBtn');
-            const multiStepSection = document.getElementById('multiStepSection');
-            const approvalSection = document.getElementById('approvalSection');
-            const approvedViewSection = document.getElementById('approvedViewSection');
-            const hrmoManagementSection = document.getElementById('hrmoManagementSection');
-            const closeHrmoBtn = document.getElementById('closeHrmoBtn');
-            const backFromHrmoBtn = document.getElementById('backFromHrmoBtn');
             const step7Buttons = document.getElementById('step7Buttons');
+            const stepDots = Array.from(document.querySelectorAll('.progress-dot'));
 
-            // Print and Export buttons
-            const printPdfBtn = document.getElementById('printPdfBtn');
-            const exportCsvBtn = document.getElementById('exportCsvBtn');
-
-            // Step dots
-            const step1Dot = document.getElementById('step1Dot');
-            const step2Dot = document.getElementById('step2Dot');
-            const step3Dot = document.getElementById('step3Dot');
-            const step4Dot = document.getElementById('step4Dot');
-            const step5Dot = document.getElementById('step5Dot');
-            const step6Dot = document.getElementById('step6Dot');
-            const step7Dot = document.getElementById('step7Dot');
-            const stepDots = [step1Dot, step2Dot, step3Dot, step4Dot, step5Dot, step6Dot, step7Dot];
-
-            // Form titles for each step
             const formTitles = [
                 'ATA form: Personal Details',
                 'ATA form: Teaching Assignments',
@@ -1172,224 +586,103 @@
                 'ATA form: Admin Approval Section'
             ];
 
-            function updateFormDisplay() {
-                // Hide all forms
-                form1.style.display = 'none';
-                form2.style.display = 'none';
-                form3.style.display = 'none';
-                form4.style.display = 'none';
-                form5.style.display = 'none';
-                form6.style.display = 'none';
-                form7.style.display = 'none';
+            // --- DISPLAY FUNCTION ---
+            window.updateFormDisplay = function() {
+                // 1. Hide all forms
+                for(let i=1; i<=7; i++) {
+                    const f = document.getElementById('form'+i);
+                    if(f) f.style.display = 'none';
+                }
 
-                // Show current form
-                document.getElementById(`form${currentStep}`).style.display = 'block';
+                // 2. Show current form
+                const currentForm = document.getElementById('form' + window.currentStep);
+                if (currentForm) currentForm.style.display = 'block';
 
-                // Update title
-                formTitle.textContent = formTitles[currentStep - 1];
+                // 3. Update Title
+                if (formTitle) formTitle.textContent = formTitles[window.currentStep - 1];
 
-                // Update progress dots
+                // 4. Update Dots (Visuals Only)
                 stepDots.forEach((dot, index) => {
                     const stepNumber = index + 1;
-                    
                     dot.classList.remove('filled', 'active');
                     
-                    if (stepNumber < currentStep) {
-                        dot.textContent = '●';
-                        dot.classList.add('filled');
-                    } else if (stepNumber === currentStep) {
-                        dot.textContent = '●';
-                        dot.classList.add('active');
+                    // Grey out forbidden dots visually
+                    if (window.isStepVisible && !window.isStepVisible(stepNumber)) {
+                        dot.style.opacity = "0.3"; 
+                        dot.style.cursor = "not-allowed";
+                    } else {
+                        dot.style.opacity = "1"; 
+                        dot.style.cursor = "pointer";
+                    }
+
+                    if (stepNumber < window.currentStep) {
+                        dot.textContent = '●'; dot.classList.add('filled');
+                    } else if (stepNumber === window.currentStep) {
+                        dot.textContent = '●'; dot.classList.add('active');
                     } else {
                         dot.textContent = '○';
                     }
                 });
 
-                // Update back button text
-                if (currentStep === 1) {
-                    backBtn.textContent = 'Return to Dashboard';
-                } else {
-                    backBtn.textContent = 'Back';
-                }
+                // 5. Update Buttons
+                if (backBtn) backBtn.textContent = (window.currentStep === 1) ? 'Return to Dashboard' : 'Back';
+                if (nextBtn) nextBtn.textContent = (window.currentStep === totalSteps) ? 'Finish' : 'Next';
+                if (step7Buttons) step7Buttons.style.display = (window.currentStep === 7) ? 'block' : 'none';
 
-                // Update next button text
-                if (currentStep === totalSteps) {
-                    nextBtn.textContent = 'Finish';
-                } else {
-                    nextBtn.textContent = 'Next';
-                }
+                // 6. Force Section Visibility Check (Important!)
+                if (window.handleInnerSectionVisibility) window.handleInnerSectionVisibility();
 
-                // Show/hide Step 7 special buttons
-                if (step7Buttons) {
-                    step7Buttons.style.display = currentStep === 7 ? 'block' : 'none';
-                }
-
-                // Scroll to top
+                // 7. Scroll top
                 const container = document.querySelector('.form-cards-container');
-                if (container) {
-                    container.scrollTop = 0;
-                }
-            }
+                if (container) container.scrollTop = 0;
+            };
 
-            // Next button click
-            if (nextBtn) {
-                nextBtn.addEventListener('click', function() {
-                    if (currentStep < totalSteps) {
-                        currentStep++;
-                        updateFormDisplay();
-                    } else {
-                        alert('You have completed all forms! You can now proceed to Approval Routing.');
+            // --- DOT CLICK LISTENER (FIXED) ---
+            stepDots.forEach((dot, index) => {
+                dot.addEventListener('click', () => {
+                    const targetStep = index + 1;
+
+                    // SECURITY CHECK: Is the user allowed to go here?
+                    if (window.isStepVisible && !window.isStepVisible(targetStep)) {
+                        alert("⚠️ This section is not applicable to your current role.");
+                        return; // Stop! Do not switch pages.
                     }
-                });
-            }
 
-            // Back button click
+                    window.currentStep = targetStep;
+                    updateFormDisplay();
+                });
+            });
+
+            // Back button logic
             if (backBtn) {
                 backBtn.addEventListener('click', function() {
-                    if (currentStep === 1) {
+                    if (window.currentStep === 1) {
                         window.location.href = '/dashboard/window';
-                    } else if (currentStep > 1) {
-                        currentStep--;
-                        updateFormDisplay();
+                    } else {
+                        // Simple decrement is okay for back, or you can use "smart skip" in reverse
+                        let prevStep = window.currentStep - 1;
+                        while (prevStep > 0 && window.isStepVisible && !window.isStepVisible(prevStep)) {
+                            prevStep--; // Skip backwards over hidden steps
+                        }
+                        if (prevStep > 0) {
+                            window.currentStep = prevStep;
+                            updateFormDisplay();
+                        }
                     }
                 });
             }
 
-            // Go to Approval Routing
-            if (goToApprovalBtn) {
-                goToApprovalBtn.addEventListener('click', function() {
-                    multiStepSection.style.display = 'none';
-                    approvalSection.style.display = 'flex';
-                });
-            }
-
-            // Back to Forms
-            if (backToFormsBtn) {
-                backToFormsBtn.addEventListener('click', function() {
-                    approvalSection.style.display = 'none';
-                    multiStepSection.style.display = 'flex';
-                });
-            }
-
-            // Close Approval Form (go to dashboard)
-            if (closeApprovalBtn) {
-                closeApprovalBtn.addEventListener('click', function() {
-                    window.location.href = '/dashboard/window';
-                });
-            }
-            
-            // View Approved Form from Step 7
-            if (viewApprovedBtn) {
-                viewApprovedBtn.addEventListener('click', function() {
-                    multiStepSection.style.display = 'none';
-                    approvedViewSection.style.display = 'flex';
-                });
-            }
-            
-            // Close Approved View (go back to approval)
-            if (backFromApprovedToApprovalBtn) {
-                backFromApprovedToApprovalBtn.addEventListener('click', function() {
-                    approvedViewSection.style.display = 'none';
-                    approvalSection.style.display = 'flex';
-                });
-            }
-            
-            // Close Approved View (go to dashboard)
-            if (closeApprovedViewBtn) {
-                closeApprovedViewBtn.addEventListener('click', function() {
-                    window.location.href = '/dashboard/window';
-                });
-            }
-
-            // HRMO Management navigation (for demo, you can add a button somewhere to access this)
-            // For now, we can add a hidden way to access it from approval section
-            // You can add a button in approval section later if needed
-            
-            // Close HRMO Management
-            if (closeHrmoBtn) {
-                closeHrmoBtn.addEventListener('click', function() {
-                    hrmoManagementSection.style.display = 'none';
-                    // Go back to dashboard or wherever appropriate
-                    window.location.href = '/dashboard/window';
-                });
-            }
-            
-            if (backFromHrmoBtn) {
-                backFromHrmoBtn.addEventListener('click', function() {
-                    hrmoManagementSection.style.display = 'none';
-                    approvalSection.style.display = 'flex';
-                });
-            }
-
-            // Print PDF button
-            if (printPdfBtn) {
-                printPdfBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    alert('Print PDF functionality would go here');
-                });
-            }
-
-            // Export CSV button
-            if (exportCsvBtn) {
-                exportCsvBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    alert('Export CSV functionality would go here');
-                });
-            }
-
-            // Initialize
+            // Initial Run
             updateFormDisplay();
-
-            // Add Course/Work/Practicum/Employment/Module functionality
-            document.querySelectorAll('.add-course-btn button').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    alert('Add item functionality would go here');
-                });
-            });
-
-            // Remove button functionality
-            document.querySelectorAll('.remove-btn').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    alert('Remove item functionality would go here');
-                });
-            });
-
-            // Dropdown button functionality
-            document.querySelectorAll('.dropdown-btn').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    alert('Dropdown functionality would go here');
-                });
-            });
-
-            // Upload button functionality
-            document.querySelectorAll('.upload-btn').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    alert('File upload functionality would go here');
-                });
-            });
-
-            // HRMO Action buttons
-            document.querySelectorAll('.hrmo-action-btn').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    alert('HRMO action: ' + btn.textContent.trim());
-                });
-            });
-
-            // Filter select
-            const filterSelect = document.querySelector('.hrmo-filter-select');
-            if (filterSelect) {
-                filterSelect.addEventListener('change', function() {
-                    alert('Filter changed to: ' + this.value);
-                });
-            }
         });
     </script>
 
     <script src="/js/ata_client.js"></script>
+
+    <script src="/js/ata_client.js"></script>
+    <script src="/js/ata_autocomplete.js"></script>
+
+    <%- include('partials/dev_toolbar') %>
+
 </body>
 </html>

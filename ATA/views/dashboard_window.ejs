@@ -57,20 +57,23 @@
 
         <!-- Action cards - with clickable links -->
         <div class="action-cards">
-            <!-- Start New ATA Form Card - NOW CLICKABLE -->
             <a href="/ata/new" class="action-card-link-wrapper">
                 <div class="action-card">
                     <div class="action-card-title">Start New ATA Form</div>
                 </div>
             </a>
 
-            <!-- Pending Card -->
+            <a href="/admin/courses" id="adminCourseBtn" class="action-card-link-wrapper" style="display: none;">
+                <div class="action-card" style="background-color: #721c24;">
+                    <div class="action-card-title"><i class="fas fa-database"></i> Manage Courses</div>
+                </div>
+            </a>
+
             <div class="action-card pending-card">
                 <div class="action-card-title">Pending (0)</div>
                 <div class="action-card-link">View →</div>
             </div>
 
-            <!-- Approved Card -->
             <div class="action-card approved-card">
                 <div class="action-card-title">Approved (0)</div>
                 <div class="action-card-link">View →</div>
@@ -90,5 +93,9 @@
     </main>
 
     <script src="/js/ata_client.js"></script>
+
+    <script src="/js/ata_client.js"></script>
+    
+    <%- include('partials/dev_toolbar') %>
 </body>
 </html>

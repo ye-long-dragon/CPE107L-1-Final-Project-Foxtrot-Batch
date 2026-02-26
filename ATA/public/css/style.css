@@ -1595,6 +1595,74 @@ body.dark-mode .sidebar { background: #181a1f; }
 /* ===============================
    RESPONSIVE
 ================================= */
+
+/*
+For ATA FROMS ONLY
+
+/* Progress Dot Container */
+.progress-dot {
+    position: relative; /* Needed to anchor the tooltip */
+    cursor: pointer;    /* Shows it's clickable */
+}
+
+/* 1. The Tooltip Bubble (Positioned ABOVE) */
+.progress-dot::after {
+    content: attr(data-label);
+    position: absolute;
+    
+    /* CHANGE: Use 'bottom' with a positive value to push it UP */
+    bottom: 35px; 
+    left: 50%;
+    transform: translateX(-50%);
+    
+    background-color: #333;
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, bottom 0.2s;
+    pointer-events: none;
+    z-index: 1000; /* Ensure it's on top of everything */
+}
+
+/* 2. The Little Arrow (Pointing DOWN) */
+.progress-dot::before {
+    content: "";
+    position: absolute;
+    
+    /* CHANGE: Position it right under the bubble */
+    bottom: 29px; 
+    left: 50%;
+    transform: translateX(-50%);
+    
+    /* CHANGE: Create a triangle pointing DOWN */
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #333; /* Color matches tooltip background */
+    
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, bottom 0.2s;
+    z-index: 1000;
+}
+
+/* 3. Hover Effects (Float Upwards) */
+.progress-dot:hover::after {
+    opacity: 1;
+    visibility: visible;
+    bottom: 40px; /* Slight float up animation */
+}
+
+.progress-dot:hover::before {
+    opacity: 1;
+    visibility: visible;
+    bottom: 34px; /* Slight float up animation */
+}
+
 @media (max-width: 768px) {
     .main-content { 
         padding: 20px; 
