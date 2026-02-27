@@ -1,18 +1,20 @@
-import { Schema, model } from "mongoose";
+import mongoose from "mongoose";
+
+const { Schema, model, models } = mongoose;
 
 const syllabusSchema = new Schema({
   userID: {
     type: Schema.Types.ObjectId,
-    ref: "User", // Correctly references the User model you provided
+    ref: "User", 
     required: true
   },
   courseCode: {
     type: String,
-    required: true // e.g., "CPE107L"
+    required: true 
   },
   courseTitle: {
     type: String,
-    required: true // e.g., "Software Design"
+    required: true 
   },
   assignedInstructor: {
     type: Schema.Types.ObjectId,
@@ -21,10 +23,10 @@ const syllabusSchema = new Schema({
   },
   courseImage: {
     type: String,
-    default: null // Stores the file path of the uploaded image
+    default: null 
   }
 }, { timestamps: true });
 
-// The MongoDB _id serves as the "syllabusID" for the ERD
-const Syllabus = model("Syllabus", syllabusSchema);
+const Syllabus = models.Syllabus || model("Syllabus", syllabusSchema);
+
 export default Syllabus;

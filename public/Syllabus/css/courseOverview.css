@@ -1,6 +1,23 @@
 /* ============================
-   MAIN PANEL (BORDERS & SHADOWS)
+   MAIN PANEL OVERRIDES & BORDERS
    ============================ */
+.main-content {
+  margin-left: 260px;
+  min-height: calc(100vh - 40px);
+  /* Adjust to prevent double scrollbars */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+}
+
+.main-content {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.main-content input,
+.main-content select,
+.main-content button {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
 .overview-panel {
   width: 100%;
   max-width: 2500px;
@@ -8,7 +25,8 @@
   padding: 30px;
   margin: 0 auto;
   min-height: 80vh;
-  margin-top: -45px;
+  margin-top: 20px;
+  box-sizing: border-box;
 }
 
 /* ============================
@@ -16,84 +34,144 @@
    ============================ */
 .courses-header {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 25px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #f0f0f0;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #eee;
+  flex-wrap: wrap;
+  gap: 15px;
 }
 
+/* Left Section: Title & Toggles */
 .header-left {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 20px;
 }
 
-.header-left h1 {
+.courses-header h1 {
   font-size: 28px;
-  font-weight: 700;
+  font-weight: 600;
+  color: #111;
+  margin: 0;
 }
 
-.top-header h2 {
-  font-size: 30px;
-  line-height: 1.4;
-  color: #000;
-}
-
-/* Hides the List and Grid view icons */
 .view-toggles {
-  display: none !important;
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  overflow: hidden;
+  height: 36px;
+  box-sizing: border-box;
 }
 
-/* ============================
-   RESTORED HEADER CONTROLS
-   ============================ */
-.header-controls {
+.toggle-btn {
+  background: #fff;
+  border: none;
+  height: 100%;
+  padding: 0 12px;
+  cursor: pointer;
+  color: #666;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.toggle-btn.active {
+  background: #111;
+  color: #fff;
+}
+
+.toggle-btn:hover:not(.active) {
+  background: #f0f0f0;
+}
+
+/* Center Section: Search, Terms, Filters */
+.header-center {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   gap: 15px;
+  margin-left: 20px;
+  /* Pushes everything from the search bar onwards to the right */
+}
+
+/* Right Section: Items Per Page & Actions */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .search-container {
   position: relative;
-  display: flex;
-  align-items: center;
+  width: 250px;
+  /* Reduced width to prevent overlapping */
 }
 
 .search-container i {
   position: absolute;
   left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
   color: #888;
 }
 
 .search-container input {
-  padding: 8px 12px 8px 35px;
+  width: 100%;
+  height: 36px;
+  padding: 0 12px 0 36px;
   border: 1px solid #ccc;
-  border-radius: 6px;
-  width: 250px;
+  border-radius: 4px;
   font-size: 13px;
+  box-sizing: border-box;
   outline: none;
+  transition: border-color 0.2s;
+}
+
+.search-container input:focus {
+  border-color: #666;
 }
 
 .control-group {
   display: flex;
-  flex-direction: column;
-  gap: 5px;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: #555;
 }
 
 .control-group label {
-  font-size: 11px;
-  color: #666;
-  font-weight: 600;
+  white-space: nowrap;
 }
 
 .control-group select {
-  padding: 8px 10px;
+  height: 36px;
+  padding: 0 28px 0 10px;
   border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 13px;
+  border-radius: 4px;
   background-color: #fff;
+  font-size: 13px;
+  color: #333;
+  box-sizing: border-box;
   cursor: pointer;
+  appearance: none;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="6"><path fill="%23666" d="M0 0l5 6 5-6z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 8px auto;
+  outline: none;
+}
+
+.terms-group select {
+  min-width: 200px;
+}
+
+.filters-group select {
+  min-width: 140px;
+}
+
+.items-per-page select {
+  min-width: 60px;
 }
 
 /* ============================
@@ -153,7 +231,8 @@
   width: 100%;
   height: 130px;
   object-fit: cover;
-  background-color: #f9f9f9; /* Fallback color */
+  background-color: #f9f9f9;
+  /* Fallback color */
 }
 
 .card-content {
@@ -203,14 +282,17 @@
   background: #000;
   color: #fff;
   border: none;
-  padding: 8px 16px;
-  border-radius: 8px;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 4px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  margin-left: 20px;
+  margin-left: 10px;
   transition: 0.2s;
+  box-sizing: border-box;
 }
+
 .add-btn:hover {
   background: #333;
 }
@@ -220,14 +302,17 @@
   background: #e74c3c;
   color: #fff;
   border: none;
-  padding: 8px 16px;
-  border-radius: 8px;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 4px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  margin-left: 10px;
+  margin-left: 5px;
   transition: 0.2s;
+  box-sizing: border-box;
 }
+
 .delete-header-btn:hover {
   background: #c0392b;
 }
@@ -237,19 +322,20 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-left: 10px;
 }
 
 .cancel-delete-btn {
   background: transparent;
   color: #666;
-  border: 1.5px solid #ddd;
-  padding: 8px 18px;
-  border-radius: 8px;
+  border: 1px solid #ddd;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 4px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-sizing: border-box;
 }
 
 .cancel-delete-btn:hover {
@@ -262,12 +348,14 @@
   background: #e74c3c;
   color: #fff;
   border: none;
-  padding: 8px 18px;
-  border-radius: 8px;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 4px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-sizing: border-box;
 }
 
 .confirm-delete-btn:hover:not(:disabled) {
@@ -283,6 +371,7 @@
   font-size: 13px;
   font-weight: 600;
   color: #e74c3c;
+  white-space: nowrap;
 }
 
 /* Course Card — selection mode */
@@ -309,7 +398,8 @@
 
 /* Modal Overlay Panel */
 .modal-overlay {
-  display: none; /* Hidden by default */
+  display: none;
+  /* Hidden by default */
   position: fixed;
   top: 0;
   left: 0;
@@ -328,6 +418,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -347,11 +438,22 @@
   transform-origin: center center;
 }
 
+.modal-content {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.modal-content input,
+.modal-content select,
+.modal-content button {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
 @keyframes slideUpModal {
   from {
     opacity: 0;
     transform: translateY(24px) scale(0.96);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -549,11 +651,27 @@
 }
 
 @keyframes shakeError {
-  0%, 100% { transform: translateX(0); }
-  20% { transform: translateX(-6px); }
-  40% { transform: translateX(6px); }
-  60% { transform: translateX(-4px); }
-  80% { transform: translateX(4px); }
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  20% {
+    transform: translateX(-6px);
+  }
+
+  40% {
+    transform: translateX(6px);
+  }
+
+  60% {
+    transform: translateX(-4px);
+  }
+
+  80% {
+    transform: translateX(4px);
+  }
 }
 
 /* Highlight input with error */

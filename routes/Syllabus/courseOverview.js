@@ -1,10 +1,10 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import multer from 'multer';
-import Syllabus from '../../models/syllabus.js';
-import SyllabusApprovalStatus from '../../models/syllabusApprovalStatus.js';
+import Syllabus from '../../models/Syllabus/syllabus.js';
+import SyllabusApprovalStatus from '../../models/Syllabus/syllabusApprovalStatus.js';
 
-// Multer config — store in memory so we can convert to base64 for MongoDB
+// Multer config — store in memory for conversion to base64 for MongoDB
 const storage = multer.memoryStorage();
 
 const upload = multer({
@@ -23,16 +23,13 @@ const upload = multer({
 
 const coursesOverviewRouter = express.Router();
 
-coursesOverviewRouter.get('/', (req, res) => {
-    res.redirect('/courses/507f1f77bcf86cd799439011');
-});
-
+/**
+ * API: Fetch Users for Instructor Dropdown
+ */
 coursesOverviewRouter.get('/api/users', async (req, res) => {
     try {
         const User = mongoose.models.User;
-        if (!User) {
-            return res.json([]);
-        }
+        if (!User) return res.json([]);
         const users = await User.find({}, 'firstName lastName email role');
         res.json(users);
     } catch (error) {
@@ -41,6 +38,9 @@ coursesOverviewRouter.get('/api/users', async (req, res) => {
     }
 });
 
+/**
+ * API: SEARCH logic for Live Search results
+ */
 coursesOverviewRouter.get('/api/search', async (req, res) => {
     try {
         const query = req.query.q || '';
@@ -66,7 +66,7 @@ coursesOverviewRouter.get('/api/search', async (req, res) => {
 
         const formatted = courses.map(c => {
             const idStr = c._id.toString();
-            const draftRecord = approvals.find(a => a.syllabusID === idStr);
+            const draftRecord = approvals.find(a => a.syllabusID.toString() === idStr);
 
             return {
                 id: idStr,
@@ -78,7 +78,7 @@ coursesOverviewRouter.get('/api/search', async (req, res) => {
                 img: (c.courseImage && c.courseImage.startsWith('data:'))
                     ? c.courseImage
                     : `https://picsum.photos/seed/${c._id}/400/200`,
-                hasDraft: !!draftRecord, 
+                hasDraft: !!draftRecord,
                 status: draftRecord ? draftRecord.status : "No Syllabus Draft"
             };
         });
@@ -90,19 +90,15 @@ coursesOverviewRouter.get('/api/search', async (req, res) => {
     }
 });
 
+/**
+ * 1. READ logic for the main dashboard load
+ */
 coursesOverviewRouter.get('/:userId', async (req, res) => {
     try {
         const userId = req.params.userId;
         const searchQuery = req.query.search ? req.query.search.toLowerCase() : '';
 
         let userCourses = await Syllabus.find({ userID: userId });
-
-        if (searchQuery) {
-            userCourses = userCourses.filter(c => 
-                (c.courseTitle && c.courseTitle.toLowerCase().includes(searchQuery)) || 
-                (c.courseCode && c.courseCode.toLowerCase().includes(searchQuery))
-            );
-        }
 
         if (mongoose.models.User) {
             await Syllabus.populate(userCourses, { path: 'assignedInstructor' });
@@ -113,111 +109,77 @@ coursesOverviewRouter.get('/:userId', async (req, res) => {
 
         const formattedCourses = userCourses.map(c => {
             const idStr = c._id.toString();
-            const draftRecord = approvals.find(a => a.syllabusID === idStr);
+            const draftRecord = approvals.find(a => a.syllabusID.toString() === idStr);
 
             return {
                 id: idStr,
                 code: c.courseCode,
                 title: c.courseTitle,
-                instructor: c.assignedInstructor 
-                    ? `${c.assignedInstructor.firstName} ${c.assignedInstructor.lastName}` 
-                    : "TBA", 
-                img: (c.courseImage && c.courseImage.startsWith('data:')) 
-                    ? c.courseImage 
+                instructor: c.assignedInstructor
+                    ? `${c.assignedInstructor.firstName} ${c.assignedInstructor.lastName}`
+                    : "TBA",
+                img: (c.courseImage && c.courseImage.startsWith('data:'))
+                    ? c.courseImage
                     : `https://picsum.photos/seed/${c._id}/400/200`,
-                hasDraft: !!draftRecord, 
+                hasDraft: !!draftRecord,
                 status: draftRecord ? draftRecord.status : "No Syllabus Draft"
             };
         });
 
-        res.render('courseOverview', { 
-            courses: formattedCourses, 
-            userId: userId, 
-            searchQuery: req.query.search || '' 
+        res.render('Syllabus/courseOverview', {
+            courses: formattedCourses,
+            userId: userId,
+            searchQuery: req.query.search || '',
+            currentPageCategory: 'syllabus' //
         });
     } catch (error) {
-        console.error("Database connection failed for teammate:", error);
-        res.render('courseOverview', { courses: [], userId: req.params.userId, searchQuery: '' });
+        console.error("Dashboard error:", error);
+        res.render('Syllabus/courseOverview', { courses: [], userId: req.params.userId, searchQuery: '', currentPageCategory: 'syllabus' });
     }
 });
 
+/**
+ * 2. CREATE logic with Duplicate Check
+ */
 coursesOverviewRouter.post('/:userId/add', upload.single('courseImage'), async (req, res) => {
     try {
         const userId = req.params.userId;
         const { courseCode, courseTitle, assignedInstructor } = req.body;
 
-        const existingCode = await Syllabus.findOne({
-            userID: userId,
-            courseCode: { $regex: new RegExp(`^${courseCode}$`, 'i') }
-        });
-        if (existingCode) {
-            return res.status(409).json({ 
-                error: 'duplicate', 
-                field: 'courseCode', 
-                message: `A course with code "${courseCode}" already exists.` 
-            });
-        }
-
-        const existingTitle = await Syllabus.findOne({
-            userID: userId,
-            courseTitle: { $regex: new RegExp(`^${courseTitle}$`, 'i') }
-        });
-        if (existingTitle) {
-            return res.status(409).json({ 
-                error: 'duplicate', 
-                field: 'courseTitle', 
-                message: `A course named "${courseTitle}" already exists.` 
-            });
-        }
+        const existingCode = await Syllabus.findOne({ userID: userId, courseCode: { $regex: new RegExp(`^${courseCode}$`, 'i') } });
+        if (existingCode) return res.status(409).json({ error: 'duplicate', field: 'courseCode', message: `Code "${courseCode}" already exists.` });
 
         const syllabusData = { userID: userId, courseCode, courseTitle };
-        
-        if (assignedInstructor && assignedInstructor !== '') {
-            syllabusData.assignedInstructor = assignedInstructor;
-        }
-
+        if (assignedInstructor) syllabusData.assignedInstructor = assignedInstructor;
         if (req.file) {
             const base64 = req.file.buffer.toString('base64');
             syllabusData.courseImage = `data:${req.file.mimetype};base64,${base64}`;
         }
-        
+
         const newSyllabus = new Syllabus(syllabusData);
         await newSyllabus.save();
-        res.json({ success: true, redirect: `/courses/${userId}` });
+        res.json({ success: true, redirect: `/syllabus/${userId}` });
     } catch (error) {
-        console.error('Error adding course:', error);
-        res.status(500).json({ error: 'server', message: 'Error adding course to database.' });
+        console.error('Add course error:', error);
+        res.status(500).json({ error: 'server', message: 'Error adding course.' });
     }
 });
 
-// ORIGINAL: SINGLE DELETE — Removes a single course using the trash icon
-coursesOverviewRouter.post('/:userId/delete/:courseId', async (req, res) => {
-    try {
-        const { userId, courseId } = req.params;
-        await Syllabus.findByIdAndDelete(courseId);
-        res.redirect(`/courses/${userId}`);
-    } catch (error) {
-        console.error('Error deleting course:', error);
-        res.status(500).send("Error deleting course from database.");
-    }
-});
-
-// NEW: BULK DELETE — Removes multiple courses at once (Teammate's feature)
+/**
+ * 3. BULK DELETE
+ */
 coursesOverviewRouter.post('/:userId/delete-bulk', express.json(), async (req, res) => {
     try {
         const { userId } = req.params;
         const { courseIds } = req.body;
-
-        if (!courseIds || !Array.isArray(courseIds) || courseIds.length === 0) {
-            return res.status(400).json({ error: 'No courses selected for deletion.' });
-        }
-
+        if (!courseIds || courseIds.length === 0) return res.status(400).json({ error: 'No courses selected.' });
         await Syllabus.deleteMany({ _id: { $in: courseIds }, userID: userId });
-        res.json({ success: true, redirect: `/courses/${userId}` });
+        await SyllabusApprovalStatus.deleteMany({ syllabusID: { $in: courseIds } });
+        res.json({ success: true, redirect: `/syllabus/${userId}` });
     } catch (error) {
-        console.error('Error deleting courses:', error);
-        res.status(500).json({ error: 'Error deleting courses from database.' });
+        console.error('Bulk delete error:', error);
+        res.status(500).json({ error: 'Error deleting courses.' });
     }
 });
 
-export { coursesOverviewRouter as default };
+export default coursesOverviewRouter;
