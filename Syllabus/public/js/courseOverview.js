@@ -305,6 +305,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Attach to initial cards
     attachDeleteConfirmation();
+    
 
     // =========================================
     // Live Search — keystroke by keystroke
@@ -352,18 +353,19 @@ document.addEventListener('DOMContentLoaded', () => {
         const isDeleteMode = courseGrid.classList.contains('delete-mode');
 
         if (courses.length > 0) {
+            // CHANGED: Search results now trigger openDraftModal() and inject dynamic status
             courseGrid.innerHTML = courses.map(course => `
                 <div class="course-card">
                     <form action="/courses/${userId}/delete/${course.id}" method="POST" class="delete-form">
                         <button type="submit" class="delete-btn" title="Delete Course"><i class="fas fa-trash"></i></button>
                     </form>
-                    <div class="card-image" onclick="window.location.href='/syllabus/${course.id}'">
+                    <div class="card-image" onclick="openDraftModal('${course.id}', ${course.hasDraft})">
                         <img src="${course.img}" alt="Course Image">
                     </div>
-                    <div class="card-content" onclick="window.location.href='/syllabus/${course.id}'">
+                    <div class="card-content" onclick="openDraftModal('${course.id}', ${course.hasDraft})">
                         <span class="course-code">${course.code}</span>
                         <h3 class="course-title">${course.title}</h3>
-                        <p class="course-status">Open</p>
+                        <p class="course-status">${course.status || 'No Syllabus Draft'}</p>
                     </div>
                     <div class="card-footer">
                         <span class="instructor">${course.instructor}</span>
@@ -381,5 +383,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Re-attach delete confirmation to new cards
         attachDeleteConfirmation();
+    }
+});
+
+/* =====================================================================
+   DRAFT STATUS MODAL LOGIC (GLOBAL SCOPE)
+   Placed outside DOMContentLoaded so the HTML onclick tags can access it
+===================================================================== */
+window.openDraftModal = function(syllabusId, hasDraft) {
+    const modal = document.getElementById('draftModal');
+    const msg = document.getElementById('draftMessage');
+    const btn = document.getElementById('draftActionBtn');
+    
+    if (hasDraft) {
+        msg.innerText = "A syllabus draft already exists for this course.";
+        btn.innerText = "Edit Syllabus Draft";
+        btn.onclick = () => window.location.href = `/syllabus/edit/${syllabusId}`; 
+    } else {
+        msg.innerText = "There's no syllabus draft at the moment.";
+        btn.innerText = "+ Add Syllabus Draft";
+        btn.onclick = () => window.location.href = `/syllabus/create/${syllabusId}`; 
+    }
+    
+    if(modal) modal.style.display = 'flex';
+};
+
+window.closeDraftModal = function() {
+    const modal = document.getElementById('draftModal');
+    if(modal) modal.style.display = 'none';
+};
+
+// Close modal if user clicks anywhere outside of the white content box
+window.addEventListener('click', function(event) {
+    const draftModal = document.getElementById('draftModal');
+    if (event.target === draftModal) {
+        draftModal.style.display = "none";
     }
 });

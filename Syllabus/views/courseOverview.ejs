@@ -51,13 +51,13 @@
                                         <button type="submit" class="delete-btn" title="Delete Course"><i class="fas fa-trash"></i></button>
                                     </form>
 
-                                    <div class="card-image" onclick="window.location.href='/syllabus/<%= course.id %>'">
+                                    <div class="card-image" onclick="openDraftModal('<%= course.id %>', <%= course.hasDraft %>)">
                                         <img src="<%= course.img || 'https://picsum.photos/400/200?random=' + course.id %>" alt="Course Image">
                                     </div>
-                                    <div class="card-content" onclick="window.location.href='/syllabus/<%= course.id %>'">
+                                    <div class="card-content" onclick="openDraftModal('<%= course.id %>', <%= course.hasDraft %>)">
                                         <span class="course-code"><%= course.code %></span>
                                         <h3 class="course-title"><%= course.title %></h3>
-                                        <p class="course-status">Open</p>
+                                        <p class="course-status"><%= course.status || 'No Syllabus Draft' %></p>
                                     </div>
                                     <div class="card-footer">
                                         <span class="instructor"><%= course.instructor %></span>
@@ -121,8 +121,7 @@
                     <div class="select-wrapper">
                         <select id="assignedInstructor" name="assignedInstructor">
                             <option value="">— Select an Instructor —</option>
-                            <!-- Options populated dynamically via JavaScript -->
-                        </select>
+                            </select>
                         <i class="fas fa-chevron-down select-arrow"></i>
                     </div>
                     <span class="form-hint" id="instructorHint">Loading instructors from database...</span>
@@ -138,6 +137,27 @@
                     <button type="submit" class="submit-btn">Save Course</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="draftModal">
+        <div class="modal-content" style="width: 460px; text-align: center;">
+            <div class="modal-header" style="justify-content: space-between;">
+                <div class="modal-title-group">
+                    <div class="modal-icon"><i class="fas fa-file-alt"></i></div>
+                    <h2>Syllabus Draft</h2>
+                </div>
+                <span class="close-modal" onclick="closeDraftModal()">&times;</span>
+            </div>
+            
+            <div style="padding: 30px 20px; text-align: center;">
+                <p id="draftMessage" style="font-size: 16px; font-weight: 600; color: #444; margin: 0;"></p>
+            </div>
+
+            <div class="modal-actions" style="justify-content: center;">
+                <button id="draftActionBtn" class="submit-btn" style="width: 100%; justify-content: center;">
+                    </button>
+            </div>
         </div>
     </div>
 

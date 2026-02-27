@@ -2,6 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import multer from 'multer';
 import Syllabus from '../../models/syllabus.js';
+import SyllabusApprovalStatus from '../../models/syllabusApprovalStatus.js';
 
 // Multer config — store in memory so we can convert to base64 for MongoDB
 const storage = multer.memoryStorage();
@@ -22,22 +23,12 @@ const upload = multer({
 
 const coursesOverviewRouter = express.Router();
 
-/**
- * 0. BASE ROUTE
- * Handles: localhost:8300/courses
- * Redirects to a test user ID to prevent teammate 404s
- */
 coursesOverviewRouter.get('/', (req, res) => {
     res.redirect('/courses/507f1f77bcf86cd799439011');
 });
 
-/**
- * API: Fetch Users for Instructor Dropdown
- * Must be defined BEFORE /:userId to prevent route conflict
- */
 coursesOverviewRouter.get('/api/users', async (req, res) => {
     try {
-        // Dynamically check if the User model exists (will be available after main branch merge)
         const User = mongoose.models.User;
         if (!User) {
             return res.json([]);
@@ -50,19 +41,14 @@ coursesOverviewRouter.get('/api/users', async (req, res) => {
     }
 });
 
-/*
- * Searches courseTitle and courseCode, case-insensitive
- * Must be defined BEFORE /:userId to prevent route conflict
- */
 coursesOverviewRouter.get('/api/search', async (req, res) => {
     try {
         const query = req.query.q || '';
         const userId = req.query.userId || '';
 
-        // Build the filter — match userID and search in title or code
         const filter = { userID: userId };
         if (query) {
-            const regex = new RegExp(query, 'i'); // case-insensitive
+            const regex = new RegExp(query, 'i');
             filter.$or = [
                 { courseTitle: { $regex: regex } },
                 { courseCode: { $regex: regex } }
@@ -71,22 +57,31 @@ coursesOverviewRouter.get('/api/search', async (req, res) => {
 
         let courses = await Syllabus.find(filter);
 
-        // Populate instructor if User model exists
         if (mongoose.models.User) {
             await Syllabus.populate(courses, { path: 'assignedInstructor' });
         }
 
-        const formatted = courses.map(c => ({
-            id: c._id.toString(),
-            code: c.courseCode,
-            title: c.courseTitle,
-            instructor: c.assignedInstructor
-                ? `${c.assignedInstructor.firstName} ${c.assignedInstructor.lastName}`
-                : "TBA",
-            img: (c.courseImage && c.courseImage.startsWith('data:'))
-                ? c.courseImage
-                : `https://picsum.photos/seed/${c._id}/400/200`
-        }));
+        const courseIds = courses.map(c => c._id.toString());
+        const approvals = await SyllabusApprovalStatus.find({ syllabusID: { $in: courseIds } });
+
+        const formatted = courses.map(c => {
+            const idStr = c._id.toString();
+            const draftRecord = approvals.find(a => a.syllabusID === idStr);
+
+            return {
+                id: idStr,
+                code: c.courseCode,
+                title: c.courseTitle,
+                instructor: c.assignedInstructor
+                    ? `${c.assignedInstructor.firstName} ${c.assignedInstructor.lastName}`
+                    : "TBA",
+                img: (c.courseImage && c.courseImage.startsWith('data:'))
+                    ? c.courseImage
+                    : `https://picsum.photos/seed/${c._id}/400/200`,
+                hasDraft: !!draftRecord, 
+                status: draftRecord ? draftRecord.status : "No Syllabus Draft"
+            };
+        });
 
         res.json(formatted);
     } catch (error) {
@@ -95,16 +90,11 @@ coursesOverviewRouter.get('/api/search', async (req, res) => {
     }
 });
 
-/**
- * 1. READ & SEARCH
- * Fetches syllabus entries tied to the Professor (User)
- */
 coursesOverviewRouter.get('/:userId', async (req, res) => {
     try {
         const userId = req.params.userId;
         const searchQuery = req.query.search ? req.query.search.toLowerCase() : '';
 
-        // Querying with 'userID' matching your model
         let userCourses = await Syllabus.find({ userID: userId });
 
         if (searchQuery) {
@@ -114,22 +104,31 @@ coursesOverviewRouter.get('/:userId', async (req, res) => {
             );
         }
 
-        // Populate instructor names only if the User model exists (comes from main branch)
         if (mongoose.models.User) {
             await Syllabus.populate(userCourses, { path: 'assignedInstructor' });
         }
 
-        const formattedCourses = userCourses.map(c => ({
-            id: c._id.toString(),
-            code: c.courseCode,
-            title: c.courseTitle,
-            instructor: c.assignedInstructor 
-                ? `${c.assignedInstructor.firstName} ${c.assignedInstructor.lastName}` 
-                : "TBA", 
-            img: (c.courseImage && c.courseImage.startsWith('data:')) 
-                ? c.courseImage 
-                : `https://picsum.photos/seed/${c._id}/400/200`
-        }));
+        const courseIds = userCourses.map(c => c._id.toString());
+        const approvals = await SyllabusApprovalStatus.find({ syllabusID: { $in: courseIds } });
+
+        const formattedCourses = userCourses.map(c => {
+            const idStr = c._id.toString();
+            const draftRecord = approvals.find(a => a.syllabusID === idStr);
+
+            return {
+                id: idStr,
+                code: c.courseCode,
+                title: c.courseTitle,
+                instructor: c.assignedInstructor 
+                    ? `${c.assignedInstructor.firstName} ${c.assignedInstructor.lastName}` 
+                    : "TBA", 
+                img: (c.courseImage && c.courseImage.startsWith('data:')) 
+                    ? c.courseImage 
+                    : `https://picsum.photos/seed/${c._id}/400/200`,
+                hasDraft: !!draftRecord, 
+                status: draftRecord ? draftRecord.status : "No Syllabus Draft"
+            };
+        });
 
         res.render('courseOverview', { 
             courses: formattedCourses, 
@@ -137,19 +136,16 @@ coursesOverviewRouter.get('/:userId', async (req, res) => {
             searchQuery: req.query.search || '' 
         });
     } catch (error) {
-        // Safe fallback: Renders the UI with 0 courses if the DB isn't ready
         console.error("Database connection failed for teammate:", error);
         res.render('courseOverview', { courses: [], userId: req.params.userId, searchQuery: '' });
     }
 });
 
-// 2. CREATE logic for the Add Course Popup (with image upload)
 coursesOverviewRouter.post('/:userId/add', upload.single('courseImage'), async (req, res) => {
     try {
         const userId = req.params.userId;
         const { courseCode, courseTitle, assignedInstructor } = req.body;
 
-        // Check for duplicate course code (case-insensitive)
         const existingCode = await Syllabus.findOne({
             userID: userId,
             courseCode: { $regex: new RegExp(`^${courseCode}$`, 'i') }
@@ -162,7 +158,6 @@ coursesOverviewRouter.post('/:userId/add', upload.single('courseImage'), async (
             });
         }
 
-        // Check for duplicate course title (case-insensitive)
         const existingTitle = await Syllabus.findOne({
             userID: userId,
             courseTitle: { $regex: new RegExp(`^${courseTitle}$`, 'i') }
@@ -177,12 +172,10 @@ coursesOverviewRouter.post('/:userId/add', upload.single('courseImage'), async (
 
         const syllabusData = { userID: userId, courseCode, courseTitle };
         
-        // Only set instructor if a valid selection was made
         if (assignedInstructor && assignedInstructor !== '') {
             syllabusData.assignedInstructor = assignedInstructor;
         }
 
-        // Convert uploaded image to base64 data URI and store in MongoDB
         if (req.file) {
             const base64 = req.file.buffer.toString('base64');
             syllabusData.courseImage = `data:${req.file.mimetype};base64,${base64}`;
@@ -197,7 +190,6 @@ coursesOverviewRouter.post('/:userId/add', upload.single('courseImage'), async (
     }
 });
 
-// 3. DELETE — Remove a course from the database
 coursesOverviewRouter.post('/:userId/delete/:courseId', async (req, res) => {
     try {
         const { userId, courseId } = req.params;
