@@ -66,6 +66,9 @@ import formRoutes from "./routes/TLA/formRoutes.js";
 //Syllabus
 import landingPageRouter from "./routes/Syllabus/landingPage.js";
 
+// ATA
+import ataPages from "./routes/ATA/ataPages.js";
+
 // ========================
 // Routes
 // ========================
@@ -83,6 +86,10 @@ app.use("/tla/form", formRoutes);
 
 //Syllabus
 app.use("/syllabus", landingPageRouter);
+
+// ATA Pages
+app.use("/ata", ataPages);
+
 
 // ========================
 // 404 (LAST)

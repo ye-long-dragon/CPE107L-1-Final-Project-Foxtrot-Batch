@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapúa MCM - ATA Portal</title>
+    <link rel="stylesheet" href="/public/ATA/css/style.css">
+    <link rel="stylesheet" href="/public/common/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <!-- HAMBURGER MENU -->
+    <div class="hamburger-menu" id="hamburgerMenu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+    <!-- Sidebar Overlay -->
+   
+
+    <!-- Sidebar Navigation -->
+    <div class="page-layout">
+        <aside class="side-menu-container">
+            <%- include('../partials/sideMenuBar') %>
+        </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+
+        <!-- HERO BOX -->
+        <div class="hero-box">
+            <h1>Mapúa Malayan Colleges Mindanao</h1>
+            <p>An advanced, web-based portal for Mapúa Malayan Colleges Mindanao students and faculty, providing centralized access to academic records, enrollment, scheduling, and institutional resources for streamlined campus management.</p>
+        </div>
+
+        <!-- GET STARTED BOX -->
+        <div class="get-started-box">
+            <h2>Get Started</h2>
+            <div class="dashboard-actions">
+                <a href="/dashboard/window" class="dashboard-btn">Dashboard</a>
+                <a href="/ata/new" class="dashboard-btn">New ATA</a>
+                <a href="/submissions" class="dashboard-btn">Submissions</a>
+                <a href="/reports" class="dashboard-btn">Reports</a>
+                <a href="/profile" class="dashboard-btn">Profile</a>
+            </div>
+        </div>
+
+    </main>
+
+    <script src="/public/ATA/js/ata_client.js"></script>
+</body>
+</html>

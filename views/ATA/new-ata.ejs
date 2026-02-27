@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapúa MCM - New ATA Form</title>
+    <link rel="stylesheet" href="/ATA/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <div class="hamburger-menu" id="hamburgerMenu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-logo">
+            <img src="/ATA/images/mapua_logo.png" alt="Mapúa Logo" class="logo-image">
+            <div class="logo-placeholder">MAPÚA</div>
+        </div>
+
+        <ul class="nav-menu">
+            <li class="nav-item"><a href="/syllabus" class="nav-link"><i class="fas fa-book"></i>Syllabus</a></li>
+            <li class="nav-item"><a href="/ata" class="nav-link active"><i class="fas fa-file-alt"></i>ATA</a></li>
+            <li class="nav-item"><a href="/tla" class="nav-link"><i class="fas fa-tasks"></i>TLA</a></li>
+            <li class="nav-item"><a href="/tws" class="nav-link"><i class="fas fa-calendar-week"></i>TWS</a></li>
+        </ul>
+
+        <div class="mode-toggle">
+            <i class="fas fa-moon"></i>
+            <span>Dark/Light Mode</span>
+            <i class="fas fa-toggle-off"></i>
+        </div>
+
+        <div class="sign-out">
+            <a href="/logout" class="nav-link"><i class="fas fa-sign-out-alt"></i>Sign out</a>
+        </div>
+
+        <div class="sidebar-year">2015</div>
+    </div>
+
+    <main class="form-bg-fixed" id="multiStepSection">
+
+        <div class="form-title-box" id="formTitle">
+            <h1>ATA form: Personal Details</h1>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-steps">
+              <span class="progress-dot filled" id="step1Dot" data-label="Personal Details">●</span>
+                <span class="progress-dot" id="step2Dot" data-label="Teaching Load">○</span>
+                <span class="progress-dot" id="step3Dot" data-label="Admin & Practicum">○</span>
+                <span class="progress-dot" id="step4Dot" data-label="Outside Employment">○</span>
+                <span class="progress-dot" id="step5Dot" data-label="Remedial Modules">○</span>
+                <span class="progress-dot" id="step6Dot" data-label="Review">○</span>
+                <span class="progress-dot" id="step7Dot" data-label="Approval">○</span>
+            </div>
+        </div>
+
+        <div class="form-cards-container">
+            
+            <div class="form-card-scrollable" id="form1">
+                <div class="ata-form">
+                    
+                    <div class="form-row">
+                        <div class="form-label">NAME OF FACULTY MEMBER:</div>
+                        <div class="form-field">
+                            <input type="text" class="form-input" placeholder="" id="facultyName">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-label">POSITION:</div>
+                        <div class="form-field">
+                            <input type="text" class="form-input" placeholder="" id="position">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-label">COLLEGE:</div>
+                        <div class="form-field">
+                            <input type="text" class="form-input" placeholder="" id="college">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-label">EMPLOYMENT STATUS:</div>
+                        <div class="form-field radio-group">
+                            <label class="radio-label">
+                                <input type="radio" name="employment" value="fulltime"> FULL TIME
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="employment" value="parttime"> PART TIME
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-label">ADDRESS:</div>
+                        <div class="form-field">
+                            <input type="text" class="form-input" placeholder="" id="address">
+                        </div>
+                    </div>
+
+                    <div id="sectionA_Container">
+                        <div class="form-section-divider">
+                            (A) TOTAL TEACHING UNITS SERVED FOR A.Y.<br>
+                            <span class="sub-text">(For Admin and Faculty with Admin Only)</span>
+                        </div>
+
+                        <div class="form-row units-row">
+                            <div class="form-label"></div>
+                            <div class="form-field units-field">
+                                <input type="text" class="form-input units-input" placeholder="" id="teachingUnits1">
+                                <input type="text" class="form-input units-input" placeholder="" id="teachingUnits2">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="form-card-scrollable" id="form2" style="display: none;">
+                <div class="ata-form">
+                    
+                    <div class="form-section-header">
+                        (B) COURSES WITHIN ASSIGNED COLLEGE
+                    </div>
+
+                    <div class="table-header">
+                        <div class="table-col">Course</div>
+                        <div class="table-col">Section</div>
+                        <div class="table-col">Units</div>
+                        <div class="table-col">Effective Date</div>
+                        <div class="table-col">Actions</div>
+                    </div>
+
+                    <div class="course-row">
+                        <div class="table-col"><input type="text" class="table-input" placeholder="Course code"></div>
+                        <div class="table-col"><input type="text" class="table-input" placeholder="Section"></div>
+                        <div class="table-col"><input type="text" class="table-input" placeholder="Units"></div>
+                        <div class="table-col">
+                            <div class="date-input-group">
+                                <input type="text" class="table-input date-input" placeholder="DD/MM/YYYY">
+                            </div>
+                        </div>
+                        <div class="table-col action-col">
+                            <button class="action-btn remove-btn"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="course-row">
+                        <div class="table-col"><input type="text" class="table-input" placeholder="Course code"></div>
+                        <div class="table-col"><input type="text" class="table-input" placeholder="Section"></div>
+                        <div class="table-col"><input type="text" class="table-input" placeholder="Units"></div>
+                        <div class="table-col">
+                            <div class="date-input-group">
+                                <input type="text" class="table-input date-input" placeholder="DD/MM/YYYY">
+                            </div>
+                        </div>
+                        <div class="table-col action-col">
+                            <button class="action-btn remove-btn"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="add-course-btn">
+                        <button class="secondary-btn small-btn">+ Add Course</button>
+                    </div>
+
+                    <div class="total-units-row">
+                        <span class="total-label">Total Units (B):</span>
+                        <span class="total-value">0</span>
+                    </div>
+
+                    <div class="form-divider"></div>
+
+                    <div class="form-section-header">
+                        (C) COURSES FROM OTHER COLLEGE
+                    </div>
+
+                    <div class="table-header">
+                        <div class="table-col">Course</div>
+                        <div class="table-col">Section</div>
+                        <div class="table-col">Units</div>
+                        <div class="table-col">Effective Date</div>
+                        <div class="table-col">Dean Sig.</div>
+                    </div>
+
+                    <div class="course-row">
+                        <div class="table-col"><input type="text" class="table-input" placeholder="Course code"></div>
+                        <div class="table-col"><input type="text" class="table-input" placeholder="Section"></div>
+                        <div class="table-col"><input type="text" class="table-input" placeholder="Units"></div>
+                        <div class="table-col">
+                            <div class="date-input-group">
+                                <input type="text" class="table-input date-input" placeholder="DD/MM/YYYY">
+                            </div>
+                        </div>
+                        <div class="table-col">
+                            <span class="pending-badge">Pending</span>
+                        </div>
+                    </div>
+
+                    <div class="add-course-btn">
+                        <button class="secondary-btn small-btn">+ Add Course</button>
+                    </div>
+
+                    <div class="total-units-row">
+                        <span class="total-label">Total Units (C):</span>
+                        <span class="total-value">0</span>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="form-card-scrollable" id="form3" style="display: none;">
+                <div class="ata-form">
+                    
+                    <div id="sectionD_Container">
+                        <div class="form-section-header">
+                            (D) ADMINISTRATIVE/ RESEARCH WORK
+                        </div>
+
+                        <div class="admin-header">
+                            <div class="admin-col work-desc">Work Description</div>
+                            <div class="admin-col units">Units</div>
+                            <div class="admin-col date">Effective Date</div>
+                            <div class="admin-col actions">Actions</div>
+                        </div>
+
+                        <div class="admin-row">
+                            <div class="admin-col work-desc">
+                                <input type="text" class="table-input" placeholder="Work description">
+                            </div>
+                            <div class="admin-col units">
+                                <input type="text" class="table-input" placeholder="Units">
+                            </div>
+                            <div class="admin-col date">
+                                <div class="date-input-group">
+                                    <input type="text" class="table-input date-input" placeholder="DD/MM/YYYY">
+                                    <button class="dropdown-btn">▼</button>
+                                </div>
+                            </div>
+                            <div class="admin-col actions">
+                                <button class="action-btn remove-btn"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="add-course-btn">
+                            <button class="secondary-btn small-btn">+ Add Work</button>
+                        </div>
+
+                        <div class="total-units-row">
+                            <span class="total-label">Total Units (D):</span>
+                            <span class="total-value">0</span>
+                        </div>
+
+                        <div class="form-divider"></div>
+                    </div>
+                    <div class="form-section-header">
+                        (E) PRACTICUM ADVISING
+                    </div>
+
+                    <div class="practicum-header">
+                        <div class="practicum-col">Course Code</div>
+                        <div class="practicum-col">No. of Students</div>
+                        <div class="practicum-col">Coordinator</div>
+                        <div class="practicum-col">Actions</div>
+                    </div>
+
+                    <div class="practicum-row">
+                        <div class="practicum-col">
+                            <input type="text" class="table-input" placeholder="Course code">
+                        </div>
+                        <div class="practicum-col">
+                            <input type="text" class="table-input" placeholder="#">
+                        </div>
+                        <div class="practicum-col">
+                            <input type="text" class="table-input" placeholder="Coordinator">
+                        </div>
+                        <div class="practicum-col">
+                            <div class="action-group">
+                                <button class="dropdown-btn">▼</button>
+                                <button class="action-btn remove-btn"><i class="fas fa-trash"></i></button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="add-course-btn">
+                        <button class="secondary-btn small-btn">+ Add Practicum</button>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="form-card-scrollable" id="form4" style="display: none;">
+                <div class="ata-form">
+                    
+                    <div class="form-section-header">
+                        (F) EMPLOYMENT OUTSIDE MAPUA MCM
+                    </div>
+
+                    <div class="form-subtitle">
+                        (Part-Time Only)
+                    </div>
+
+                    <div class="employment-header">
+                        <div class="employment-col employer">Employer University</div>
+                        <div class="employment-col position">Position/Status</div>
+                        <div class="employment-col course">Course/Units</div>
+                        <div class="employment-col hours">Hrs/Wk</div>
+                        <div class="employment-col actions">Actions</div>
+                    </div>
+
+                    <div class="employment-row">
+                        <div class="employment-col employer">
+                            <input type="text" class="table-input" placeholder="University name">
+                        </div>
+                        <div class="employment-col position">
+                            <input type="text" class="table-input" placeholder="Position">
+                        </div>
+                        <div class="employment-col course">
+                            <input type="text" class="table-input" placeholder="Course/Units">
+                        </div>
+                        <div class="employment-col hours">
+                            <input type="text" class="table-input" placeholder="Hours">
+                        </div>
+                        <div class="employment-col actions">
+                            <button class="action-btn remove-btn"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="add-course-btn">
+                        <button class="secondary-btn small-btn">+ Add Employment</button>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="form-card-scrollable" id="form5" style="display: none;">
+                <div class="ata-form">
+                    
+                    <div class="form-section-header">
+                        (G) REMEDIAL MODULE TEACHING ASSIGNMENT
+                    </div>
+
+                    <div class="remedial-header">
+                        <div class="remedial-col">Course ID</div>
+                        <div class="remedial-col">Module Code</div>
+                        <div class="remedial-col">Section</div>
+                        <div class="remedial-col">Units</div>
+                        <div class="remedial-col">Students</div>
+                        <div class="remedial-col">Actions</div>
+                    </div>
+
+                    <div class="remedial-row">
+                        <div class="remedial-col">
+                            <input type="text" class="table-input" placeholder="Course ID">
+                        </div>
+                        <div class="remedial-col">
+                            <input type="text" class="table-input" placeholder="Module Code">
+                        </div>
+                        <div class="remedial-col">
+                            <input type="text" class="table-input" placeholder="Section">
+                        </div>
+                        <div class="remedial-col">
+                            <input type="text" class="table-input" placeholder="Units">
+                        </div>
+                        <div class="remedial-col">
+                            <input type="text" class="table-input" placeholder="#">
+                        </div>
+                        <div class="remedial-col action-col">
+                            <button class="action-btn remove-btn"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="add-course-btn">
+                        <button class="secondary-btn small-btn">+ Add Module</button>
+                    </div>
+
+                    <div class="remedial-note">
+                        Note: Remedial units are not included in bonus/summer pay
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="form-card-scrollable" id="form6" style="display: none;">
+                <div class="ata-form review-form">
+                    
+                    <div class="review-title">REVIEW & SUBMIT</div>
+
+                    <div class="summary-table">
+                        <div class="summary-header">
+                            <div class="summary-col section">SECTION</div>
+                            <div class="summary-col units">UNITS</div>
+                            <div class="summary-col effective">EFFECTIVE UNITS</div>
+                        </div>
+
+                        <div class="summary-row">
+                            <div class="summary-col section">(B) Courses Within College</div>
+                            <div class="summary-col units">0</div>
+                            <div class="summary-col effective">0</div>
+                        </div>
+
+                        <div class="summary-row">
+                            <div class="summary-col section">(C) Courses Other Colleges</div>
+                            <div class="summary-col units">0</div>
+                            <div class="summary-col effective">0</div>
+                        </div>
+
+                        <div class="summary-row">
+                            <div class="summary-col section">(D) Administrative Work</div>
+                            <div class="summary-col units">0</div>
+                            <div class="summary-col effective">0</div>
+                        </div>
+
+                        <div class="summary-row">
+                            <div class="summary-col section">(E) Practicum Advising</div>
+                            <div class="summary-col units">0</div>
+                            <div class="summary-col effective">0</div>
+                        </div>
+
+                        <div class="summary-row">
+                            <div class="summary-col section">(G) Remedial Modules</div>
+                            <div class="summary-col units">0</div>
+                            <div class="summary-col effective">0</div>
+                        </div>
+
+                        <div class="summary-total">
+                            <div class="summary-col section">TOTAL</div>
+                            <div class="summary-col units">0</div>
+                            <div class="summary-col effective">0</div>
+                        </div>
+                    </div>
+
+                    <div class="acceptance-row">
+                        <input type="checkbox" id="acceptCheckbox" class="acceptance-checkbox">
+                        <label for="acceptCheckbox" class="acceptance-label">
+                            I hereby accept the above teaching assignment/s.
+                        </label>
+                    </div>
+
+                    <div class="signature-row">
+                        <div class="signature-label">SIGNATURE OF FACULTY:</div>
+                        <div class="signature-field">
+                            <button class="upload-btn">Upload File</button>
+                        </div>
+                    </div>
+
+                    <div class="signature-row">
+                        <div class="signature-label">DATE:</div>
+                        <div class="signature-field">
+                            <div class="date-input-group">
+                                <input type="text" class="table-input date-input" placeholder="DD/MM/YYYY">
+                                <button class="dropdown-btn">▼</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="form-card-scrollable" id="form7" style="display: none;">
+                <div class="ata-form admin-form">
+                    
+                    <div class="form-section-header">
+                        (H) RECOMMENDING APPROVAL
+                    </div>
+
+                    <div class="justification-row">
+                        <div class="justification-label">Justification for overload (if applicable):</div>
+                        <div class="justification-field">
+                            <textarea class="form-input justification-input" rows="3" placeholder="Enter justification..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="admin-signature-row">
+                        <div class="admin-signature-label">SIGNATURE OF PROGRAM CHAIR:</div>
+                        <div class="admin-signature-field">
+                            <button class="upload-btn">Upload File</button>
+                        </div>
+                    </div>
+
+                    <div class="admin-signature-row">
+                        <div class="admin-signature-label">DATE:</div>
+                        <div class="admin-signature-field">
+                            <div class="date-input-group">
+                                <input type="text" class="table-input date-input" placeholder="DD/MM/YYYY">
+                                <button class="dropdown-btn">▼</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-divider-light"></div>
+
+                    <div class="admin-signature-row">
+                        <div class="admin-signature-label">RECEIVED BY HR</div>
+                        <div class="admin-signature-field"></div>
+                    </div>
+
+                    <div class="admin-signature-row">
+                        <div class="admin-signature-label">NOTED BY VPAA</div>
+                        <div class="admin-signature-field"></div>
+                    </div>
+
+                    <div class="admin-signature-row">
+                        <div class="admin-signature-label">APPROVED BY DEAN</div>
+                        <div class="admin-signature-field"></div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div> <div class="step7-buttons-container" id="step7Buttons" style="display: none;">
+            <div class="step7-buttons-wrapper">
+                <button class="form-btn approval-routing-btn" id="goToApprovalBtn">Go to Approval Routing</button>
+                <button class="form-btn primary-btn" id="viewApprovedBtn">View Approved Form (Read-Only)</button>
+            </div>
+        </div>
+
+        <div class="form-navigation-outside">
+            <button class="form-btn secondary-btn" id="backBtn">Return to Dashboard</button>
+            <button class="form-btn primary-btn" id="nextBtn">Next</button>
+        </div>
+
+    </main>
+
+    <main class="form-bg-fixed" id="approvalSection" style="display: none;">
+        <div class="form-title-box">
+            <h1>APPROVAL ROUTING</h1>
+        </div>
+        <div class="form-cards-container">
+            <div class="form-card-scrollable">
+                <div class="approval-item-simple">
+                    <div class="approval-role-simple">APPROVED BY:</div>
+                    <div class="approval-name-simple">DEAN</div>
+                    <div class="form-row"><div class="form-label">Signature:</div><div class="form-field"><button class="upload-btn">Upload File</button></div></div>
+                </div>
+                <div class="form-action-buttons-simple">
+                    <button class="form-btn secondary-btn" id="printPdfBtn">Print PDF</button>
+                    <button class="form-btn secondary-btn" id="exportCsvBtn">Export CSV</button>
+                    <button class="form-btn primary-btn" id="closeApprovalBtn">Close Form</button>
+                </div>
+                <div class="back-to-forms-container">
+                    <button class="form-btn secondary-btn" id="backToFormsBtn">Back to Forms</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <main class="form-bg-fixed" id="approvedViewSection" style="display: none;">
+        <div class="form-title-box"><h1>ATA FORM: APPROVED VIEW</h1></div>
+        <div class="form-cards-container">
+            <div class="form-card-scrollable">
+                <div class="approved-header"><div class="approved-header-item"><span class="approved-header-label">Form:</span><span>ATA-2025-001</span></div></div>
+                <div class="back-to-forms-container" style="margin-top: 30px;">
+                    <button class="form-btn primary-btn" id="closeApprovedViewBtn">Close</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Global Step Tracker
+            window.currentStep = 1;
+            
+            const totalSteps = 7;
+            const formTitle = document.getElementById('formTitle').querySelector('h1');
+            const backBtn = document.getElementById('backBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const step7Buttons = document.getElementById('step7Buttons');
+            const stepDots = Array.from(document.querySelectorAll('.progress-dot'));
+
+            const formTitles = [
+                'ATA form: Personal Details',
+                'ATA form: Teaching Assignments',
+                'ATA form: Administrative & Practicum Work',
+                'ATA form: External Employment (Part-Time Only)',
+                'ATA form: Remedial Module Assignments',
+                'ATA form: Review & Submit',
+                'ATA form: Admin Approval Section'
+            ];
+
+            // --- DISPLAY FUNCTION ---
+            window.updateFormDisplay = function() {
+                // 1. Hide all forms
+                for(let i=1; i<=7; i++) {
+                    const f = document.getElementById('form'+i);
+                    if(f) f.style.display = 'none';
+                }
+
+                // 2. Show current form
+                const currentForm = document.getElementById('form' + window.currentStep);
+                if (currentForm) currentForm.style.display = 'block';
+
+                // 3. Update Title
+                if (formTitle) formTitle.textContent = formTitles[window.currentStep - 1];
+
+                // 4. Update Dots (Visuals Only)
+                stepDots.forEach((dot, index) => {
+                    const stepNumber = index + 1;
+                    dot.classList.remove('filled', 'active');
+                    
+                    // Grey out forbidden dots visually
+                    if (window.isStepVisible && !window.isStepVisible(stepNumber)) {
+                        dot.style.opacity = "0.3"; 
+                        dot.style.cursor = "not-allowed";
+                    } else {
+                        dot.style.opacity = "1"; 
+                        dot.style.cursor = "pointer";
+                    }
+
+                    if (stepNumber < window.currentStep) {
+                        dot.textContent = '●'; dot.classList.add('filled');
+                    } else if (stepNumber === window.currentStep) {
+                        dot.textContent = '●'; dot.classList.add('active');
+                    } else {
+                        dot.textContent = '○';
+                    }
+                });
+
+                // 5. Update Buttons
+                if (backBtn) backBtn.textContent = (window.currentStep === 1) ? 'Return to Dashboard' : 'Back';
+                if (nextBtn) nextBtn.textContent = (window.currentStep === totalSteps) ? 'Finish' : 'Next';
+                if (step7Buttons) step7Buttons.style.display = (window.currentStep === 7) ? 'block' : 'none';
+
+                // 6. Force Section Visibility Check (Important!)
+                if (window.handleInnerSectionVisibility) window.handleInnerSectionVisibility();
+
+                // 7. Scroll top
+                const container = document.querySelector('.form-cards-container');
+                if (container) container.scrollTop = 0;
+            };
+
+            // --- DOT CLICK LISTENER (FIXED) ---
+            stepDots.forEach((dot, index) => {
+                dot.addEventListener('click', () => {
+                    const targetStep = index + 1;
+
+                    // SECURITY CHECK: Is the user allowed to go here?
+                    if (window.isStepVisible && !window.isStepVisible(targetStep)) {
+                        alert("⚠️ This section is not applicable to your current role.");
+                        return; // Stop! Do not switch pages.
+                    }
+
+                    window.currentStep = targetStep;
+                    updateFormDisplay();
+                });
+            });
+
+            // Back button logic
+            if (backBtn) {
+                backBtn.addEventListener('click', function() {
+                    if (window.currentStep === 1) {
+                        window.location.href = '/dashboard/window';
+                    } else {
+                        // Simple decrement is okay for back, or you can use "smart skip" in reverse
+                        let prevStep = window.currentStep - 1;
+                        while (prevStep > 0 && window.isStepVisible && !window.isStepVisible(prevStep)) {
+                            prevStep--; // Skip backwards over hidden steps
+                        }
+                        if (prevStep > 0) {
+                            window.currentStep = prevStep;
+                            updateFormDisplay();
+                        }
+                    }
+                });
+            }
+
+            // Initial Run
+            updateFormDisplay();
+        });
+    </script>
+
+   <script src="/ATA/js/ata_client.js"></script>
+<script src="/ATA/js/ata_autocomplete.js"></script>
+    <%- include('partials/dev_toolbar') %>
+
+</body>
+</html>
