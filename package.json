@@ -1,11 +1,13 @@
 {
   "name": "cpe107l-1-final-project-foxtrot-batch",
   "version": "1.0.0",
-  "description": "This will be the final project for the Foxtrot Batch for the Software Design Laboratory (CPE107L-1) wherein students will create a Syllabus, ATA, TWS, and TLA Systems for MMCM CEA Department",
+  "description": "This will be the final project for the Foxtrot Batch...",
   "main": "index.js",
   "type": "module",
+  "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon TLA/tlaServer.js"
   },
   "repository": {
     "type": "git",
@@ -17,21 +19,10 @@
     "Syllabus",
     "TWA",
     "Mapua",
-    "Malayan",
-    "Colleges",
-    "Mindanao",
-    "CPE",
-    "Computer",
-    "Engineering",
-    "Software",
-    "Design"
+    "CPE"
   ],
   "author": "A361 - Foxtrot Batch - Computer Engineering",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/ye-long-dragon/CPE107L-1-Final-Project-Foxtrot-Batch/issues"
-  },
-  "homepage": "https://github.com/ye-long-dragon/CPE107L-1-Final-Project-Foxtrot-Batch#readme",
   "dependencies": {
     "dotenv": "^17.3.1",
     "ejs": "^4.0.1",
