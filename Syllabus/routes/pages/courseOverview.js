@@ -190,6 +190,7 @@ coursesOverviewRouter.post('/:userId/add', upload.single('courseImage'), async (
     }
 });
 
+// ORIGINAL: SINGLE DELETE — Removes a single course using the trash icon
 coursesOverviewRouter.post('/:userId/delete/:courseId', async (req, res) => {
     try {
         const { userId, courseId } = req.params;
@@ -198,6 +199,24 @@ coursesOverviewRouter.post('/:userId/delete/:courseId', async (req, res) => {
     } catch (error) {
         console.error('Error deleting course:', error);
         res.status(500).send("Error deleting course from database.");
+    }
+});
+
+// NEW: BULK DELETE — Removes multiple courses at once (Teammate's feature)
+coursesOverviewRouter.post('/:userId/delete-bulk', express.json(), async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { courseIds } = req.body;
+
+        if (!courseIds || !Array.isArray(courseIds) || courseIds.length === 0) {
+            return res.status(400).json({ error: 'No courses selected for deletion.' });
+        }
+
+        await Syllabus.deleteMany({ _id: { $in: courseIds }, userID: userId });
+        res.json({ success: true, redirect: `/courses/${userId}` });
+    } catch (error) {
+        console.error('Error deleting courses:', error);
+        res.status(500).json({ error: 'Error deleting courses from database.' });
     }
 });
 

@@ -3,7 +3,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const openBtn = document.getElementById("openAddModalBtn");
     const closeBtn = document.getElementById("closeModalBtn");
     const cancelBtn = document.getElementById("cancelModalBtn");
-    const toggleDeleteBtn = document.getElementById("toggleDeleteBtn");
+    const enterDeleteModeBtn = document.getElementById("enterDeleteMode");
+    const deleteToolbar = document.getElementById("deleteToolbar");
+    const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
+    const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+    const selectedCountEl = document.getElementById("selectedCount");
     const courseGrid = document.querySelector(".course-grid");
     const instructorSelect = document.getElementById("assignedInstructor");
     const instructorHint = document.getElementById("instructorHint");
@@ -230,29 +234,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    /**
-     * Validate and preview the selected image file
-     */
     function handleImageFile(file) {
-        // Validate file type
         const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
         if (!allowedTypes.includes(file.type)) {
             alert('Please select a valid image file (JPG, PNG, GIF, or WEBP)');
             return;
         }
 
-        // Validate file size (5MB max)
         if (file.size > 5 * 1024 * 1024) {
             alert('Image must be smaller than 5MB');
             return;
         }
 
-        // Set the file to the input (for drag-and-drop files)
         const dataTransfer = new DataTransfer();
         dataTransfer.items.add(file);
         courseImageInput.files = dataTransfer.files;
 
-        // Show preview
         const reader = new FileReader();
         reader.onload = (e) => {
             if (previewImage) previewImage.src = e.target.result;
@@ -262,9 +259,6 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.readAsDataURL(file);
     }
 
-    /**
-     * Reset the image upload to its default state
-     */
     function resetImageUpload() {
         if (courseImageInput) courseImageInput.value = '';
         if (previewImage) previewImage.src = '';
@@ -273,39 +267,119 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =========================================
-    // Toggle Delete UI
+    // Delete Selection Mode (Teammate's Code + Your Modal)
     // =========================================
-    if (toggleDeleteBtn && courseGrid) {
-        toggleDeleteBtn.onclick = () => {
-            courseGrid.classList.toggle("delete-mode");
-            if (courseGrid.classList.contains("delete-mode")) {
-                toggleDeleteBtn.style.background = "#c0392b";
-                toggleDeleteBtn.innerHTML = '<i class="fas fa-times"></i> Cancel Delete';
-            } else {
-                toggleDeleteBtn.style.background = "#e74c3c";
-                toggleDeleteBtn.innerHTML = '<i class="fas fa-trash"></i> Delete Course';
+    let isDeleteMode = false;
+    let selectedCourseIds = new Set();
+
+    function enterDeleteMode() {
+        isDeleteMode = true;
+        courseGrid.classList.add('delete-mode');
+        enterDeleteModeBtn.style.display = 'none';
+        deleteToolbar.style.display = 'flex';
+        selectedCourseIds.clear();
+        updateSelectedCount();
+        attachCardClickHandlers();
+    }
+
+    function exitDeleteMode() {
+        isDeleteMode = false;
+        courseGrid.classList.remove('delete-mode');
+        enterDeleteModeBtn.style.display = '';
+        deleteToolbar.style.display = 'none';
+        selectedCourseIds.clear();
+        document.querySelectorAll('.course-card.selected').forEach(c => c.classList.remove('selected'));
+    }
+
+    function updateSelectedCount() {
+        const count = selectedCourseIds.size;
+        if (selectedCountEl) selectedCountEl.textContent = `${count} selected`;
+        if (confirmDeleteBtn) confirmDeleteBtn.disabled = count === 0;
+    }
+
+    function attachCardClickHandlers() {
+        document.querySelectorAll('.course-card').forEach(card => {
+            card.removeEventListener('click', handleCardClick);
+            card.addEventListener('click', handleCardClick);
+        });
+    }
+
+    function handleCardClick(e) {
+        const card = e.currentTarget;
+        
+        if (!isDeleteMode) {
+            // MERGE FIX: Instead of direct navigation, trigger your new Draft Modal logic!
+            const courseId = card.dataset.id;
+            const hasDraft = card.dataset.hasdraft === 'true'; // parse boolean
+            
+            if (courseId) {
+                window.openDraftModal(courseId, hasDraft);
+            }
+            return;
+        }
+
+        // Prevent navigation when in delete mode
+        e.preventDefault();
+        e.stopPropagation();
+
+        const courseId = card.dataset.id;
+        if (!courseId) return;
+
+        if (selectedCourseIds.has(courseId)) {
+            selectedCourseIds.delete(courseId);
+            card.classList.remove('selected');
+        } else {
+            selectedCourseIds.add(courseId);
+            card.classList.add('selected');
+        }
+
+        updateSelectedCount();
+    }
+
+    // Enter delete mode button
+    if (enterDeleteModeBtn && courseGrid) {
+        enterDeleteModeBtn.onclick = enterDeleteMode;
+    }
+
+    // Cancel delete mode
+    if (cancelDeleteBtn) {
+        cancelDeleteBtn.onclick = exitDeleteMode;
+    }
+
+    // Confirm bulk delete
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.onclick = async () => {
+            if (selectedCourseIds.size === 0) return;
+
+            const count = selectedCourseIds.size;
+            const confirmed = confirm(`Are you sure you want to delete ${count} course${count > 1 ? 's' : ''}? This action cannot be undone.`);
+            if (!confirmed) return;
+
+            const searchContainer = document.querySelector('.search-container');
+            const userId = searchContainer ? searchContainer.dataset.userid : '';
+
+            try {
+                const response = await fetch(`/courses/${userId}/delete-bulk`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ courseIds: Array.from(selectedCourseIds) })
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    window.location.href = result.redirect;
+                } else {
+                    alert(result.error || 'Error deleting courses.');
+                }
+            } catch (error) {
+                console.error('Delete error:', error);
+                alert('An error occurred while deleting courses.');
             }
         };
     }
 
-    // =========================================
-    // Delete Confirmation Dialog
-    // =========================================
-    function attachDeleteConfirmation() {
-        const deleteForms = document.querySelectorAll('.delete-form');
-        deleteForms.forEach(form => {
-            form.addEventListener('submit', (e) => {
-                const confirmed = confirm('Are you sure you want to delete this course? This action cannot be undone.');
-                if (!confirmed) {
-                    e.preventDefault();
-                }
-            });
-        });
-    }
-
-    // Attach to initial cards
-    attachDeleteConfirmation();
-    
+    // Attach click handlers to initial cards
+    attachCardClickHandlers();
 
     // =========================================
     // Live Search — keystroke by keystroke
@@ -321,7 +395,6 @@ document.addEventListener('DOMContentLoaded', () => {
         searchInput.addEventListener('input', () => {
             const query = searchInput.value.trim();
 
-            // Debounce — wait 200ms after last keystroke
             clearTimeout(searchTimeout);
             searchTimeout = setTimeout(() => {
                 fetchCourses(query);
@@ -334,12 +407,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch(`/courses/api/search?q=${encodeURIComponent(query)}&userId=${encodeURIComponent(userId)}`);
             const courses = await response.json();
 
-            // Update result count
             if (resultCount) {
                 resultCount.textContent = `${courses.length} Results`;
             }
-
-            // Rebuild course grid
             renderCourseGrid(courses);
         } catch (error) {
             console.error('Search error:', error);
@@ -349,20 +419,16 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderCourseGrid(courses) {
         if (!courseGrid) return;
 
-        // Check if currently in delete mode
-        const isDeleteMode = courseGrid.classList.contains('delete-mode');
+        const wasDeleteMode = isDeleteMode;
 
         if (courses.length > 0) {
-            // CHANGED: Search results now trigger openDraftModal() and inject dynamic status
+            // MERGE FIX: Using dataset attributes so your teammate's click handler can read the Draft status
             courseGrid.innerHTML = courses.map(course => `
-                <div class="course-card">
-                    <form action="/courses/${userId}/delete/${course.id}" method="POST" class="delete-form">
-                        <button type="submit" class="delete-btn" title="Delete Course"><i class="fas fa-trash"></i></button>
-                    </form>
-                    <div class="card-image" onclick="openDraftModal('${course.id}', ${course.hasDraft})">
+                <div class="course-card" data-id="${course.id}" data-hasdraft="${course.hasDraft}">
+                    <div class="card-image">
                         <img src="${course.img}" alt="Course Image">
                     </div>
-                    <div class="card-content" onclick="openDraftModal('${course.id}', ${course.hasDraft})">
+                    <div class="card-content">
                         <span class="course-code">${course.code}</span>
                         <h3 class="course-title">${course.title}</h3>
                         <p class="course-status">${course.status || 'No Syllabus Draft'}</p>
@@ -376,19 +442,22 @@ document.addEventListener('DOMContentLoaded', () => {
             courseGrid.innerHTML = '<p style="text-align: center; color: #777; grid-column: 1 / -1; padding: 40px 0;">No courses found.</p>';
         }
 
-        // Preserve delete mode if it was active
-        if (isDeleteMode) {
+        // Preserve delete mode and re-attach handlers
+        if (wasDeleteMode) {
             courseGrid.classList.add('delete-mode');
+            attachCardClickHandlers();
+            selectedCourseIds.forEach(id => {
+                const card = courseGrid.querySelector(`[data-id="${id}"]`);
+                if (card) card.classList.add('selected');
+            });
+        } else {
+            attachCardClickHandlers();
         }
-
-        // Re-attach delete confirmation to new cards
-        attachDeleteConfirmation();
     }
 });
 
 /* =====================================================================
    DRAFT STATUS MODAL LOGIC (GLOBAL SCOPE)
-   Placed outside DOMContentLoaded so the HTML onclick tags can access it
 ===================================================================== */
 window.openDraftModal = function(syllabusId, hasDraft) {
     const modal = document.getElementById('draftModal');
@@ -413,7 +482,6 @@ window.closeDraftModal = function() {
     if(modal) modal.style.display = 'none';
 };
 
-// Close modal if user clicks anywhere outside of the white content box
 window.addEventListener('click', function(event) {
     const draftModal = document.getElementById('draftModal');
     if (event.target === draftModal) {

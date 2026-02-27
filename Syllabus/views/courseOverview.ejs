@@ -24,7 +24,13 @@
                         <div class="header-left">
                             <h1>Courses</h1>
                             <button id="openAddModalBtn" class="add-btn"><i class="fas fa-plus"></i> Add Course</button>
-                            <button id="toggleDeleteBtn" class="delete-header-btn"><i class="fas fa-trash"></i> Delete Course</button>
+                            <button id="enterDeleteMode" class="delete-header-btn"><i class="fas fa-trash"></i> Delete Course</button>
+                            
+                            <div id="deleteToolbar" class="delete-toolbar" style="display: none;">
+                                <button id="cancelDeleteBtn" class="cancel-delete-btn">Cancel</button>
+                                <button id="confirmDeleteBtn" class="confirm-delete-btn" disabled>Confirm Delete</button>
+                                <span id="selectedCount" class="selected-count">0 selected</span>
+                            </div>
                         </div>
 
                         <div class="header-controls">
@@ -46,15 +52,11 @@
                     <div class="course-grid">
                         <% if (typeof courses !== 'undefined' && courses.length > 0) { %>
                             <% courses.forEach(course => { %>
-                                <div class="course-card">
-                                    <form action="/courses/<%= typeof userId !== 'undefined' ? userId : '' %>/delete/<%= course.id %>" method="POST" class="delete-form">
-                                        <button type="submit" class="delete-btn" title="Delete Course"><i class="fas fa-trash"></i></button>
-                                    </form>
-
-                                    <div class="card-image" onclick="openDraftModal('<%= course.id %>', <%= course.hasDraft %>)">
+                                <div class="course-card" data-id="<%= course.id %>" data-hasdraft="<%= course.hasDraft %>">
+                                    <div class="card-image">
                                         <img src="<%= course.img || 'https://picsum.photos/400/200?random=' + course.id %>" alt="Course Image">
                                     </div>
-                                    <div class="card-content" onclick="openDraftModal('<%= course.id %>', <%= course.hasDraft %>)">
+                                    <div class="card-content">
                                         <span class="course-code"><%= course.code %></span>
                                         <h3 class="course-title"><%= course.title %></h3>
                                         <p class="course-status"><%= course.status || 'No Syllabus Draft' %></p>
@@ -121,7 +123,7 @@
                     <div class="select-wrapper">
                         <select id="assignedInstructor" name="assignedInstructor">
                             <option value="">— Select an Instructor —</option>
-                            </select>
+                        </select>
                         <i class="fas fa-chevron-down select-arrow"></i>
                     </div>
                     <span class="form-hint" id="instructorHint">Loading instructors from database...</span>
