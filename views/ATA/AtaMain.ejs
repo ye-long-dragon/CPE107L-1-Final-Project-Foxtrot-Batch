@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mapúa MCM - ATA Portal</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/public/ATA/css/style.css">
+    <link rel="stylesheet" href="/public/common/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -17,34 +18,13 @@
     </div>
 
     <!-- Sidebar Overlay -->
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+   
 
     <!-- Sidebar Navigation -->
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-logo">
-            <img src="/images/mapua_logo.png" alt="Mapúa Logo" class="logo-image">
-            <div class="logo-placeholder">MAPÚA</div>
-        </div>
-
-        <ul class="nav-menu">
-            <li class="nav-item"><a href="/syllabus" class="nav-link"><i class="fas fa-book"></i>Syllabus</a></li>
-            <li class="nav-item"><a href="/ata" class="nav-link active"><i class="fas fa-file-alt"></i>ATA</a></li>
-            <li class="nav-item"><a href="/tla" class="nav-link"><i class="fas fa-tasks"></i>TLA</a></li>
-            <li class="nav-item"><a href="/tws" class="nav-link"><i class="fas fa-calendar-week"></i>TWS</a></li>
-        </ul>
-
-        <div class="mode-toggle">
-            <i class="fas fa-moon"></i>
-            <span>Dark/Light Mode</span>
-            <i class="fas fa-toggle-off"></i>
-        </div>
-
-        <div class="sign-out">
-            <a href="/logout" class="nav-link"><i class="fas fa-sign-out-alt"></i>Sign out</a>
-        </div>
-
-        <div class="sidebar-year">2015</div>
-    </div>
+    <div class="page-layout">
+        <aside class="side-menu-container">
+            <%- include('../partials/sideMenuBar') %>
+        </aside>
 
     <!-- MAIN CONTENT -->
     <main class="main-content">
@@ -69,6 +49,6 @@
 
     </main>
 
-    <script src="/js/ata_client.js"></script>
+    <script src="/public/ATA/js/ata_client.js"></script>
 </body>
 </html>
