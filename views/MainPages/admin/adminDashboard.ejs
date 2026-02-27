@@ -33,12 +33,13 @@
             flex-direction: column;
             align-items: center;
             width: 100%;
-            padding-bottom: 50px;
+            padding-bottom: 80px;
+            overflow-y: auto;
         }
 
         .admin-hero {
             width: 100%;
-            height: 300px;
+            min-height: 300px;
             background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
                         url('/common/img/background.jpg') no-repeat center center/cover;
             display: flex;
@@ -47,65 +48,92 @@
             justify-content: center;
             color: var(--text-on-dark, #fff);
             text-align: center;
+            flex-shrink: 0; 
         }
 
+        /* The Dashboard Container */
         .admin-panel {
             background-color: #fff;
-            padding: 30px;
+            padding: 40px; 
             border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             max-width: 800px;
             width: 90%;
-            margin-top: -50px;
+            margin: 60px auto 30px auto;
             z-index: 10;
+            position: relative;
         }
 
         .form-title {
-            color: var(--accent-primary);
-            margin-bottom: 20px;
-            font-size: 1.25rem;
-            border-bottom: 2px solid #f4f4f4;
-            padding-bottom: 10px;
+            color: var(--accent-primary, #a01a1e);
+            margin-bottom: 25px;
+            font-size: 1.4rem;
+            border-bottom: 2px solid #f8f8f8;
+            padding-bottom: 15px;
+            font-weight: 700;
         }
 
         .admin-form-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 15px;
+            gap: 20px;
         }
 
-        .form-group { margin-bottom: 15px; }
+        .form-group { margin-bottom: 20px; }
         .full-width { grid-column: span 2; }
 
-        label {
+        .admin-input-style label {
             display: block;
-            font-weight: 600;
-            font-size: 0.85rem;
-            margin-bottom: 5px;
-            color: #555;
+            font-weight: 700;
+            font-size: 0.75rem;
+            margin-bottom: 10px; 
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        input, textarea, select {
+        .admin-input-style input, 
+        .admin-input-style textarea, 
+        .admin-input-style select {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 6px;
+            padding: 12px 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
             font-family: inherit;
+            font-size: 0.9rem;
+            color: #444;
+            background-color: #fafafa;
             box-sizing: border-box;
+            transition: all 0.2s ease;
         }
 
+        .admin-input-style input:focus, 
+        .admin-input-style textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary, #a01a1e);
+            background-color: #fff;
+            box-shadow: 0 0 0 4px rgba(160, 26, 30, 0.05);
+        }
+
+        /* Button Styling */
         .btn-submit {
-            background-color: var(--accent-primary);
+            background-color: var(--accent-primary, #a01a1e);
             color: white;
-            padding: 12px 25px;
+            padding: 14px 35px;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
-            font-weight: 600;
-            transition: background 0.3s;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            margin-top: 10px;
         }
 
-        .btn-submit:hover { background-color: var(--accent-primary-hover, #7d1417); }
+        .btn-submit:hover {
+            background-color: var(--accent-primary-hover, #7d1417);
+            transform: translateY(-1px);
+            box-shadow: 0 5px 15px rgba(160, 26, 30, 0.3);
+        }
 
         .announcement-box {
             background-color: #fff;
@@ -114,11 +142,12 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.05);
             max-width: 800px;
             width: 90%;
-            margin: 30px 0;
+            margin: 20px auto;
+            display: block;
         }
 
         .announcement-item {
-            padding: 15px 0;
+            padding: 20px 0;
             border-bottom: 1px solid #eee;
             display: flex;
             justify-content: space-between;
@@ -133,16 +162,18 @@
             font-weight: 700;
             text-transform: uppercase;
             display: block;
+            margin-bottom: 5px;
         }
 
         .btn-delete {
             background-color: transparent;
             color: #dc3545;
             border: 1px solid #dc3545;
-            padding: 5px 12px;
-            border-radius: 4px;
+            padding: 6px 15px;
+            border-radius: 6px;
             cursor: pointer;
             font-size: 0.8rem;
+            font-weight: 600;
             transition: 0.2s;
         }
 
@@ -152,21 +183,34 @@
         }
 
         .btn-proj-overview {
-            margin-top: 15px;
-            padding: 10px 20px;
-            background: rgba(255,255,255,0.2);
-            border: 1px solid #fff;
+            display: inline-block;
+            padding: 15px 40px;
+            background-color: var(--accent-primary, #a01a1e);
             color: #fff;
-            cursor: pointer;
+            text-decoration: none;
             border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            margin-top: 20px;
         }
+
+        .btn-proj-overview:hover {
+            background-color: var(--accent-primary-hover, #7d1417);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
     </style>
 </head>
 <body>
 
     <div class="page-layout">
         <aside class="side-menu-container">
-            <%- include('../../partials/sideMenuBar') %>
+            <%- include('partials/adminSideMenuBar') %>
         </aside>
 
         <main class="main-content">
@@ -180,11 +224,11 @@
                 <h3 class="form-title">Create New System Announcement</h3>
                 <form id="adminAnnouncementForm">
                     <div class="admin-form-grid">
-                        <div class="form-group">
+                        <div class="form-group admin-input-style">
                             <label>Department/Office</label>
                             <input type="text" name="department" placeholder="e.g. Dean's Office" required>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group admin-input-style">
                             <label>Category</label>
                             <select name="category">
                                 <option value="Academic">Academic Requirement</option>
@@ -193,13 +237,13 @@
                                 <option value="Urgent">Urgent Notice</option>
                             </select>
                         </div>
-                        <div class="form-group full-width">
+                        <div class="form-group full-width admin-input-style">
                             <label>Headline</label>
                             <input type="text" name="headline" placeholder="Main title of the announcement" required>
                         </div>
-                        <div class="form-group full-width">
+                        <div class="form-group full-width admin-input-style">
                             <label>Message Detail</label>
-                            <textarea name="content" rows="3" placeholder="Detailed information for faculty members..." required></textarea>
+                            <textarea name="content" rows="4" placeholder="Detailed information for faculty members..." required></textarea>
                         </div>
                     </div>
                     <button type="submit" class="btn-submit">Post Announcement</button>
@@ -208,7 +252,7 @@
 
             <div class="announcement-box">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h2 style="margin: 0; color: var(--color-mapua-blue, #002455);">Live Announcements</h2>
+                    <h2 style="margin: 0; color: var(--color-mapua-blue, #002455); font-size: 1.2rem;">Live Announcements</h2>
                     <span style="font-size: 0.8rem; color: #666;">Showing: All Departments</span>
                 </div>
                 
@@ -217,7 +261,7 @@
                         <div class="announcement-item" data-id="<%= item._id %>">
                             <div class="announcement-info">
                                 <span class="meta-tag"><%= item.department %> • <%= item.category %></span>
-                                <p><strong><%= item.headline %>:</strong> <%= item.content %></p>
+                                <p style="margin: 5px 0;"><strong><%= item.headline %>:</strong> <%= item.content %></p>
                             </div>
                             <button class="btn-delete" title="Remove post">Delete</button>
                         </div>
@@ -234,9 +278,6 @@
             </div>
         </main>
     </div>
-
-    <div id="projectModal" class="modal-overlay">
-        </div>
 
     <script src="/MainPages/js/adminDashboard.js"></script>
 </body>
