@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Course Syllabus</title>
+    <title>Syllabus Form</title>
     <link rel="stylesheet" href="/Syllabus/css/infoSyllabus.css?v=<%= new Date().getTime() %>" />
     <link rel="stylesheet" href="/Syllabus/css/outcomesTable.css?v=<%= new Date().getTime() %>" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -197,109 +197,141 @@
                         <div class="content-card-transparent">
                             <div class="content-label-simple">COURSE OUTCOMES</div>
 
-                            <!-- Toolbar Pill -->
-                            <div class="outcomes-toolbar">
-                                <div class="toolbar-group">
-                                    <button type="button" class="toolbar-btn" onclick="execCmd('bold')" title="Bold">
-                                        <span class="material-symbols-outlined">format_bold</span>
-                                    </button>
-                                </div>
-                                <div class="toolbar-group">
-                                    <button type="button" class="toolbar-btn" onclick="execCmd('insertOrderedList')"
-                                        title="Numbering">
-                                        <span class="material-symbols-outlined">format_list_numbered</span>
-                                    </button>
-                                    <button type="button" class="toolbar-btn" onclick="execCmd('insertUnorderedList')"
-                                        title="Bullets">
-                                        <span class="material-symbols-outlined">format_list_bulleted</span>
-                                    </button>
-                                </div>
-                                <div class="toolbar-group">
-                                    <button type="button" class="toolbar-btn" onclick="execCmd('justifyLeft')"
-                                        title="Align Left">
-                                        <span class="material-symbols-outlined">format_align_left</span>
-                                    </button>
-                                    <button type="button" class="toolbar-btn" onclick="execCmd('justifyCenter')"
-                                        title="Align Center">
-                                        <span class="material-symbols-outlined">format_align_center</span>
-                                    </button>
-                                    <button type="button" class="toolbar-btn" onclick="execCmd('justifyRight')"
-                                        title="Align Right">
-                                        <span class="material-symbols-outlined">format_align_right</span>
-                                    </button>
-                                    <button type="button" class="toolbar-btn" onclick="execCmd('justifyFull')"
-                                        title="Justify">
-                                        <span class="material-symbols-outlined">format_align_justify</span>
-                                    </button>
-                                </div>
-                                <div class="toolbar-group">
-                                    <button type="button" class="toolbar-btn" onclick="setVerticalAlign('top')"
-                                        title="Align Top">
-                                        <span class="material-symbols-outlined">vertical_align_top</span>
-                                    </button>
-                                    <button type="button" class="toolbar-btn" onclick="setVerticalAlign('middle')"
-                                        title="Align Middle">
-                                        <span class="material-symbols-outlined">vertical_align_center</span>
-                                    </button>
-                                    <button type="button" class="toolbar-btn" onclick="setVerticalAlign('bottom')"
-                                        title="Align Bottom">
-                                        <span class="material-symbols-outlined">vertical_align_bottom</span>
-                                    </button>
-                                </div>
-                                <div class="toolbar-group">
-                                    <button type="button" class="toolbar-btn" onclick="addEditorRow()" title="Add Row">
-                                        <span class="material-symbols-outlined">add_box</span>
-                                    </button>
-                                    <button type="button" class="toolbar-btn" onclick="deleteEditorRow()"
-                                        title="Delete Row">
-                                        <span class="material-symbols-outlined">indeterminate_check_box</span>
-                                    </button>
-                                </div>
-                                <div class="toolbar-group">
-                                    <button type="button" class="toolbar-btn" onclick="toggleMerge()"
-                                        title="Merge Cells">
-                                        <span class="material-symbols-outlined">cell_merge</span>
-                                    </button>
-                                    <button type="button" class="toolbar-btn" onclick="toggleWrap()" title="Wrap Text">
-                                        <span class="material-symbols-outlined">wrap_text</span>
-                                    </button>
-                                </div>
-                            </div>
+                                    <!-- Toolbar Pill -->
+                                    <div class="outcomes-toolbar">
+                                        <div class="toolbar-group">
+                                            <button type="button" class="toolbar-btn" onclick="execCmd('bold')"
+                                                title="Bold">
+                                                <span class="material-symbols-outlined">format_bold</span>
+                                            </button>
+                                        </div>
+                                        <div class="toolbar-group">
+                                            <button type="button" class="toolbar-btn"
+                                                onclick="execCmd('insertOrderedList')" title="Numbering">
+                                                <span class="material-symbols-outlined">format_list_numbered</span>
+                                            </button>
+                                            <button type="button" class="toolbar-btn"
+                                                onclick="execCmd('insertUnorderedList')" title="Bullets">
+                                                <span class="material-symbols-outlined">format_list_bulleted</span>
+                                            </button>
+                                        </div>
+                                        <div class="toolbar-group">
+                                            <button type="button" class="toolbar-btn" onclick="execCmd('justifyLeft')"
+                                                title="Align Left">
+                                                <span class="material-symbols-outlined">format_align_left</span>
+                                            </button>
+                                            <button type="button" class="toolbar-btn" onclick="execCmd('justifyCenter')"
+                                                title="Align Center">
+                                                <span class="material-symbols-outlined">format_align_center</span>
+                                            </button>
+                                            <button type="button" class="toolbar-btn" onclick="execCmd('justifyRight')"
+                                                title="Align Right">
+                                                <span class="material-symbols-outlined">format_align_right</span>
+                                            </button>
+                                            <button type="button" class="toolbar-btn" onclick="execCmd('justifyFull')"
+                                                title="Justify">
+                                                <span class="material-symbols-outlined">format_align_justify</span>
+                                            </button>
+                                        </div>
+                                        <div class="toolbar-group">
+                                            <button type="button" class="toolbar-btn" onclick="addEditorRow()"
+                                                title="Add Row">
+                                                <span class="material-symbols-outlined">add_box</span>
+                                            </button>
+                                            <button type="button" class="toolbar-btn" onclick="deleteEditorRow()"
+                                                title="Delete Row">
+                                                <span class="material-symbols-outlined">indeterminate_check_box</span>
+                                            </button>
+                                        </div>
+                                        <div class="toolbar-group">
+                                            <button type="button" class="toolbar-btn" onclick="toggleMerge()"
+                                                title="Merge Cells">
+                                                <span class="material-symbols-outlined">cell_merge</span>
+                                            </button>
+                                            <div class="color-picker-dropdown">
+                                                <button type="button" class="toolbar-btn split-btn-main"
+                                                    onclick="applyActiveColor()" title="Fill Color">
+                                                    <span class="material-symbols-outlined icon-with-color">
+                                                        format_color_fill
+                                                        <span class="active-color-bar" id="active-color-bar"></span>
+                                                    </span>
+                                                </button>
+                                                <button type="button" class="toolbar-btn split-btn-arrow"
+                                                    onclick="toggleColorPalette(event)" title="More Colors">
+                                                    <span class="material-symbols-outlined"
+                                                        style="font-size: 16px;">arrow_drop_down</span>
+                                                </button>
 
-                            <!-- Editor Table -->
-                            <div class="outcomes-table-container">
-                                <div id="table-selection-box">
-                                    <div class="selection-handle"></div>
+                                                <div id="color-palette-menu" class="color-palette-menu">
+                                                    <div class="palette-section">
+                                                        <div class="palette-label">Theme Colors</div>
+                                                        <div class="palette-grid" id="theme-colors-grid"></div>
+                                                    </div>
+                                                    <div class="palette-section">
+                                                        <div class="palette-label">Standard Colors</div>
+                                                        <div class="palette-grid" id="standard-colors-grid"></div>
+                                                    </div>
+                                                    <div class="palette-divider"></div>
+                                                    <div class="palette-footer">
+                                                        <button type="button" class="palette-option-btn"
+                                                            onclick="selectPaletteColor('transparent')">
+                                                            <span
+                                                                class="material-symbols-outlined">format_color_reset</span>
+                                                            No Fill
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Editor Table -->
+                                    <div class="outcomes-table-container">
+                                        <div id="table-selection-box">
+                                            <div class="selection-handle"></div>
+                                        </div>
+                                        <table class="outcomes-editor-table" id="outcomes-editor-table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="col-co">CO</th>
+                                                    <th class="col-mediating">MEDIATING OUTCOMES</th>
+                                                    <th class="col-intended">INTENDED LEARNING OUTCOMES</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="outcomes-editor-body">
+                                                <!-- Rows added by JS -->
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
-                                <table class="outcomes-editor-table" id="outcomes-editor-table">
-                                    <thead>
-                                        <tr>
-                                            <th class="col-index no-pdf">#</th>
-                                            <th class="col-co">CO</th>
-                                            <th class="col-mediating">MEDIATING OUTCOMES</th>
-                                            <th class="col-intended">INTENDED LEARNING OUTCOMES</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="outcomes-editor-body">
-                                        <!-- Rows added by JS -->
-                                    </tbody>
-                                </table>
-                            </div>
+                            </section>
+
+                            <section class="content-panel-transparent">
+                                <div class="info-item">
+                                    <label>TEXTBOOK</label>
+                                    <div class="course-editable-text multiline" contenteditable="true"
+                                        data-placeholder="Enter textbook name here..."></div>
+                                </div>
+                                </br>
+                                <div class="info-item">
+                                    <label>REFERENCES</label>
+                                    <div class="course-editable-text multiline" contenteditable="true"
+                                        data-placeholder="Enter references here..."></div>
+                                </div>
+                            </section>
                         </div>
-                    </section>
-                </div>
-            </div>
-            <div class="button-footer-outer">
-                <button class="next-btn-rect" onclick="window.history.back()" type="button">
-                    <span class="material-symbols-outlined">arrow_back</span>
-                    <span>BACK</span>
-                </button>
+                    </div>
+                    <div class="button-footer-outer">
+                        <button class="next-btn-rect" onclick="window.history.back()" type="button">
+                            <span class="material-symbols-outlined">arrow_back</span>
+                            <span>BACK</span>
+                        </button>
 
-                <button class="next-btn-rect" onclick="window.location.href='/syllabus/info'" type="button">
-                    <span>NEXT</span>
-                    <span class="material-symbols-outlined">arrow_forward</span>
-                </button>
-            </div>
+                        <button class="next-btn-rect" onclick="window.location.href='/syllabus/schedule'" type="button">
+                            <span>NEXT</span>
+                            <span class="material-symbols-outlined">arrow_forward</span>
+                        </button>
+                    </div>
         </main>
     </div>
 

@@ -156,8 +156,6 @@ body {
 }
 
 .syllabus-scroll-area {
-  padding-bottom: 200px;
-  /* Increased padding to lift section higher */
   overflow-y: auto;
   padding-bottom: 60px;
 }
@@ -165,7 +163,7 @@ body {
 /* Section 2: MMCM Banner 350px; scrolls up with content */
 .syllabus-banner {
   flex-direction: column;
-  height: 350px;
+  height: 300px;
   width: 100%;
   position: relative;
   display: flex;
