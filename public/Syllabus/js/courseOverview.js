@@ -22,6 +22,46 @@ document.addEventListener('DOMContentLoaded', () => {
     const courseImageInput = document.getElementById("courseImageInput");
 
     // =========================================
+    // View Toggle — List / Grid
+    // =========================================
+    const listViewBtn = document.querySelector('.toggle-btn.list-view');
+    const gridViewBtn = document.querySelector('.toggle-btn.grid-view');
+
+    if (listViewBtn && gridViewBtn && courseGrid) {
+        listViewBtn.addEventListener('click', () => {
+            courseGrid.classList.add('list-view');
+            listViewBtn.classList.add('active');
+            gridViewBtn.classList.remove('active');
+        });
+
+        gridViewBtn.addEventListener('click', () => {
+            courseGrid.classList.remove('list-view');
+            gridViewBtn.classList.add('active');
+            listViewBtn.classList.remove('active');
+        });
+    }
+
+    // =========================================
+    // Actions Dropdown Toggle
+    // =========================================
+    const actionsWrapper = document.getElementById('actionsDropdownWrapper');
+    const actionsToggle = document.getElementById('actionsToggleBtn');
+
+    if (actionsToggle && actionsWrapper) {
+        actionsToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            actionsWrapper.classList.toggle('open');
+        });
+
+        // Close when clicking anywhere else
+        document.addEventListener('click', (e) => {
+            if (!actionsWrapper.contains(e.target)) {
+                actionsWrapper.classList.remove('open');
+            }
+        });
+    }
+
+    // =========================================
     // Modal Open — fetch users & display panel
     // =========================================
     if (modal && openBtn) {
@@ -73,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
         instructorHint.className = "form-hint";
 
         try {
-            const response = await fetch('/syllabus/api/users');
+            const response = await fetch('/syllabus/users');
             const users = await response.json();
 
             // Clear existing options (keep the default)
@@ -275,7 +315,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function enterDeleteMode() {
         isDeleteMode = true;
         courseGrid.classList.add('delete-mode');
-        enterDeleteModeBtn.style.display = 'none';
+        if (actionsWrapper) actionsWrapper.style.display = 'none';
         deleteToolbar.style.display = 'flex';
         selectedCourseIds.clear();
         updateSelectedCount();
@@ -285,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function exitDeleteMode() {
         isDeleteMode = false;
         courseGrid.classList.remove('delete-mode');
-        enterDeleteModeBtn.style.display = '';
+        if (actionsWrapper) actionsWrapper.style.display = '';
         deleteToolbar.style.display = 'none';
         selectedCourseIds.clear();
         document.querySelectorAll('.course-card.selected').forEach(c => c.classList.remove('selected'));
@@ -404,7 +444,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     async function fetchCourses(query) {
         try {
-            const response = await fetch(`/syllabus/api/search?q=${encodeURIComponent(query)}&userId=${encodeURIComponent(userId)}`);
+            const response = await fetch(`/syllabus/search?q=${encodeURIComponent(query)}&userId=${encodeURIComponent(userId)}`);
             const courses = await response.json();
 
             if (resultCount) {
@@ -420,6 +460,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!courseGrid) return;
 
         const wasDeleteMode = isDeleteMode;
+        const wasListView = courseGrid.classList.contains('list-view');
 
         if (courses.length > 0) {
             // MERGE FIX: Using dataset attributes so your teammate's click handler can read the Draft status
@@ -441,6 +482,9 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             courseGrid.innerHTML = '<p style="text-align: center; color: #777; grid-column: 1 / -1; padding: 40px 0;">No courses found.</p>';
         }
+
+        // Restore list-view state after re-render
+        if (wasListView) courseGrid.classList.add('list-view');
 
         // Preserve delete mode and re-attach handlers
         if (wasDeleteMode) {

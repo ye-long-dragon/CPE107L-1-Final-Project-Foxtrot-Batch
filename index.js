@@ -57,6 +57,8 @@ import syllabusCourseOverviewActions from "./models/Syllabus/syllabusCourseOverv
 import syllabusApprovalStatusActions from "./models/Syllabus/syllabusApprovalStatus.js";
 import newSyllabusRoutes from "./routes/Syllabus/newSyllabusRoutes.js";
 import infoSyllabusRoutes from "./routes/Syllabus/infoSyllabusRoutes.js";
+import courseOverviewFacultyRoutes from "./routes/Syllabus/courseOverviewFaculty.js";
+import syllabusApprovalRoutes from "./routes/Syllabus/syllabusApproval.js";
 
 // ========================
 // Routes
@@ -78,7 +80,11 @@ app.use("/syllabus/api", syllabusCourseOverviewActions);
 app.use("/syllabus/approval", syllabusApprovalStatusActions);
 app.use("/syllabus/create", newSyllabusRoutes);
 app.use("/syllabus/info", infoSyllabusRoutes);
+app.use("/syllabus/approve", syllabusApprovalRoutes);
 app.use("/syllabus", courseOverviewRoutes); // wildcard /:userId — MUST be last
+
+// Faculty specific route
+app.use("/faculty", courseOverviewFacultyRoutes);
 
 // ========================
 // 404 (LAST)
