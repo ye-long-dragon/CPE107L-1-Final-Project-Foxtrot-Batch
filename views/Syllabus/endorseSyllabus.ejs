@@ -4,10 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Review Syllabus</title>
+    <title>Endorse Syllabus — Program Chair</title>
     <link rel="stylesheet" href="/common/css/variables.css">
     <link rel="stylesheet" href="/Syllabus/css/syllabus.css">
-    <link rel="stylesheet" href="/Syllabus/css/reviewSyllabus.css">
+    <link rel="stylesheet" href="/Syllabus/css/endorseSyllabus.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 
@@ -60,7 +60,7 @@
                     <!-- Main Split Layout -->
                     <div class="review-content-layout">
 
-                        <!-- Left Panel -->
+                        <!-- Left Panel: Document -->
                         <div class="review-left-panel">
                             <h3>Basic Information</h3>
                             <div class="document-placeholder">
@@ -68,10 +68,10 @@
                             </div>
                         </div>
 
-                        <!-- Right Panel -->
+                        <!-- Right Panel: Endorsement Card -->
                         <div class="review-right-panel">
                             <div class="permission-card">
-                                <h3>[USER PERMISSION]</h3>
+                                <h3>Endorsement Status</h3>
 
                                 <!-- Progress Tracker -->
                                 <div class="progress-tracker">
@@ -79,17 +79,17 @@
                                         <div class="step-circle"></div>
                                         <span>Faculty<br>Submitted</span>
                                     </div>
+                                    <div class="step-line completed"></div>
+
+                                    <div class="step completed">
+                                        <div class="step-circle"></div>
+                                        <span>TA<br>Reviewed</span>
+                                    </div>
                                     <div class="step-line ongoing"></div>
 
                                     <div class="step ongoing">
                                         <div class="step-circle"></div>
-                                        <span>Technical<br>Assistant<br>On-Going</span>
-                                    </div>
-                                    <div class="step-line"></div>
-
-                                    <div class="step">
-                                        <div class="step-circle"></div>
-                                        <span>Program<br>Chair<br>Pending</span>
+                                        <span>Program<br>Chair<br>On-Going</span>
                                     </div>
                                     <div class="step-line"></div>
 
@@ -108,7 +108,7 @@
                                 <!-- Comments -->
                                 <div class="comments-section">
                                     <label>Comments</label>
-                                    <textarea placeholder=""></textarea>
+                                    <textarea id="endorseComments" placeholder="Add endorsement remarks..."></textarea>
                                 </div>
 
                                 <!-- Status -->
@@ -117,8 +117,8 @@
                                     <div class="styled-select-container">
                                         <span class="status-dot"></span>
                                         <select id="statusSelect" onchange="updateStatusDot()">
-                                            <option value="approved">Approved</option>
-                                            <option value="revision">For Revision</option>
+                                            <option value="endorsed">Endorse</option>
+                                            <option value="revision">Return for Revision</option>
                                         </select>
                                     </div>
                                 </div>
@@ -127,12 +127,14 @@
                                 <div class="action-buttons">
                                     <button class="btn-red"><i class="fas fa-file-pdf"></i> Save as PDF</button>
                                     <button class="btn-dark"><i class="fas fa-folder"></i> Save as Draft</button>
-                                    <button class="btn-purple">Submit</button>
+                                    <button class="btn-endorse" onclick="submitEndorsement()">
+                                        <i class="fas fa-stamp"></i> Submit Endorsement
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div> <!-- End of review-card-container -->
+                </div>
             </main>
     </div>
 
@@ -140,7 +142,7 @@
         function updateStatusDot() {
             const select = document.getElementById('statusSelect');
             const dot = document.querySelector('.status-dot');
-            if (select.value === 'approved') {
+            if (select.value === 'endorsed') {
                 dot.style.backgroundColor = '#16a34a'; // Green
             } else {
                 dot.style.backgroundColor = '#ea580c'; // Orange
@@ -148,6 +150,13 @@
         }
         // Initialize dot color
         updateStatusDot();
+
+        function submitEndorsement() {
+            const status = document.getElementById('statusSelect').value;
+            const comments = document.getElementById('endorseComments').value;
+            alert(`Endorsement submitted!\nStatus: ${status}\nComments: ${comments || '(none)'}`);
+            // TODO: wire to backend POST /syllabus/prog-chair/endorse/:id/submit
+        }
     </script>
 </body>
 

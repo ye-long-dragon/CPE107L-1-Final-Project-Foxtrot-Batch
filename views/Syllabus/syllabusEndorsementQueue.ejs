@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Syllabus Approval Queue (Tech Assistant)</title>
+    <title>Syllabus Endorsement Queue — Program Chair</title>
     <link rel="stylesheet" href="/common/css/variables.css">
     <link rel="stylesheet" href="/Syllabus/css/syllabus.css">
     <link rel="stylesheet" href="/Syllabus/css/syllabusApproval.css">
@@ -23,8 +23,9 @@
                         <div class="approval-header">
                             <div class="approval-header-left">
                                 <div>
-                                    <h1>Syllabus Review Queue</h1>
-                                    <p class="approval-subtitle">Review submitted syllabus drafts for your courses</p>
+                                    <h1>Syllabus Endorsement Queue</h1>
+                                    <p class="approval-subtitle">Review and endorse submitted syllabus drafts to the
+                                        Dean</p>
                                 </div>
                             </div>
                             <div class="approval-header-right">
@@ -36,9 +37,9 @@
                                         </span>
                                     </div>
                                     <div class="stat-pill approved">
-                                        <i class="fas fa-check-circle"></i>
+                                        <i class="fas fa-stamp"></i>
                                         <span>
-                                            <%= approvedCount %> Approved
+                                            <%= endorsedCount %> Endorsed
                                         </span>
                                     </div>
                                 </div>
@@ -49,13 +50,13 @@
                         <div class="filter-tabs">
                             <button class="tab-btn active" data-filter="all">All Drafts</button>
                             <button class="tab-btn" data-filter="Pending">Pending</button>
-                            <button class="tab-btn" data-filter="Approved">Reviewed</button>
+                            <button class="tab-btn" data-filter="Endorsed">Endorsed</button>
                         </div>
 
                         <!-- Search Bar -->
                         <div class="approval-search-bar">
                             <i class="fas fa-search"></i>
-                            <input type="text" id="approvalSearch" placeholder="Search by course title or code...">
+                            <input type="text" id="endorseSearch" placeholder="Search by course title or code...">
                         </div>
 
                         <!-- Draft List -->
@@ -65,14 +66,13 @@
                                 <div class="empty-state">
                                     <div class="empty-icon"><i class="fas fa-file-alt"></i></div>
                                     <h3>No Syllabus Drafts Found</h3>
-                                    <p>There are currently no syllabus drafts to review.</p>
+                                    <p>There are currently no syllabus drafts to endorse.</p>
                                 </div>
                                 <% } %>
 
                                     <% for (var i=0; i < drafts.length; i++) { %>
                                         <% var d=drafts[i]; %>
-                                            <!-- Only render if Pending or Approved -->
-                                            <% if (d.status==='Pending' || d.status==='Approved' ) { %>
+                                            <% if (d.status==='Pending' || d.status==='Endorsed' ) { %>
                                                 <div class="draft-row" data-status="<%= d.status %>"
                                                     data-title="<%= (d.courseTitle || '').toLowerCase() %>"
                                                     data-code="<%= (d.courseCode || '').toLowerCase() %>">
@@ -94,13 +94,13 @@
                                                             </span>
                                                             <span><i class="fas fa-calendar-alt"></i> Submitted: <%=
                                                                     d.submittedDate %></span>
-                                                            <% if (d.approvalDate) { %>
-                                                                <span><i class="fas fa-check"></i> Approved: <%=
-                                                                        d.approvalDate %></span>
+                                                            <% if (d.endorsedDate) { %>
+                                                                <span><i class="fas fa-stamp"></i> Endorsed: <%=
+                                                                        d.endorsedDate %></span>
                                                                 <% } %>
-                                                                    <% if (d.approvedBy) { %>
+                                                                    <% if (d.endorsedBy) { %>
                                                                         <span><i class="fas fa-user-shield"></i> By: <%=
-                                                                                d.approvedBy %></span>
+                                                                                d.endorsedBy %></span>
                                                                         <% } %>
                                                                             <% if (d.remarks) { %>
                                                                                 <span class="draft-remarks"><i
@@ -112,9 +112,9 @@
                                                     </div>
 
                                                     <div class="draft-actions">
-                                                        <% if (d.status==='Approved' ) { %>
+                                                        <% if (d.status==='Endorsed' ) { %>
                                                             <span class="status-badge status-approved">
-                                                                <i class="fas fa-check-circle"></i> Reviewed
+                                                                <i class="fas fa-stamp"></i> Endorsed
                                                             </span>
                                                             <% } else if (d.status==='Pending' ) { %>
                                                                 <span class="status-badge status-pending">
@@ -122,9 +122,9 @@
                                                                 </span>
                                                                 <% } %>
                                                                     <button class="review-btn"
-                                                                        data-href="/syllabus/edit/<%= d.syllabusId %>"
+                                                                        data-href="/syllabus/prog-chair/endorse/<%= d.syllabusId %>"
                                                                         onclick="window.location.href=this.dataset.href">
-                                                                        <i class="fas fa-eye"></i> Review
+                                                                        <i class="fas fa-stamp"></i> Endorse
                                                                     </button>
                                                     </div>
                                                 </div>
@@ -140,7 +140,7 @@
     <script>
         var tabs = document.querySelectorAll('.tab-btn');
         var rows = document.querySelectorAll('.draft-row');
-        var searchInput = document.getElementById('approvalSearch');
+        var searchInput = document.getElementById('endorseSearch');
 
         tabs.forEach(function (tab) {
             tab.addEventListener('click', function () {
@@ -162,7 +162,15 @@
             });
         }
 
-        filterRows(); // run on load
+        filterRows();
+
+        // Close dropdown guard on pageshow (back button)
+        window.addEventListener('pageshow', function (event) {
+            if (event.persisted) {
+                var wrapper = document.getElementById('actionsDropdownWrapper');
+                if (wrapper) wrapper.classList.remove('open');
+            }
+        });
     </script>
 </body>
 

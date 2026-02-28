@@ -1,9 +1,9 @@
 /* ============================
-   reviewSyllabus.css
-   Font & color aligned with courseOverview.css
+   endorseSyllabus.css
+   Mirrors reviewSyllabus.css but for Program Chair Endorsement
    ============================ */
 
-/* ---- Base Typography ---- */
+/* ---- Base Typography (matches courseOverview.css) ---- */
 body,
 .main-content,
 .main-content input,
@@ -13,7 +13,7 @@ body,
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* ---- Main Layout Offset for Sidebar ---- */
+/* ---- Main Layout ---- */
 .main-content {
     margin-left: 260px;
     min-height: 100vh;
@@ -85,7 +85,7 @@ body,
 }
 
 /* ============================
-   PAGE HEADER (Back & Title)
+   PAGE HEADER
    ============================ */
 .review-page-header {
     display: flex;
@@ -149,7 +149,7 @@ body,
     align-items: flex-start;
 }
 
-/* ---- Left Panel (Document) ---- */
+/* ---- Left Panel ---- */
 .review-left-panel {
     flex: 2;
     display: flex;
@@ -188,7 +188,7 @@ body,
 }
 
 /* ============================
-   RIGHT PANEL (Permission Card)
+   RIGHT PANEL
    ============================ */
 .review-right-panel {
     flex: 1;
@@ -284,7 +284,7 @@ body,
 }
 
 /* ============================
-   COMMENTS SECTION
+   COMMENTS
    ============================ */
 .comments-section {
     margin-bottom: 16px;
@@ -325,7 +325,7 @@ body,
 }
 
 /* ============================
-   STATUS SECTION
+   STATUS
    ============================ */
 .status-section {
     margin-bottom: 20px;
@@ -434,6 +434,6 @@ body,
     background-color: #111111;
 }
 
-.btn-purple {
-    background-color: #4f46e5;
+.btn-endorse {
+    background-color: #1a7a4a;
 }

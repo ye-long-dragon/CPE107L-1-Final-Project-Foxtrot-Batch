@@ -16,7 +16,7 @@ const DUMMY_DRAFTS = [
         status: 'Pending',
         approvalDate: null,
         approvedBy: null,
-        remarks: 'Awaiting dean review.',
+        remarks: 'Awaiting TA review.',
         submittedDate: 'Feb 25, 2026'
     },
     {
@@ -27,7 +27,7 @@ const DUMMY_DRAFTS = [
         img: 'https://picsum.photos/seed/ee101/400/200',
         status: 'Approved',
         approvalDate: 'Feb 27, 2026',
-        approvedBy: 'Dean Robert Tan',
+        approvedBy: 'Latrell Colman',
         remarks: 'Approved with minor corrections noted.',
         submittedDate: 'Feb 22, 2026'
     },
@@ -40,7 +40,7 @@ const DUMMY_DRAFTS = [
         status: 'Pending',
         approvalDate: null,
         approvedBy: null,
-        remarks: 'Please add course outcomes table.',
+        remarks: null,
         submittedDate: 'Feb 26, 2026'
     }
 ];
