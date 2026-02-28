@@ -180,6 +180,108 @@ body {
     background-color: #4caf50;
 }
 
+.circle.draft {
+    background-color: #b0bec5;
+}
+
+.circle.not-submitted {
+    background-color: #e0e0e0;
+}
+
+/* ── CRUD action row ── */
+
+.week-buttons {
+    flex-direction: column;
+    gap: 6px;
+}
+
+.week-actions {
+    display: flex;
+    gap: 8px;
+    padding: 0 10px 6px;
+}
+
+.tla-edit-btn,
+.tla-delete-btn {
+    flex: 1;
+    padding: 7px 0;
+    border: none;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.3px;
+}
+
+.tla-edit-btn {
+    background-color: rgba(70, 130, 180, 0.15);
+    color: #1a5276;
+}
+
+.tla-edit-btn:hover {
+    background-color: rgba(70, 130, 180, 0.3);
+    transform: translateY(-1px);
+}
+
+.tla-delete-btn {
+    background-color: rgba(178, 59, 59, 0.12);
+    color: #922b21;
+}
+
+.tla-delete-btn:hover {
+    background-color: rgba(178, 59, 59, 0.28);
+    transform: translateY(-1px);
+}
+
+/* ── Empty state ── */
+
+.no-tla-msg {
+    padding: 30px;
+    text-align: center;
+    color: #555;
+    font-size: 1rem;
+}
+
+.no-tla-msg a {
+    color: #b23b3b;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.no-tla-msg a:hover {
+    text-decoration: underline;
+}
+
+/* ── Toast notification ─── */
+
+.tla-toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #2e7d32;
+    color: #fff;
+    padding: 12px 28px;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    z-index: 9999;
+    white-space: nowrap;
+}
+
+.tla-toast--error {
+    background: #b23b3b;
+}
+
+.tla-toast--visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
 
 @media (max-width: 768px) {
     .main-content {

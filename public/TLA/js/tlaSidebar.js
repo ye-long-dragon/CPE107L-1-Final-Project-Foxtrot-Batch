@@ -1,3 +1,5 @@
+// sidebar.js - Load sidebar partial into all pages
+
 document.addEventListener('DOMContentLoaded', function() {
     const sidebarContainer = document.getElementById('sidebar-container');
     

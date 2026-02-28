@@ -6,7 +6,8 @@ const preDigitalSessionSchema = new Schema({
   teacherLearningActivity: String,
   lmsDigitalTool: String,
   assessment: String
-});
+},{ timestamps:true });
 
 const PreDigitalSession = model("PreDigitalSession", preDigitalSessionSchema);
+export { preDigitalSessionSchema };
 export default PreDigitalSession;

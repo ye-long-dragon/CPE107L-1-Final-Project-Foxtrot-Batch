@@ -59,9 +59,15 @@ import progChairRoutes from "./routes/MainPages/progChairRoutes.js";
 import userRoutes from './routes/APIs/userRoutes.js';
 
 // TLA
-import dashBoardRoutes from "./routes/TLA/dashboardRoutes.js";
-import overviewRoutes from "./routes/TLA/overviewRoutes.js";
-import formRoutes from "./routes/TLA/formRoutes.js";
+import dashBoardRoutes from "./routes/TLA/tlaDashboardRoutes.js";
+import overviewRoutes from "./routes/TLA/tlaOverviewRoutes.js";
+import formRoutes from "./routes/TLA/tlaFormRoutes.js";
+
+// TLA APIs
+import tlaApiRoutes          from "./routes/APIs/TLA/tlaRoutes.js";
+import tlaApprovalApiRoutes  from "./routes/APIs/TLA/tlaApprovalStatusRoutes.js";
+import tlaPreDigitalRoutes   from "./routes/APIs/TLA/tlaPreDigitalSessionRoutes.js";
+import tlaPostDigitalRoutes  from "./routes/APIs/TLA/tlaPostDigitalSessionRoutes.js";
 
 //Syllabus
 import landingPageRouter from "./routes/Syllabus/landingPage.js";
@@ -76,10 +82,17 @@ app.use("/admin/users", userRoutes); //admin user API
 app.use("/admin",adminRoutes);
 app.use("/progChair", progChairRoutes);
 
-//TLA
-app.use("/tla", dashBoardRoutes);
+//TLA Pages
+app.use("/tla/dashboard", dashBoardRoutes);
 app.use("/tla/overview", overviewRoutes);
 app.use("/tla/form", formRoutes);
+app.get("/tla", (req, res) => res.redirect("/tla/dashboard"));
+
+// TLA APIs
+app.use("/api/tla/approval",      tlaApprovalApiRoutes);
+app.use("/api/tla/pre-digital",   tlaPreDigitalRoutes);
+app.use("/api/tla/post-digital",  tlaPostDigitalRoutes);
+app.use("/api/tla",               tlaApiRoutes);
 
 //Syllabus
 app.use("/syllabus", landingPageRouter);
