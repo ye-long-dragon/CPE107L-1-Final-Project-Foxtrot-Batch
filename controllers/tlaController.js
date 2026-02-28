@@ -145,8 +145,7 @@ export async function createTLA(req, res) {
         const statusBackup = stripId(statusDoc);
         await Promise.all([ Status_B1.create(statusBackup), Status_B2.create(statusBackup) ]);
 
-        // Redirect back to dashboard on success
-        res.redirect('/tla/dashboard');
+        res.redirect('/tla/overview');
     } catch (error) {
         console.error('createTLA error:', error);
         res.status(500).send('Server error');
@@ -252,7 +251,7 @@ export async function updateTLA(req, res) {
             ]);
         }
 
-        res.redirect('/tla/dashboard');
+        res.redirect('/tla/overview');
     } catch (error) {
         console.error('updateTLA error:', error);
         res.status(500).send('Server error');
@@ -262,9 +261,42 @@ export async function updateTLA(req, res) {
 // ─── GET /tla/overview ───────────────────────────────────────────────────────
 export async function getOverview(req, res) {
     try {
+        const userID = req.session.user.id;
+
+        const tlas = await TLA_Main.find({ userID }).sort({ weekNumber: 1 });
+        const tlaIDs = tlas.map(t => t._id);
+        const statuses = await Status_Main.find({ tlaID: { $in: tlaIDs } });
+
+        const statusMap = {};
+        for (const s of statuses) {
+            statusMap[s.tlaID.toString()] = s.status;
+        }
+
+        // Build a map keyed by weekNumber for quick lookup
+        const weekMap = {};
+        for (const t of tlas) {
+            if (t.weekNumber) {
+                weekMap[t.weekNumber] = {
+                    _id: t._id,
+                    status: statusMap[t._id.toString()] || 'Not Submitted'
+                };
+            }
+        }
+
+        // Build all 14 week slots
+        const weeks = [];
+        for (let w = 1; w <= 14; w++) {
+            if (weekMap[w]) {
+                weeks.push({ weekNumber: w, _id: weekMap[w]._id, status: weekMap[w].status });
+            } else {
+                weeks.push({ weekNumber: w, _id: null, status: 'Not Submitted' });
+            }
+        }
+
         res.render('TLA/tlaOverview', {
             currentPageCategory: 'tla',
-            user: req.session.user
+            user: req.session.user,
+            weeks
         });
     } catch (error) {
         console.error('getOverview error:', error);

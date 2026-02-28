@@ -86,7 +86,7 @@ app.use("/progChair", progChairRoutes);
 app.use("/tla/dashboard", dashBoardRoutes);
 app.use("/tla/overview", overviewRoutes);
 app.use("/tla/form", formRoutes);
-app.get("/tla", (req, res) => res.redirect("/tla/dashboard"));
+app.get("/tla", (req, res) => res.redirect("/tla/overview"));
 
 // TLA APIs
 app.use("/api/tla/approval",      tlaApprovalApiRoutes);

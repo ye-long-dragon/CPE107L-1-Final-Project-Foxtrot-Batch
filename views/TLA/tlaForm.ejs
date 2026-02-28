@@ -178,12 +178,12 @@
 
                     <% if (currentStatus === 'Archived') { %>
                         <!-- Archived: read-only, no edits -->
-                        <button type="button" class="btn-save" onclick="window.location.href='/tla/dashboard'">BACK TO DASHBOARD</button>
+                        <button type="button" class="btn-save" onclick="window.location.href='/tla/overview'">BACK TO DASHBOARD</button>
                         <button type="button" class="btn-pdf" onclick="printTLAForm()">SAVE AS PDF</button>
 
                     <% } else if (currentStatus === 'Pending') { %>
                         <!-- Pending: waiting for approval, no edits -->
-                        <button type="button" class="btn-save" onclick="window.location.href='/tla/dashboard'">BACK TO DASHBOARD</button>
+                        <button type="button" class="btn-save" onclick="window.location.href='/tla/overview'">BACK TO DASHBOARD</button>
                         <button type="button" class="btn-pdf" onclick="printTLAForm()">SAVE AS PDF</button>
 
                     <% } else if (currentStatus === 'Approved') { %>
