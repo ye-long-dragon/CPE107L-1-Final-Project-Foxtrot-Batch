@@ -56,6 +56,7 @@ import loginRoutes from "./routes/MainPages/loginRoutes.js";
 import institutionRoutes from "./routes/MainPages/institutionRoutes.js";
 import adminRoutes from "./routes/MainPages/adminRoutes.js";
 import progChairRoutes from "./routes/MainPages/progChairRoutes.js";
+import deanRoutes from "./routes/MainPages/deanRoutes.js";
 import userRoutes from './routes/APIs/userRoutes.js';
 
 // TLA
@@ -82,6 +83,7 @@ app.use("/institution",institutionRoutes);
 app.use("/admin/users", userRoutes); //admin user API
 app.use("/admin",adminRoutes);
 app.use("/progChair", progChairRoutes);
+app.use("/dean", deanRoutes);
 
 //TLA
 app.use("/tla", dashBoardRoutes);
