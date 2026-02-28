@@ -2,24 +2,24 @@
 // 1. HAMBURGER MENU & UI UTILITIES
 // ==========================================
 document.addEventListener('DOMContentLoaded', () => {
-    const hamburgerMenu = document.getElementById('hamburgerMenu');
-    const sidebar = document.getElementById('sidebar');
-    const sidebarOverlay = document.getElementById('sidebarOverlay');
+const hamburgerMenu = document.getElementById('hamburgerMenu');
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
 
-    if (hamburgerMenu && sidebar && sidebarOverlay) {
-        hamburgerMenu.addEventListener('click', () => {
-            hamburgerMenu.classList.toggle('active');
-            sidebar.classList.toggle('active');
-            sidebarOverlay.classList.toggle('active');
-        });
+if (hamburgerMenu && sidebar && sidebarOverlay) {
+    hamburgerMenu.addEventListener('click', () => {
+        hamburgerMenu.classList.toggle('active');
+        sidebar.classList.toggle('active');
+        sidebarOverlay.classList.toggle('active');
+    });
 
-        sidebarOverlay.addEventListener('click', () => {
-            hamburgerMenu.classList.remove('active');
-            sidebar.classList.remove('active');
-            sidebarOverlay.classList.remove('active');
-        });
-    }
-    
+    sidebarOverlay.addEventListener('click', () => {
+        hamburgerMenu.classList.remove('active');
+        sidebar.classList.remove('active');
+        sidebarOverlay.classList.remove('active');
+    });
+}
+
     // Run visibility check on load!
     window.handleInnerSectionVisibility();
 });

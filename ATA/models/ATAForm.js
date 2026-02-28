@@ -35,9 +35,11 @@ const outsideEmploymentSchema = new mongoose.Schema({
     workHours: { type: Number, required: true }
 });
 
+
+
 // Handles State Machine Audit Trail
 const approvalHistorySchema = new mongoose.Schema({
-    approverRole: { type: String, enum: ['CHAIR', 'DEAN', 'VPAA', 'HRMO'], required: true },
+    approverRole: { type: String, enum: ['CHAIR', 'PRACTICUM_COORDINATOR', 'DEAN', 'VPAAA', 'HRMO'], required: true },
     approvalStatus: { type: String, enum: ['ENDORSED', 'APPROVED', 'RETURNED'], required: true },
     remarks: { type: String }, 
     date: { type: Date, default: Date.now }
@@ -55,12 +57,24 @@ const ataFormSchema = new mongoose.Schema({
     term: { type: String, default: "2nd Term 2025-2026" },
     academicYear: { type: String, default: "2025-2026" },
     submissionDate: { type: Date, default: Date.now },
+
+    //Section G - Remedial Module Teaching Assignments
+    remedialAssignments: [{
+        courseCode: { type: String, required: true },
+        units: { type: Number, required: true },
+        numberOfStudents: { type: Number, required: true },
+        type: { type: String, enum: ['lecture', 'lab'], required: true }
+    }],
+    totalRemedialUnits: { 
+        type: Number, 
+        default: 0 
+    },
     
     // State Machine Status
     status: { 
         type: String, 
-        enum: ['DRAFT', 'PENDING_CHAIR', 'PENDING_DEAN', 'APPROVED', 'ARCHIVED'], 
-        default: 'DRAFT' 
+        enum: ['DRAFT', 'PENDING_CHAIR', 'PENDING_PRACTICUM', 'PENDING_DEAN', 'APPROVED', 'ARCHIVED'], 
+        default: 'DRAFT'    
     },
     digitalSignature: { type: String },
     
@@ -72,7 +86,7 @@ const ataFormSchema = new mongoose.Schema({
     courseAssignments: [courseAssignmentSchema],
     administrativeRoles: [adminRoleSchema],
     outsideEmployment: [outsideEmploymentSchema],
-    approvalHistory: [approvalHistorySchema]
+    approvalHistory: [approvalHistorySchema]            
 
 }, { timestamps: true });
 

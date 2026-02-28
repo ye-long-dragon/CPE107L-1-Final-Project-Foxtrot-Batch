@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url';
 import mongoose from 'mongoose';
 import ATAForm from './models/ATAForm.js'; 
 import Course from './models/Course.js';
+import ataRoutes from './routes/ataRoutes.js';
 
 // ========================
 // 1. SETUP
@@ -12,7 +13,6 @@ import Course from './models/Course.js';
 // ES Module fix for __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
 dotenv.config(); 
 const app = express();
 const PORT = process.env.ATAPORT || 8080;
@@ -33,6 +33,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use('/ata', ataRoutes); 
 
 // ========================
 // 4. ROUTES
