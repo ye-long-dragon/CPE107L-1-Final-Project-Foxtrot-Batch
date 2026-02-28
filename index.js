@@ -14,12 +14,19 @@ const __dirname = path.dirname(__filename);
 // ========================
 // Load .env from ROOT
 // ========================
-dotenv.config({ path: path.resolve(__dirname,".env") });
-dotenv.config(); 
-console.log("MONGO_URI:", process.env.MONGO_URI);   
+dotenv.config({ path: path.resolve(__dirname, ".env") });
+dotenv.config();
+console.log("MONGO_URI:", process.env.MONGO_URI);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// ========================
+// Middleware
+// ========================
+// ADDED: These are required for the Bulk Delete feature
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // ========================
 // View Engine Setup
@@ -44,25 +51,35 @@ import dashBoardRoutes from "./routes/TLA/dashboardRoutes.js";
 import overviewRoutes from "./routes/TLA/overviewRoutes.js";
 import formRoutes from "./routes/TLA/formRoutes.js";
 
-//Syllabus
+// Syllabus
+import courseOverviewRoutes from "./routes/Syllabus/courseOverview.js";
+import syllabusCourseOverviewActions from "./models/Syllabus/syllabusCourseOverview.js";
+import syllabusApprovalStatusActions from "./models/Syllabus/syllabusApprovalStatus.js";
 import newSyllabusRoutes from "./routes/Syllabus/newSyllabusRoutes.js";
 import infoSyllabusRoutes from "./routes/Syllabus/infoSyllabusRoutes.js";
 
 // ========================
 // Routes
 // ========================
-app.use("/login",loginRoutes)
-app.use("/institution",institutionRoutes)
-app.use("/admin",adminRoutes)
+app.use("/login", loginRoutes)
+app.use("/institution", institutionRoutes)
+app.use("/admin", adminRoutes)
 
-//TLA
+// TLA
 app.use("/tla", dashBoardRoutes)
 app.use("/tla/overview", overviewRoutes)
 app.use("/tla/form", formRoutes)
 
-//Syllabus
-app.use("/syllabus", newSyllabusRoutes)
-app.use("/syllabus/info", infoSyllabusRoutes)
+// Syllabus — specific routes MUST come before the wildcard /:userId handler
+app.get("/syllabus", (req, res) => {
+    res.redirect("/syllabus/507f1f77bcf86cd799439011");
+});
+app.use("/syllabus/api", syllabusCourseOverviewActions);
+app.use("/syllabus/approval", syllabusApprovalStatusActions);
+app.use("/syllabus/create", newSyllabusRoutes);
+app.use("/syllabus/info", infoSyllabusRoutes);
+app.use("/syllabus", courseOverviewRoutes); // wildcard /:userId — MUST be last
+
 // ========================
 // 404 (LAST)
 // ========================

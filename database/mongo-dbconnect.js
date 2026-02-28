@@ -8,9 +8,11 @@ const connectDB = async () => {
   try {
     const baseURI = process.env.MONGO_URI;
 
-    mainDB = mongoose.createConnection(baseURI, {
+    // Use global mongoose connect for mainDB so global models work out of the box
+    await mongoose.connect(baseURI, {
       dbName: "mainDB",
     });
+    mainDB = mongoose.connection;
 
     backup1 = mongoose.createConnection(baseURI, {
       dbName: "backup1",
@@ -20,9 +22,7 @@ const connectDB = async () => {
       dbName: "backup2",
     });
 
-    mainDB.once("open", () =>
-      console.log("✅ Connected to mainDB")
-    );
+    console.log("✅ Connected to mainDB");
 
     backup1.once("open", () =>
       console.log("✅ Connected to backup1")
