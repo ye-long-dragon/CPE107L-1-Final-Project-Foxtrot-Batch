@@ -14,9 +14,9 @@ const __dirname = path.dirname(__filename);
 // ========================
 // Load .env from ROOT
 // ========================
-dotenv.config({ path: path.resolve(__dirname,".env") });
-dotenv.config(); 
-console.log("MONGO_URI:", process.env.MONGO_URI);   
+dotenv.config({ path: path.resolve(__dirname, ".env") });
+dotenv.config();
+console.log("MONGO_URI:", process.env.MONGO_URI);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -32,12 +32,19 @@ app.set("views", path.join(__dirname, "views"));
 // ========================
 app.use(express.static(path.join(__dirname, "public")));
 
+// TWS static assets (CSS + images)
+app.use("/tws/public", express.static(path.join(__dirname, "public/TWS/css")));
+app.use("/tws/public", express.static(path.join(__dirname, "public/TWS/img")));
+
 // ========================
 // Import Routes
 // ========================
 import loginRoutes from "./routes/MainPages/loginRoutes.js";
 import institutionRoutes from "./routes/MainPages/institutionRoutes.js";
 import adminRoutes from "./routes/MainPages/adminRoutes.js";
+
+// TWS
+import twsRoutes from "./routes/TWS/twsRoutes.js";
 
 // TLA
 import dashBoardRoutes from "./routes/TLA/dashboardRoutes.js";
@@ -50,9 +57,13 @@ import landingPageRouter from "./routes/Syllabus/landingPage.js";
 // ========================
 // Routes
 // ========================
-app.use("/login",loginRoutes)
-app.use("/institution",institutionRoutes)
-app.use("/admin",adminRoutes)
+app.use("/login", loginRoutes)
+app.use("/institution", institutionRoutes)
+app.use("/admin", adminRoutes)
+
+// TWS
+app.use("/tws", twsRoutes);
+app.get("/tws", (req, res) => res.redirect("/tws/dashboard"));
 
 //TLA
 app.use("/tla", dashBoardRoutes)
