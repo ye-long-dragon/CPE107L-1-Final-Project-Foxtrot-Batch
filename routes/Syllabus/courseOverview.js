@@ -1,5 +1,6 @@
 import express from 'express';
 import mongoose from 'mongoose';
+import { mainDB } from '../../database/mongo-dbconnect.js';
 import multer from 'multer';
 import Syllabus from '../../models/Syllabus/syllabus.js';
 import SyllabusApprovalStatus from '../../models/Syllabus/syllabusApprovalStatus.js';
@@ -26,9 +27,9 @@ const coursesOverviewRouter = express.Router();
 /**
  * API: Fetch Users for Instructor Dropdown
  */
-coursesOverviewRouter.get('/api/users', async (req, res) => {
+coursesOverviewRouter.get('/users', async (req, res) => {
     try {
-        const User = mongoose.models.User;
+        const User = mainDB.models.User;
         if (!User) return res.json([]);
         const users = await User.find({}, 'firstName lastName email role');
         res.json(users);
@@ -41,12 +42,18 @@ coursesOverviewRouter.get('/api/users', async (req, res) => {
 /**
  * API: SEARCH logic for Live Search results
  */
-coursesOverviewRouter.get('/api/search', async (req, res) => {
+coursesOverviewRouter.get('/search', async (req, res) => {
     try {
         const query = req.query.q || '';
         const userId = req.query.userId || '';
 
-        const filter = { userID: userId };
+        const filter = {};
+
+        // Only filter by userID if userId is a valid ObjectId
+        if (userId && mongoose.Types.ObjectId.isValid(userId)) {
+            filter.userID = new mongoose.Types.ObjectId(userId);
+        }
+
         if (query) {
             const regex = new RegExp(query, 'i');
             filter.$or = [
@@ -57,7 +64,7 @@ coursesOverviewRouter.get('/api/search', async (req, res) => {
 
         let courses = await Syllabus.find(filter);
 
-        if (mongoose.models.User) {
+        if (mainDB.models.User) {
             await Syllabus.populate(courses, { path: 'assignedInstructor' });
         }
 
@@ -100,7 +107,7 @@ coursesOverviewRouter.get('/:userId', async (req, res) => {
 
         let userCourses = await Syllabus.find({ userID: userId });
 
-        if (mongoose.models.User) {
+        if (mainDB.models.User) {
             await Syllabus.populate(userCourses, { path: 'assignedInstructor' });
         }
 

@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
+import { mainDB } from "../../database/mongo-dbconnect.js";
 
-const { Schema, model, models } = mongoose;
+const { Schema } = mongoose;
 
 const syllabusSchema = new Schema({
   userID: { type: Schema.Types.ObjectId, ref: "User", required: true },
@@ -22,6 +23,6 @@ const syllabusSchema = new Schema({
   courseImage: String
 }, { timestamps: true });
 
-const Syllabus = models.Syllabus || model("Syllabus", syllabusSchema);
+const Syllabus = mainDB.models.Syllabus || mainDB.model("Syllabus", syllabusSchema);
 
 export default Syllabus;

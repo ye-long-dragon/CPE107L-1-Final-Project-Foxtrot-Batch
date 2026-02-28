@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
-const { Schema, model, models } = mongoose;
+import { mainDB } from "../../database/mongo-dbconnect.js";
+
+const { Schema } = mongoose;
 
 const syllabusApprovalStatusSchema = new Schema({
   syllabusID: { type: Schema.Types.ObjectId, ref: "Syllabus", required: true },
@@ -9,5 +11,5 @@ const syllabusApprovalStatusSchema = new Schema({
   approvedBy: String
 }, { timestamps: true });
 
-const SyllabusApprovalStatus = models.SyllabusApprovalStatus || model("SyllabusApprovalStatus", syllabusApprovalStatusSchema);
+const SyllabusApprovalStatus = mainDB.models.SyllabusApprovalStatus || mainDB.model("SyllabusApprovalStatus", syllabusApprovalStatusSchema);
 export default SyllabusApprovalStatus;
