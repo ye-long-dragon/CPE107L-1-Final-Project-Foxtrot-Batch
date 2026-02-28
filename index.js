@@ -59,6 +59,9 @@ import newSyllabusRoutes from "./routes/Syllabus/newSyllabusRoutes.js";
 import infoSyllabusRoutes from "./routes/Syllabus/infoSyllabusRoutes.js";
 import courseOverviewFacultyRoutes from "./routes/Syllabus/courseOverviewFaculty.js";
 import syllabusApprovalRoutes from "./routes/Syllabus/syllabusApproval.js";
+import reviewSyllabusRoutes from "./routes/Syllabus/reviewSyllabusRoutes.js";
+import courseOverviewTechAsstRoutes from "./routes/Syllabus/courseOverviewTechAsstRoutes.js";
+import syllabusApprovalTechAsstRouter from "./routes/Syllabus/syllabusApprovalTechAsstRoutes.js";
 
 // ========================
 // Routes
@@ -81,6 +84,9 @@ app.use("/syllabus/approval", syllabusApprovalStatusActions);
 app.use("/syllabus/create", newSyllabusRoutes);
 app.use("/syllabus/info", infoSyllabusRoutes);
 app.use("/syllabus/approve", syllabusApprovalRoutes);
+app.use("/syllabus/edit", reviewSyllabusRoutes);
+app.use("/syllabus/tech-assistant/approve", syllabusApprovalTechAsstRouter);
+app.use("/syllabus/tech-assistant", courseOverviewTechAsstRoutes);
 app.use("/syllabus", courseOverviewRoutes); // wildcard /:userId — MUST be last
 
 // Faculty specific route
