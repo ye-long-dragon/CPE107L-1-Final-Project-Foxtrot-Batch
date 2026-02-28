@@ -18,6 +18,7 @@
         <div class="background-overlay"></div>
         
         <div class="form-container">
+
             <h1>COLLEGE TEACHING-LEARNING ACTIVITY</h1>
 
             <!-- Status badge for non-editable records -->
@@ -179,28 +180,29 @@
                     <% if (currentStatus === 'Archived') { %>
                         <!-- Archived: read-only, no edits -->
                         <button type="button" class="btn-save" onclick="window.location.href='/tla/overview'">BACK TO DASHBOARD</button>
-                        <button type="button" class="btn-pdf" onclick="printTLAForm()">SAVE AS PDF</button>
+                        <button type="button" class="btn-pdf" onclick="printTLAForm()">DOWNLOAD AS PDF</button>
 
                     <% } else if (currentStatus === 'Pending') { %>
                         <!-- Pending: waiting for approval, no edits -->
                         <button type="button" class="btn-save" onclick="window.location.href='/tla/overview'">BACK TO DASHBOARD</button>
-                        <button type="button" class="btn-pdf" onclick="printTLAForm()">SAVE AS PDF</button>
+                        <button type="button" class="btn-pdf" onclick="printTLAForm()">DOWNLOAD AS PDF</button>
 
                     <% } else if (currentStatus === 'Approved') { %>
                         <!-- Approved: can only fill/submit post-digital -->
                         <button type="submit" name="action" value="submit-post" class="btn-submit">SUBMIT POST-DIGITAL</button>
-                        <button type="button" class="btn-pdf" onclick="printTLAForm()">SAVE AS PDF</button>
+                        <button type="button" class="btn-pdf" onclick="printTLAForm()">DOWNLOAD AS PDF</button>
 
                     <% } else { %>
                         <!-- Draft / Returned / Not Submitted / new: normal edit -->
                         <button type="submit" name="action" value="draft" class="btn-save">SAVE AS DRAFT</button>
-                        <button type="button" class="btn-pdf" onclick="printTLAForm()">SAVE AS PDF</button>
+                        <button type="button" class="btn-pdf" onclick="printTLAForm()">DOWNLOAD AS PDF</button>
                         <button type="submit" name="action" value="submit" class="btn-submit">SUBMIT</button>
                     <% } %>
                 </div>
             </form>
         </div>
     </main>
+
     <script src="/TLA/js/tlaForm.js"></script>
 </body>
 </html>

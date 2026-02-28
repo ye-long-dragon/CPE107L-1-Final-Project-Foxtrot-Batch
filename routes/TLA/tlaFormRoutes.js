@@ -4,7 +4,8 @@ import {
     getNewForm,
     getFormById,
     createTLA,
-    updateTLA
+    updateTLA,
+    generateDocx
 } from "../../controllers/tlaController.js";
 
 const formRoutes = express.Router();
@@ -17,6 +18,9 @@ formRoutes.get("/:id", requireLogin, getFormById);
 
 // POST /tla/form      – create new TLA
 formRoutes.post("/", requireLogin, createTLA);
+
+// POST /tla/form/generate-docx – fill .docx template and send as download
+formRoutes.post("/generate-docx", requireLogin, generateDocx);
 
 // POST /tla/form/:id  – update existing TLA
 formRoutes.post("/:id", requireLogin, updateTLA);

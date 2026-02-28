@@ -176,7 +176,7 @@ body {
 
 .module-start-link {
     font-size: 12px;
-    color: var(--color-mapua-red, #a00100);
+    color: var(--accent-primary);
     text-decoration: none;
     font-weight: 600;
 }
@@ -373,7 +373,7 @@ body {
 
 .sched-icon {
     font-size: 18px;
-    color: var(--color-mapua-blue, #002455);
+    color: var(--accent-secondary);
     flex-shrink: 0;
     margin-top: 1px;
 }

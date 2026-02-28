@@ -4,6 +4,13 @@ import {
     Pre_Main,   Pre_B1,   Pre_B2,
     Post_Main,  Post_B1,  Post_B2
 } from '../models/TLA/tlaModels.js';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const PDF_TEMPLATE = join(__dirname, '../public/common/img/TLA_TEMPLATE_BLANK.pdf');
 
 // ─── Auth guard ─────────────────────────────────────────────────────────────
 export function requireLogin(req, res, next) {
@@ -301,5 +308,107 @@ export async function getOverview(req, res) {
     } catch (error) {
         console.error('getOverview error:', error);
         res.status(500).send('Server error');
+    }
+}
+
+// ─── POST /tla/form/generate-docx ────────────────────────────────────────────
+// Overlays form values onto the blank PDF template and serves the result as PDF.
+export async function generateDocx(req, res) {
+    try {
+        const b    = req.body;
+        const user = req.session.user;
+        const faculty = b.facultyFacilitating ||
+                        (user ? `${user.firstName} ${user.lastName}` : '');
+
+        // ── Load the blank PDF template ────────────────────────────────────
+        const templateBytes = readFileSync(PDF_TEMPLATE);
+        const pdfDoc = await PDFDocument.load(templateBytes);
+        const page   = pdfDoc.getPages()[0];          // single-page template
+        const font   = await pdfDoc.embedFont(StandardFonts.Helvetica);
+        const black  = rgb(0, 0, 0);
+
+        // ── Helper: draw text (single line) ────────────────────────────────
+        const draw = (txt, x, y, { size = 9, f = font, color = black, maxWidth } = {}) => {
+            if (!txt) return;
+            // Truncate to fit maxWidth if provided
+            if (maxWidth) {
+                while (f.widthOfTextAtSize(txt, size) > maxWidth && txt.length > 1) {
+                    txt = txt.slice(0, -1);
+                }
+            }
+            page.drawText(txt, { x, y, size, font: f, color });
+        };
+
+        // ── Helper: draw multi-line wrapped text in a cell ─────────────────
+        const drawWrapped = (txt, x, y, cellW, { size = 8, lineH = 10, f = font } = {}) => {
+            if (!txt) return;
+            const words = txt.split(/\s+/);
+            let line = '';
+            let curY = y;
+            for (const word of words) {
+                const test = line ? line + ' ' + word : word;
+                if (f.widthOfTextAtSize(test, size) > cellW - 6) {
+                    if (line) { page.drawText(line, { x, y: curY, size, font: f, color: black }); curY -= lineH; }
+                    line = word;
+                } else {
+                    line = test;
+                }
+            }
+            if (line) page.drawText(line, { x, y: curY, size, font: f, color: black });
+        };
+
+        // ════════════════════════════════════════════════════════════════════
+        //  FIELD POSITIONS  (derived from the blank PDF's text & rectangle
+        //  coordinates; all values in PDF points, origin = bottom-left)
+        // ════════════════════════════════════════════════════════════════════
+
+        // Row 1 — COURSE(S) / SECTION(S) / DATE  (cell y=729.2 → 751.2)
+        draw(b.courseCode || '',      113, 737, { size: 9, maxWidth: 105 });
+        draw(b.section || '',         290, 737, { size: 9, maxWidth: 110 });
+        draw(b.dateofDigitalDay || '', 410, 732, { size: 9, maxWidth: 145 });
+
+        // Row 2 — FACULTY  (cell y=714.6 → 728.8)
+        draw(faculty,                 250, 718, { size: 9, maxWidth: 305 });
+
+        // Row 3 — COURSE OUTCOME(S)  (cell y=693.7 → 714.1)
+        drawWrapped(b.courseOutcomes || '', 148, 705, 407, { size: 8, lineH: 9 });
+
+        // Row 4+5 — MEDIATING/INTENDED LEARNING OUTCOME(S)  (cell y=663 → 693.3)
+        drawWrapped(b.mediatingOutcomes || '', 56, 671, 498, { size: 8, lineH: 9 });
+
+        // ── PRE-DIGITAL SESSION table ──────────────────────────────────────
+        // Data area: y=427.4 → 599.1  |  Columns:
+        //   Col1 MO/ILO CODE        x=50.6 → 123.3  (w≈73)
+        //   Col2 TEACHING-LEARNING   x=123.9 → 326.5 (w≈203)
+        //   Col3 LMS/DIGITAL TOOL    x=327  → 436.1  (w≈109)
+        //   Col4 ASSESSMENT           x=436.5 → 558.0 (w≈122)
+        const preY = 585;
+        drawWrapped(b.pre_moIloCode || '',               55, preY, 65,  { size: 8 });
+        drawWrapped(b.pre_teacherLearningActivity || '', 128, preY, 195, { size: 8 });
+        drawWrapped(b.pre_lmsDigitalTool || '',          331, preY, 103, { size: 8 });
+        drawWrapped(b.pre_assessment || '',              441, preY, 113, { size: 8 });
+
+        // ── POST-DIGITAL SESSION table ─────────────────────────────────────
+        // Data area: y=197.4 → 319.3  |  Columns:
+        //   Col1 MO/ILO CODE          x=51.1 → 123.7  (w≈73)
+        //   Col2 PARTICIPANT TURNOUT   x=124.2 → 326.7 (w≈203)
+        //   Col3 ASSESSMENT RESULTS    x=327.2 → 436.5 (w≈109)
+        //   Col4 REMARKS              x=437  → 558.3  (w≈121)
+        const postY = 305;
+        drawWrapped(b.post_moIloCode || '',          55,  postY, 65,  { size: 8 });
+        drawWrapped(b.post_participantTurnout || '', 128, postY, 195, { size: 8 });
+        drawWrapped(b.post_assessmentResults || '',  331, postY, 103, { size: 8 });
+        drawWrapped(b.post_remarks || '',            441, postY, 113, { size: 8 });
+
+        // ── Serialize & send ───────────────────────────────────────────────
+        const pdfBytes = await pdfDoc.save();
+        res.set({
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': 'attachment; filename="TLA_Report.pdf"'
+        });
+        res.send(Buffer.from(pdfBytes));
+    } catch (err) {
+        console.error('generateDocx error:', err);
+        res.status(500).send('Failed to generate PDF');
     }
 }
