@@ -1,20 +1,7 @@
 import ATAForm from '../models/ATAForm.js'; 
 
 // ==========================================
-// 🧠 THE MATH ENGINE (Helper Function)
-// ==========================================
-// const calculateUnits = (courseAssignments) => {
-//     let totalTeachingUnits = 0;
-//     let totalEffectiveUnits = 0;
-    
-//     // TODO: Bonzo will send the array of classes. 
-//     // You will write the loop here to add up the units before saving.
-    
-//     return { totalTeachingUnits, totalEffectiveUnits };
-// };
-
-// ==========================================
-// 🧠 THE MATH ENGINE
+// 🧠 1. THE MATH ENGINE (Restored Mapúa Logic)
 // ==========================================
 const calculateUnits = (formData) => {
     let totalTeachingUnits = 0;
@@ -24,19 +11,34 @@ const calculateUnits = (formData) => {
         return array.reduce((sum, item) => sum + (Number(item.units) || 0), 0);
     };
 
-    // 👇 Calculate A, B, C, and D 👇
-    totalTeachingUnits += Number(formData.sectionA_AdminUnits) || 0; // Added Section A!
+    totalTeachingUnits += Number(formData.sectionA_AdminUnits) || 0; 
     totalTeachingUnits += sumUnits(formData.sectionB_WithinCollege);
     totalTeachingUnits += sumUnits(formData.sectionC_OtherCollege);
     totalTeachingUnits += sumUnits(formData.sectionD_AdminWork);
 
     let totalEffectiveUnits = totalTeachingUnits; 
-    let totalRemedialUnits = sumUnits(formData.sectionG_Remedial);
+
+    // 🚨 RESTORED: Mapúa Section G Remedial Formula (students/40)
+    let totalRemedialUnits = 0;
+    if (formData.sectionG_Remedial && formData.sectionG_Remedial.length > 0) {
+        for (const course of formData.sectionG_Remedial) {
+            const students = Number(course.numberOfStudents) || 0;
+            const units = Number(course.units) || 0;
+            const courseType = course.type; 
+
+            if (courseType === 'lecture') {
+                totalRemedialUnits += units * (students / 40);
+            } else if (courseType === 'lab') {
+                totalRemedialUnits += 2 * units * (students / 40);
+            }
+        }
+    }
     
     return { totalTeachingUnits, totalEffectiveUnits, totalRemedialUnits };
 };
+
 // ==========================================
-// 📝 1. CREATE / SUBMIT ATA 
+// 📝 2. CREATE / SUBMIT ATA 
 // ==========================================
 export const submitATA = async (req, res) => { 
     try {
@@ -44,6 +46,13 @@ export const submitATA = async (req, res) => {
         const userID = req.user._id; 
 
         const totals = calculateUnits(formData);
+
+        // 🚨 RESTORED: ENFORCE MAX 6 REMEDIAL UNITS RULE
+        if (totals.totalRemedialUnits > 6) {
+            return res.status(400).json({ 
+                error: `Remedial limit exceeded. You have ${totals.totalRemedialUnits.toFixed(2)} effective units, max is 6.` 
+            });
+        }
 
         let newStatus = 'DRAFT';
         if (formData.action === 'SUBMIT') {
@@ -61,7 +70,6 @@ export const submitATA = async (req, res) => {
             term: formData.term,
             academicYear: formData.academicYear,
             
-
             sectionB_WithinCollege: formData.sectionB_WithinCollege,
             sectionC_OtherCollege: formData.sectionC_OtherCollege,
             sectionD_AdminWork: formData.sectionD_AdminWork,
@@ -76,7 +84,6 @@ export const submitATA = async (req, res) => {
         });
 
         await newForm.save(); 
-
         res.status(201).json({ message: "ATA Form saved successfully!", data: newForm });
 
     } catch (error) {
@@ -84,60 +91,104 @@ export const submitATA = async (req, res) => {
         res.status(500).json({ error: "Failed to submit ATA Form" });
     }
 };
+
 // ==========================================
-// 🚦 5. ENDORSE / APPROVE / RETURN (Admin Action)
+// 🚦 3. ENDORSE / APPROVE / RETURN (The State Machine)
 // ==========================================
 export const approveATA = async (req, res) => {
     try {
-        const { action, remarks, targetStatus } = req.body;
-        const form = await ATAForm.findById(req.params.id);
-        const approverRole = req.user.role;
+        const { action, remarks } = req.body;
+        const formId = req.params.id;
+        const approverRole = req.user.role; 
 
+        const form = await ATAForm.findById(formId);
+        if (!form) return res.status(404).json({ error: "ATA Form not found." });
+
+        let newStatus = form.status;
+        let historyStatus = '';
+
+        // ⏪ DRAFT RECOVERY & REMARKS LOGIC (Tasks 1 & 2 Fixed)
         if (action === 'RETURN') {
-            form.status = 'DRAFT';
-        } else if (action === 'ENDORSE') {
-            // If the UI sent a specific target (like Skip to Dean), use it.
-            // Otherwise, use the smart logic.
-            if (targetStatus) {
-                form.status = targetStatus;
-            } else {
-                const hasPracticum = form.sectionE_Practicum?.length > 0;
-                form.status = hasPracticum ? 'PENDING_PRACTICUM' : 'PENDING_DEAN';
+            if (!remarks || remarks.trim() === '') {
+                return res.status(400).json({ error: "Remarks are strictly required when returning a form." });
+            }
+            newStatus = 'DRAFT';
+            historyStatus = 'RETURNED';
+        } 
+        // ⏩ FORWARD PROGRESSION (Strict checking so UI can't cheat)
+        else {
+            switch (form.status) {
+                case 'PENDING_CHAIR':
+                    if (approverRole === 'Program-Chair' && action === 'ENDORSE') {
+                        // Task 4 Fixed: Practicum Routing
+                        const hasPracticum = form.sectionE_Practicum && form.sectionE_Practicum.length > 0;
+                        newStatus = hasPracticum ? 'PENDING_PRACTICUM' : 'PENDING_DEAN';
+                        historyStatus = 'ENDORSED';
+                    } else return res.status(403).json({ error: "Invalid action for Chair." });
+                    break;
+
+                case 'PENDING_PRACTICUM':
+                    if (approverRole === 'Practicum-Coordinator' && action === 'VALIDATE') {
+                        newStatus = 'PENDING_DEAN';
+                        historyStatus = 'VALIDATED'; // Schema update used here!
+                    } else return res.status(403).json({ error: "Invalid action for Practicum Coordinator." });
+                    break;
+
+                case 'PENDING_DEAN':
+                    if (approverRole === 'Dean' && action === 'APPROVE') {
+                        newStatus = 'PENDING_VPAA';
+                        historyStatus = 'APPROVED';
+                    } else return res.status(403).json({ error: "Invalid action for Dean." });
+                    break;
+
+                case 'PENDING_VPAA':
+                    // Task 3 Fixed: VPAA Final Approval
+                    if (approverRole === 'VPAA' && action === 'NOTE') {
+                        newStatus = 'FINALIZED';
+                        historyStatus = 'NOTED'; // Schema update used here!
+                    } else return res.status(403).json({ error: "Invalid action for VPAA." });
+                    break;
+
+                default:
+                    return res.status(400).json({ error: "Form cannot be moved from its current state." });
             }
         }
 
+        form.status = newStatus;
         form.approvalHistory.push({
             approverRole,
-            approvalStatus: action === 'RETURN' ? 'RETURNED' : 'ENDORSED',
-            remarks: remarks || ""
+            approvalStatus: historyStatus,
+            remarks: remarks || "",
+            date: Date.now()
         });
 
         await form.save();
-        res.status(200).json({ message: "Success" });
-    } catch (error) { res.status(500).json({ error: error.message }); }
+        res.status(200).json({ message: `Success! Form is now ${newStatus}` });
+
+    } catch (error) { 
+        console.error(error);
+        res.status(500).json({ error: error.message }); 
+    }
 };
+
 // ==========================================
-// 📥 3. GET PENDING APPROVALS (The Inbox)
+// 📥 4. GET PENDING APPROVALS (The Inbox)
 // ==========================================
 export const getPendingApprovals = async (req, res) => {
     try {
         const userRole = req.user.role; 
-        const userProgram = req.user.program; // 👈 Now pulling "CpE" from Marites's profile
+        const userProgram = req.user.program || req.user.college; // Fallback depending on UI setup
 
         let query = {};
 
-        // 👇 STRICT BUSINESS LOGIC: Match the Program 👇
         if (userRole === 'Program-Chair') {
-            query = { 
-                status: 'PENDING_CHAIR', 
-                college: userProgram // Looking for forms where the user typed "CpE"
-            };
-        } 
-        else if (userRole === 'Dean') {
-            query = { 
-                status: 'PENDING_DEAN', 
-                // Deans usually oversee the whole department (CEA), but we'll keep it simple forn ow
-            };
+            query = { status: 'PENDING_CHAIR', college: userProgram };
+        } else if (userRole === 'Practicum-Coordinator') {
+            query = { status: 'PENDING_PRACTICUM' }; // Add college filter if needed
+        } else if (userRole === 'Dean') {
+            query = { status: 'PENDING_DEAN' }; 
+        } else if (userRole === 'VPAA') {
+            query = { status: 'PENDING_VPAA' }; 
         }
 
         const pendingForms = await ATAForm.find(query).sort({ createdAt: -1 });
@@ -155,14 +206,13 @@ export const getPendingApprovals = async (req, res) => {
 };
 
 // ==========================================
-// 📄 4. VIEW SPECIFIC FORM (Read-Only)
+// 📄 5. VIEW SPECIFIC FORM (Read-Only)
 // ==========================================
 export const viewATAForm = async (req, res) => {
     try {
         const form = await ATAForm.findById(req.params.id);
         if (!form) return res.status(404).send("Form not found");
         
-        // Render the review page and pass the form data
         res.render('review-ata', { form: form, role: req.user.role });
     } catch (error) {
         console.error("Error fetching form:", error);
