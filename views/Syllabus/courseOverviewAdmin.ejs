@@ -119,9 +119,11 @@
                                                         <span class="status-badge status-approved">
                                                             <i class="fas fa-check-circle"></i> Approved
                                                         </span>
-                                                        <button class="archive-btn" data-id="<%= d.syllabusId %>"
-                                                            title="Archive this syllabus">
-                                                            <i class="fas fa-archive"></i> Archive
+                                                        <button class="review-btn"
+                                                            onclick="window.location.href='/syllabus/hr/review/<%= d.syllabusId %>'"
+                                                            title="Review this syllabus"
+                                                            style="display: inline-flex; align-items: center; gap: 6px; border: none; border-radius: 8px; padding: 8px 18px; font-size: 13px; font-weight: 600; cursor: pointer; background: #3949ab; color: #fff; transition: all 0.2s ease;">
+                                                            <i class="fas fa-file-signature"></i> Review
                                                         </button>
                                                         <% } else if (d.status==='Archived' ) { %>
                                                             <span class="status-badge status-archived">

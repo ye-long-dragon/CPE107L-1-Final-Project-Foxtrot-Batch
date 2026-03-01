@@ -122,6 +122,40 @@ adminOverviewRouter.get('/', async (req, res) => {
 });
 
 /* -----------------------------------------------------------------------
+   GET /syllabus/hr/review/:syllabusId  →  HR Final Review Detail Page
+   ----------------------------------------------------------------------- */
+adminOverviewRouter.get('/review/:syllabusId', async (req, res) => {
+    const { syllabusId } = req.params;
+
+    try {
+        const approval = await SyllabusApprovalStatus.findOne({ syllabusID: syllabusId });
+        const isDummy = DUMMY_ITEMS.some(d => d.syllabusId === syllabusId);
+
+        if (!approval && !isDummy) return res.status(404).send("Approval record not found");
+
+        let course = null;
+        if (mongoose.Types.ObjectId.isValid(syllabusId)) {
+            course = await Syllabus.findById(syllabusId);
+        }
+
+        // Pass dummy data if actual record missing
+        let viewData = {
+            syllabusId: syllabusId,
+            courseName: course ? course.courseTitle : "Introduction to Demo Course",
+            courseCode: course ? course.courseCode : "DEMO101",
+            courseSection: "A1",
+            academicYear: "2025-2026",
+            fileType: "Syllabus Form"
+        };
+
+        res.render('Syllabus/syllabusApprovalHR', viewData);
+    } catch (err) {
+        console.error("HR Review render error:", err);
+        res.status(500).send("Server Error");
+    }
+});
+
+/* -----------------------------------------------------------------------
    POST /syllabus/hr/archive/:syllabusId  →  Archive an approved syllabus
    ----------------------------------------------------------------------- */
 adminOverviewRouter.post('/archive/:syllabusId', async (req, res) => {
