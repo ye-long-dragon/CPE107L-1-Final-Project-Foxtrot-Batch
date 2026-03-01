@@ -4,7 +4,7 @@ import { mainDB } from '../../database/mongo-dbconnect.js';
 import Syllabus from '../../models/Syllabus/syllabus.js';
 import SyllabusApprovalStatus from '../../models/Syllabus/syllabusApprovalStatus.js';
 
-const syllabusApprovalRouter = express.Router();
+const syllabusApprovalTechAsstRouter = express.Router();
 
 const DUMMY_DRAFTS = [
     {
@@ -16,7 +16,7 @@ const DUMMY_DRAFTS = [
         status: 'Pending',
         approvalDate: null,
         approvedBy: null,
-        remarks: 'Awaiting dean review.',
+        remarks: 'Awaiting TA review.',
         submittedDate: 'Feb 25, 2026'
     },
     {
@@ -27,7 +27,7 @@ const DUMMY_DRAFTS = [
         img: 'https://picsum.photos/seed/ee101/400/200',
         status: 'Approved',
         approvalDate: 'Feb 27, 2026',
-        approvedBy: 'Dean Robert Tan',
+        approvedBy: 'Latrell Colman',
         remarks: 'Approved with minor corrections noted.',
         submittedDate: 'Feb 22, 2026'
     },
@@ -40,40 +40,13 @@ const DUMMY_DRAFTS = [
         status: 'Pending',
         approvalDate: null,
         approvedBy: null,
-        remarks: 'Please add course outcomes table.',
+        remarks: null,
         submittedDate: 'Feb 26, 2026'
-    },
-    {
-        syllabusId: '665f1a2b3c4d5e6f7a8b9c04',
-        courseCode: 'ECE130',
-        courseTitle: 'Feedback and Control Systems',
-        instructor: 'Ana Lim',
-        img: 'https://picsum.photos/seed/ece130/400/200',
-        status: 'Not Submitted',
-        approvalDate: null,
-        approvedBy: null,
-        remarks: '',
-        submittedDate: '—'
-    },
-    {
-        syllabusId: '665f1a2b3c4d5e6f7a8b9c05',
-        courseCode: 'ECEIOL-3',
-        courseTitle: 'Fundamental of Electrical Circuits Laboratory',
-        instructor: 'Luis Garcia',
-        img: 'https://picsum.photos/seed/eceiol/400/200',
-        status: 'Not Submitted',
-        approvalDate: null,
-        approvedBy: null,
-        remarks: '',
-        submittedDate: '—'
     }
 ];
 
-syllabusApprovalRouter.get('/', async (req, res) => {
-    // Ignore referers from approval detail pages to prevent back-button loops
-    const referer = req.headers.referer || '';
-    const isDetailPage = /\/(dean\/approve|tech-assistant\/review|prog-chair\/endorse)\//.test(referer);
-    const returnUrl = (!referer || isDetailPage) ? '/syllabus' : referer;
+syllabusApprovalTechAsstRouter.get('/', async (req, res) => {
+    const returnUrl = req.headers.referer || '/syllabus/tech-assistant';
 
     try {
         const approvals = await SyllabusApprovalStatus.find({});
@@ -118,12 +91,12 @@ syllabusApprovalRouter.get('/', async (req, res) => {
         const pendingCount = drafts.filter(d => d.status === 'Pending').length;
         const approvedCount = drafts.filter(d => d.status === 'Approved').length;
 
-        res.render('Syllabus/syllabusApproval', { drafts, pendingCount, approvedCount, returnUrl, currentPageCategory: 'syllabus' });
+        res.render('Syllabus/syllabusApprovalTechAsst', { drafts, pendingCount, approvedCount, returnUrl, currentPageCategory: 'syllabus' });
 
     } catch (error) {
-        console.error('Approval queue error:', error);
-        res.render('Syllabus/syllabusApproval', { drafts: DUMMY_DRAFTS, pendingCount: 2, approvedCount: 1, returnUrl, currentPageCategory: 'syllabus' });
+        console.error('Approval queue tech asst error:', error);
+        res.render('Syllabus/syllabusApprovalTechAsst', { drafts: DUMMY_DRAFTS, pendingCount: 2, approvedCount: 1, returnUrl, currentPageCategory: 'syllabus' });
     }
 });
 
-export default syllabusApprovalRouter;
+export default syllabusApprovalTechAsstRouter;

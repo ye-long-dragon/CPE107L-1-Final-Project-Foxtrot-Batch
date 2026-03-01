@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Syllabus Approval Queue</title>
+    <title>Syllabus Approval Queue (Tech Assistant)</title>
     <link rel="stylesheet" href="/common/css/variables.css">
     <link rel="stylesheet" href="/Syllabus/css/syllabus.css">
     <link rel="stylesheet" href="/Syllabus/css/syllabusApproval.css">
@@ -22,13 +22,9 @@
                         <!-- Header -->
                         <div class="approval-header">
                             <div class="approval-header-left">
-                                <button class="back-btn" data-href="<%= returnUrl %>"
-                                    onclick="window.location.href=this.dataset.href">
-                                    <i class="fas fa-arrow-left"></i>
-                                </button>
                                 <div>
-                                    <h1>Syllabus Approval Queue</h1>
-                                    <p class="approval-subtitle">Review and manage submitted syllabus drafts</p>
+                                    <h1>Syllabus Review Queue</h1>
+                                    <p class="approval-subtitle">Review submitted syllabus drafts for your courses</p>
                                 </div>
                             </div>
                             <div class="approval-header-right">
@@ -53,8 +49,7 @@
                         <div class="filter-tabs">
                             <button class="tab-btn active" data-filter="all">All Drafts</button>
                             <button class="tab-btn" data-filter="Pending">Pending</button>
-                            <button class="tab-btn" data-filter="Approved">Approved</button>
-                            <button class="tab-btn" data-filter="Not Submitted">Not Submitted</button>
+                            <button class="tab-btn" data-filter="Approved">Reviewed</button>
                         </div>
 
                         <!-- Search Bar -->
@@ -76,66 +71,65 @@
 
                                     <% for (var i=0; i < drafts.length; i++) { %>
                                         <% var d=drafts[i]; %>
-                                            <div class="draft-row" data-status="<%= d.status %>"
-                                                data-title="<%= (d.courseTitle || '').toLowerCase() %>"
-                                                data-code="<%= (d.courseCode || '').toLowerCase() %>">
+                                            <!-- Only render if Pending or Approved -->
+                                            <% if (d.status==='Pending' || d.status==='Approved' ) { %>
+                                                <div class="draft-row" data-status="<%= d.status %>"
+                                                    data-title="<%= (d.courseTitle || '').toLowerCase() %>"
+                                                    data-code="<%= (d.courseCode || '').toLowerCase() %>">
 
-                                                <div class="draft-thumb">
-                                                    <img src="<%= d.img %>" alt="Course Image">
-                                                </div>
-
-                                                <div class="draft-info">
-                                                    <span class="draft-code">
-                                                        <%= d.courseCode %>
-                                                    </span>
-                                                    <h3 class="draft-title">
-                                                        <%= d.courseTitle %>
-                                                    </h3>
-                                                    <div class="draft-meta">
-                                                        <span><i class="fas fa-user-tie"></i>
-                                                            <%= d.instructor %>
-                                                        </span>
-                                                        <span><i class="fas fa-calendar-alt"></i> Submitted: <%=
-                                                                d.submittedDate %></span>
-                                                        <% if (d.approvalDate) { %>
-                                                            <span><i class="fas fa-check"></i> Approved: <%=
-                                                                    d.approvalDate %></span>
-                                                            <% } %>
-                                                                <% if (d.approvedBy) { %>
-                                                                    <span><i class="fas fa-user-shield"></i> By: <%=
-                                                                            d.approvedBy %></span>
-                                                                    <% } %>
-                                                                        <% if (d.remarks) { %>
-                                                                            <span class="draft-remarks"><i
-                                                                                    class="fas fa-comment-alt"></i>
-                                                                                <%= d.remarks %>
-                                                                            </span>
-                                                                            <% } %>
+                                                    <div class="draft-thumb">
+                                                        <img src="<%= d.img %>" alt="Course Image">
                                                     </div>
-                                                </div>
 
-                                                <div class="draft-actions">
-                                                    <% if (d.status==='Approved' ) { %>
-                                                        <span class="status-badge status-approved">
-                                                            <i class="fas fa-check-circle"></i> Approved
+                                                    <div class="draft-info">
+                                                        <span class="draft-code">
+                                                            <%= d.courseCode %>
                                                         </span>
-                                                        <% } else if (d.status==='Pending' ) { %>
-                                                            <span class="status-badge status-pending">
-                                                                <i class="fas fa-hourglass-half"></i> Pending
+                                                        <h3 class="draft-title">
+                                                            <%= d.courseTitle %>
+                                                        </h3>
+                                                        <div class="draft-meta">
+                                                            <span><i class="fas fa-user-tie"></i>
+                                                                <%= d.instructor %>
                                                             </span>
-                                                            <% } else { %>
-                                                                <span class="status-badge status-not-submitted">
-                                                                    <i class="fas fa-minus-circle"></i> Not Submitted
+                                                            <span><i class="fas fa-calendar-alt"></i> Submitted: <%=
+                                                                    d.submittedDate %></span>
+                                                            <% if (d.approvalDate) { %>
+                                                                <span><i class="fas fa-check"></i> Approved: <%=
+                                                                        d.approvalDate %></span>
+                                                                <% } %>
+                                                                    <% if (d.approvedBy) { %>
+                                                                        <span><i class="fas fa-user-shield"></i> By: <%=
+                                                                                d.approvedBy %></span>
+                                                                        <% } %>
+                                                                            <% if (d.remarks) { %>
+                                                                                <span class="draft-remarks"><i
+                                                                                        class="fas fa-comment-alt"></i>
+                                                                                    <%= d.remarks %>
+                                                                                </span>
+                                                                                <% } %>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="draft-actions">
+                                                        <% if (d.status==='Approved' ) { %>
+                                                            <span class="status-badge status-approved">
+                                                                <i class="fas fa-check-circle"></i> Reviewed
+                                                            </span>
+                                                            <% } else if (d.status==='Pending' ) { %>
+                                                                <span class="status-badge status-pending">
+                                                                    <i class="fas fa-hourglass-half"></i> Pending
                                                                 </span>
                                                                 <% } %>
                                                                     <button class="review-btn"
-                                                                        data-href="/syllabus/dean/approve/<%= d.syllabusId %>"
+                                                                        data-href="/syllabus/edit/<%= d.syllabusId %>"
                                                                         onclick="window.location.href=this.dataset.href">
-                                                                        <i class="fas fa-gavel"></i> Approve
+                                                                        <i class="fas fa-eye"></i> Review
                                                                     </button>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <% } %>
+                                                <% } %>
+                                                    <% } %>
 
                         </div>
                     </div>
@@ -167,6 +161,8 @@
                 row.style.display = (statusMatch && searchMatch) ? '' : 'none';
             });
         }
+
+        filterRows(); // run on load
     </script>
 </body>
 

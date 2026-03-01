@@ -280,10 +280,7 @@ function renumberEditorRows() {
   const rows = body.querySelectorAll('tr');
   rows.forEach((tr, i) => {
     tr.dataset.rowIndex = i.toString();
-    const indexCell = tr.querySelector('.index-cell');
-    if (indexCell) indexCell.textContent = (i + 1).toString();
-
-    const tds = tr.querySelectorAll('td:not(.index-cell)');
+    const tds = tr.querySelectorAll('td');
     tds.forEach((td, j) => {
       td.dataset.colIndex = j.toString();
     });
@@ -294,11 +291,6 @@ function addEditorRow() {
   const body = document.getElementById('outcomes-editor-body');
   if (!body) return;
   const tr = document.createElement('tr');
-
-  // Index Column
-  const tdIndex = document.createElement('td');
-  tdIndex.className = 'index-cell no-pdf';
-  tr.appendChild(tdIndex);
 
   for (let i = 0; i < 3; i++) {
     const td = document.createElement('td');
@@ -317,6 +309,7 @@ function addEditorRow() {
       isSelecting = true;
       const box = document.getElementById('table-selection-box');
       if (box) box.classList.add('dragging');
+      startCell = td;
       updateRange(td, td);
     });
     td.addEventListener('mouseenter', (e) => {
@@ -348,6 +341,7 @@ function deleteEditorRow() {
   }
 
   hideSelectionBox();
+  renderSelection();
   renumberEditorRows();
   syncMappingRows();
 }
@@ -397,10 +391,7 @@ function renderSelection() {
 
   rows.forEach((tr, r) => {
     if (r >= currentRange.minR && r <= currentRange.maxR) {
-      const indexCell = tr.querySelector('.index-cell');
-      if (indexCell) indexCell.classList.add('selected');
-
-      const tds = tr.querySelectorAll('td:not(.index-cell)');
+      const tds = tr.querySelectorAll('td');
       tds.forEach((td, c) => {
         if (c >= currentRange.minC && c <= currentRange.maxC) {
           if (td.style.display === 'none') return;
@@ -466,11 +457,10 @@ function toggleMerge() {
   let isUnmerging = false;
   let targetCell = null;
 
-  // Search the range for a cell that is already merged
   for (let r = currentRange.minR; r <= currentRange.maxR; r++) {
     const tr = rows[r];
     if (!tr) continue;
-    const tds = tr.querySelectorAll('td:not(.index-cell)');
+    const tds = tr.querySelectorAll('td');
     for (let c = currentRange.minC; c <= currentRange.maxC; c++) {
       const td = tds[c];
       if (td && (td.rowSpan > 1 || td.colSpan > 1)) {
@@ -491,7 +481,7 @@ function toggleMerge() {
 
     for (let r = firstR; r < firstR + rs; r++) {
       const tr = rows[r];
-      const tds = tr.querySelectorAll('td:not(.index-cell)');
+      const tds = tr.querySelectorAll('td');
       for (let c = firstC; c < firstC + cs; c++) {
         const td = tds[c];
         if (td) {
@@ -510,7 +500,7 @@ function toggleMerge() {
     rows.forEach((tr, r) => {
       const rowIndex = parseInt(tr.dataset.rowIndex);
       if (rowIndex >= currentRange.minR && rowIndex <= currentRange.maxR) {
-        const tds = tr.querySelectorAll('td:not(.index-cell)');
+        const tds = tr.querySelectorAll('td');
         tds.forEach(td => {
           const colIndex = parseInt(td.dataset.colIndex);
           if (colIndex >= currentRange.minC && colIndex <= currentRange.maxC) {
@@ -539,9 +529,97 @@ function toggleMerge() {
     }
   }
 
-  hideSelectionBox();
+  renderSelection();
   renumberEditorRows(); // Re-sync coordinates
 }
+
+// Color Picker Logic (Excel Style)
+let activeFillColor = '#FFFF00'; // Default Yellow
+
+const THEME_COLORS = [
+  '#ffffff', '#000000', '#e7e6e6', '#44546a', '#4472c4', '#ed7d31', '#a5a5a5', '#ffc000', '#5b9bd5', '#70ad47',
+  '#f2f2f2', '#7f7f7f', '#d0cece', '#d6dce4', '#d9e1f2', '#fbe4d5', '#ededed', '#fff2cc', '#deeaf6', '#e2efda',
+  '#d8d8d8', '#595959', '#afabab', '#acb9ca', '#b4c6e7', '#f7caac', '#dbdbdb', '#fee599', '#bdd7ee', '#c6e0b4',
+  '#bfbfbf', '#3f3f3f', '#767171', '#8496b0', '#8ea9db', '#f4b084', '#c9c9c9', '#ffd966', '#9bc2e6', '#a9d08e',
+  '#a5a5a5', '#262626', '#3b3838', '#323e4f', '#2f5597', '#c65911', '#aeaeae', '#bf8f00', '#2e75b6', '#548235',
+  '#7b7b7b', '#0d0d0d', '#262626', '#222b35', '#1f3763', '#833c0c', '#757575', '#7f6000', '#1f4e78', '#375623'
+];
+
+const STANDARD_COLORS = [
+  '#c00000', '#ff0000', '#ffc000', '#ffff00', '#92d050', '#00b050', '#00b0f0', '#0070c0', '#002060', '#7030a0'
+];
+
+function initColorPalette() {
+  const themeGrid = document.getElementById('theme-colors-grid');
+  const standardGrid = document.getElementById('standard-colors-grid');
+  if (!themeGrid || !standardGrid) return;
+
+  THEME_COLORS.forEach(color => {
+    const swatch = document.createElement('div');
+    swatch.className = 'palette-swatch';
+    swatch.style.backgroundColor = color;
+    swatch.onclick = () => selectPaletteColor(color);
+    themeGrid.appendChild(swatch);
+  });
+
+  STANDARD_COLORS.forEach(color => {
+    const swatch = document.createElement('div');
+    swatch.className = 'palette-swatch';
+    swatch.style.backgroundColor = color;
+    swatch.onclick = () => selectPaletteColor(color);
+    standardGrid.appendChild(swatch);
+  });
+}
+
+function toggleColorPalette(event) {
+  event.stopPropagation();
+  const menu = document.getElementById('color-palette-menu');
+  const isActive = menu.classList.contains('active');
+
+  // Close all other dropdowns
+  document.querySelectorAll('.color-palette-menu.active').forEach(m => m.classList.remove('active'));
+
+  if (!isActive) {
+    menu.classList.add('active');
+  }
+}
+
+function selectPaletteColor(color) {
+  activeFillColor = color;
+  updateActiveColorBar();
+  applyActiveColor();
+  document.getElementById('color-palette-menu').classList.remove('active');
+}
+
+function updateActiveColorBar() {
+  const bar = document.getElementById('active-color-bar');
+  if (bar) {
+    bar.style.backgroundColor = activeFillColor === 'transparent' ? '#ccc' : activeFillColor;
+  }
+}
+
+function applyActiveColor() {
+  if (currentRange.minR === -1) return;
+  const body = document.getElementById('outcomes-editor-body');
+  const rows = body.querySelectorAll('tr');
+  for (let r = currentRange.minR; r <= currentRange.maxR; r++) {
+    const tr = rows[r];
+    if (!tr) continue;
+    const tds = tr.querySelectorAll('td');
+    for (let c = currentRange.minC; c <= currentRange.maxC; c++) {
+      const td = tds[c];
+      if (!td || td.style.display === 'none') continue;
+      td.style.setProperty('background-color', activeFillColor, 'important');
+    }
+  }
+  renderSelection();
+}
+
+// Close color palette when clicking outside
+document.addEventListener('click', () => {
+  const menu = document.getElementById('color-palette-menu');
+  if (menu) menu.classList.remove('active');
+});
 
 function toggleWrap() {
   const body = document.getElementById('outcomes-editor-body');
@@ -551,3 +629,9 @@ function toggleWrap() {
     div.style.whiteSpace = isWrapped ? 'nowrap' : 'normal';
   });
 }
+
+// Initialize on load
+document.addEventListener('DOMContentLoaded', () => {
+  initColorPalette();
+  updateActiveColorBar();
+});

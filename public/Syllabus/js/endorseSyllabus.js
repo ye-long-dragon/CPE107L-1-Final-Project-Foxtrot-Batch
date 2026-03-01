@@ -1,25 +1,31 @@
+/* =====================================================================
+   endorseSyllabus.js
+   JS for Program Chair Course Overview + Endorsement Queue pages
+   Mirrors courseOverview.js — all functions scoped here for PC views
+   ===================================================================== */
+
 document.addEventListener('DOMContentLoaded', () => {
-    const modal = document.getElementById("addCourseModal");
-    const openBtn = document.getElementById("openAddModalBtn");
-    const closeBtn = document.getElementById("closeModalBtn");
-    const cancelBtn = document.getElementById("cancelModalBtn");
-    const enterDeleteModeBtn = document.getElementById("enterDeleteMode");
-    const deleteToolbar = document.getElementById("deleteToolbar");
-    const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
-    const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
-    const selectedCountEl = document.getElementById("selectedCount");
-    const courseGrid = document.querySelector(".course-grid");
-    const instructorSelect = document.getElementById("assignedInstructor");
-    const instructorHint = document.getElementById("instructorHint");
-    const addCourseForm = document.getElementById("addCourseForm");
+    const modal = document.getElementById('addCourseModal');
+    const openBtn = document.getElementById('openAddModalBtn');
+    const closeBtn = document.getElementById('closeModalBtn');
+    const cancelBtn = document.getElementById('cancelModalBtn');
+    const enterDeleteModeBtn = document.getElementById('enterDeleteMode');
+    const deleteToolbar = document.getElementById('deleteToolbar');
+    const cancelDeleteBtn = document.getElementById('cancelDeleteBtn');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    const selectedCountEl = document.getElementById('selectedCount');
+    const courseGrid = document.querySelector('.course-grid');
+    const instructorSelect = document.getElementById('assignedInstructor');
+    const instructorHint = document.getElementById('instructorHint');
+    const addCourseForm = document.getElementById('addCourseForm');
 
     // Image upload elements
-    const uploadZone = document.getElementById("imageUploadZone");
-    const uploadPlaceholder = document.getElementById("uploadPlaceholder");
-    const uploadPreview = document.getElementById("uploadPreview");
-    const previewImage = document.getElementById("previewImage");
-    const removeImageBtn = document.getElementById("removeImageBtn");
-    const courseImageInput = document.getElementById("courseImageInput");
+    const uploadZone = document.getElementById('imageUploadZone');
+    const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+    const uploadPreview = document.getElementById('uploadPreview');
+    const previewImage = document.getElementById('previewImage');
+    const removeImageBtn = document.getElementById('removeImageBtn');
+    const courseImageInput = document.getElementById('courseImageInput');
 
     // =========================================
     // View Toggle — List / Grid
@@ -53,7 +59,6 @@ document.addEventListener('DOMContentLoaded', () => {
             actionsWrapper.classList.toggle('open');
         });
 
-        // Close when clicking anywhere else
         document.addEventListener('click', (e) => {
             if (!actionsWrapper.contains(e.target)) {
                 actionsWrapper.classList.remove('open');
@@ -62,61 +67,45 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =========================================
-    // Modal Open — fetch users & display panel
+    // Modal Open
     // =========================================
     if (modal && openBtn) {
         openBtn.onclick = () => {
-            // Reset form fields when opening
             if (addCourseForm) addCourseForm.reset();
             resetImageUpload();
             clearFormError();
-
-            // Show modal with unfocused background
-            modal.style.display = "flex";
-
-            // Fetch instructor list from database
+            modal.style.display = 'flex';
             fetchInstructors();
         };
     }
 
-    // =========================================
-    // Modal Close — multiple close methods
-    // =========================================
     function closeModal() {
-        modal.style.display = "none";
+        if (modal) modal.style.display = 'none';
         clearFormError();
     }
 
     if (closeBtn) closeBtn.onclick = closeModal;
     if (cancelBtn) cancelBtn.onclick = closeModal;
 
-    // Close on overlay click (outside the panel)
     window.onclick = (e) => {
         if (e.target === modal) closeModal();
     };
 
-    // Close on Escape key
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && modal && modal.style.display === 'flex') {
-            closeModal();
-        }
+        if (e.key === 'Escape' && modal && modal.style.display === 'flex') closeModal();
     });
 
     // =========================================
-    // Fetch Instructors from Database
+    // Fetch Instructors
     // =========================================
     async function fetchInstructors() {
         if (!instructorSelect || !instructorHint) return;
-
-        // Show loading state
-        instructorHint.textContent = "Loading instructors from database...";
-        instructorHint.className = "form-hint";
+        instructorHint.textContent = 'Loading instructors from database...';
+        instructorHint.className = 'form-hint';
 
         try {
             const response = await fetch('/syllabus/users');
             const users = await response.json();
-
-            // Clear existing options (keep the default)
             instructorSelect.innerHTML = '<option value="">— Select an Instructor —</option>';
 
             if (users.length > 0) {
@@ -124,25 +113,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     const option = document.createElement('option');
                     option.value = user._id;
                     option.textContent = `${user.firstName} ${user.lastName}`;
-
-                    // Show role as additional context if available
-                    if (user.role) {
-                        option.textContent += ` (${user.role})`;
-                    }
-
+                    if (user.role) option.textContent += ` (${user.role})`;
                     instructorSelect.appendChild(option);
                 });
-
                 instructorHint.textContent = `${users.length} instructor(s) available`;
-                instructorHint.className = "form-hint loaded";
+                instructorHint.className = 'form-hint loaded';
             } else {
-                instructorHint.textContent = "No instructors found in database — field is optional";
-                instructorHint.className = "form-hint empty";
+                instructorHint.textContent = 'No instructors found — field is optional';
+                instructorHint.className = 'form-hint empty';
             }
         } catch (error) {
-            console.error("Error fetching instructors:", error);
-            instructorHint.textContent = "Could not load instructors — field is optional";
-            instructorHint.className = "form-hint error";
+            console.error('Error fetching instructors:', error);
+            instructorHint.textContent = 'Could not load instructors — field is optional';
+            instructorHint.className = 'form-hint error';
         }
     }
 
@@ -158,28 +141,18 @@ document.addEventListener('DOMContentLoaded', () => {
         addCourseForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             clearFormError();
-
             const formData = new FormData(addCourseForm);
-
             try {
-                const response = await fetch(addCourseForm.action, {
-                    method: 'POST',
-                    body: formData
-                });
-
+                const response = await fetch(addCourseForm.action, { method: 'POST', body: formData });
                 const result = await response.json();
-
                 if (response.ok && result.success) {
-                    // Success — redirect to the courses page
                     window.location.href = result.redirect;
                 } else if (result.error === 'duplicate') {
-                    // Show duplicate error in modal
                     showFormError(result.message, result.field);
                 } else {
-                    showFormError(result.message || 'An error occurred while adding the course.');
+                    showFormError(result.message || 'An error occurred.');
                 }
             } catch (error) {
-                console.error('Form submission error:', error);
                 showFormError('An unexpected error occurred. Please try again.');
             }
         });
@@ -189,13 +162,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (formError && formErrorText) {
             formErrorText.textContent = message;
             formError.style.display = 'flex';
-
-            // Re-trigger shake animation
             formError.style.animation = 'none';
-            formError.offsetHeight; // force reflow
+            formError.offsetHeight;
             formError.style.animation = '';
-
-            // Highlight the offending input field
             if (field === 'courseCode' && courseCodeInput) {
                 courseCodeInput.classList.add('input-error');
                 courseCodeInput.focus();
@@ -212,7 +181,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (courseCodeInput) courseCodeInput.classList.remove('input-error');
     }
 
-    // Clear error highlight when user starts typing in the errored field
     if (courseTitleInput) {
         courseTitleInput.addEventListener('input', () => {
             courseTitleInput.classList.remove('input-error');
@@ -227,64 +195,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =========================================
-    // Image Upload — Click, Drag & Drop, Preview
+    // Image Upload
     // =========================================
     if (uploadZone && courseImageInput) {
-
-        // Click to browse
         uploadZone.addEventListener('click', (e) => {
-            // Don't trigger file picker if clicking the remove button
             if (e.target.closest('.remove-image-btn')) return;
             courseImageInput.click();
         });
 
-        // File selected via picker
         courseImageInput.addEventListener('change', () => {
             if (courseImageInput.files && courseImageInput.files[0]) {
                 handleImageFile(courseImageInput.files[0]);
             }
         });
 
-        // Drag-and-drop events
-        uploadZone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadZone.classList.add('drag-over');
-        });
-
-        uploadZone.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            uploadZone.classList.remove('drag-over');
-        });
-
+        uploadZone.addEventListener('dragover', (e) => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+        uploadZone.addEventListener('dragleave', (e) => { e.preventDefault(); uploadZone.classList.remove('drag-over'); });
         uploadZone.addEventListener('drop', (e) => {
             e.preventDefault();
             uploadZone.classList.remove('drag-over');
             const file = e.dataTransfer.files[0];
-            if (file) {
-                handleImageFile(file);
-            }
+            if (file) handleImageFile(file);
         });
 
-        // Remove image button
         if (removeImageBtn) {
-            removeImageBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                resetImageUpload();
-            });
+            removeImageBtn.addEventListener('click', (e) => { e.stopPropagation(); resetImageUpload(); });
         }
     }
 
     function handleImageFile(file) {
         const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-        if (!allowedTypes.includes(file.type)) {
-            alert('Please select a valid image file (JPG, PNG, GIF, or WEBP)');
-            return;
-        }
-
-        if (file.size > 5 * 1024 * 1024) {
-            alert('Image must be smaller than 5MB');
-            return;
-        }
+        if (!allowedTypes.includes(file.type)) { alert('Please select a valid image file (JPG, PNG, GIF, or WEBP)'); return; }
+        if (file.size > 5 * 1024 * 1024) { alert('Image must be smaller than 5MB'); return; }
 
         const dataTransfer = new DataTransfer();
         dataTransfer.items.add(file);
@@ -307,7 +249,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =========================================
-    // Delete Selection Mode (Teammate's Code + Your Modal)
+    // Delete Mode
     // =========================================
     let isDeleteMode = false;
     let selectedCourseIds = new Set();
@@ -348,17 +290,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const card = e.currentTarget;
 
         if (!isDeleteMode) {
-            // MERGE FIX: Instead of direct navigation, trigger your new Draft Modal logic!
             const courseId = card.dataset.id;
-            const hasDraft = card.dataset.hasdraft === 'true'; // parse boolean
-
-            if (courseId) {
-                window.openDraftModal(courseId, hasDraft);
-            }
+            const hasDraft = card.dataset.hasdraft === 'true';
+            if (courseId) window.openDraftModal(courseId, hasDraft);
             return;
         }
 
-        // Prevent navigation when in delete mode
         e.preventDefault();
         e.stopPropagation();
 
@@ -372,39 +309,28 @@ document.addEventListener('DOMContentLoaded', () => {
             selectedCourseIds.add(courseId);
             card.classList.add('selected');
         }
-
         updateSelectedCount();
     }
 
-    // Enter delete mode button
-    if (enterDeleteModeBtn && courseGrid) {
-        enterDeleteModeBtn.onclick = enterDeleteMode;
-    }
+    if (enterDeleteModeBtn && courseGrid) enterDeleteModeBtn.onclick = enterDeleteMode;
+    if (cancelDeleteBtn) cancelDeleteBtn.onclick = exitDeleteMode;
 
-    // Cancel delete mode
-    if (cancelDeleteBtn) {
-        cancelDeleteBtn.onclick = exitDeleteMode;
-    }
-
-    // Confirm bulk delete
     if (confirmDeleteBtn) {
         confirmDeleteBtn.onclick = async () => {
             if (selectedCourseIds.size === 0) return;
-
             const count = selectedCourseIds.size;
-            const confirmed = confirm(`Are you sure you want to delete ${count} course${count > 1 ? 's' : ''}? This action cannot be undone.`);
+            const confirmed = confirm(`Delete ${count} course${count > 1 ? 's' : ''}? This cannot be undone.`);
             if (!confirmed) return;
 
             const searchContainer = document.querySelector('.search-container');
             const userId = searchContainer ? searchContainer.dataset.userid : '';
 
             try {
-                const response = await fetch(`/syllabus/${userId}/delete-bulk`, {
+                const response = await fetch(`/syllabus/prog-chair/${userId}/delete-bulk`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ courseIds: Array.from(selectedCourseIds) })
                 });
-
                 const result = await response.json();
                 if (result.success) {
                     window.location.href = result.redirect;
@@ -412,17 +338,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert(result.error || 'Error deleting courses.');
                 }
             } catch (error) {
-                console.error('Delete error:', error);
                 alert('An error occurred while deleting courses.');
             }
         };
     }
 
-    // Attach click handlers to initial cards
     attachCardClickHandlers();
 
     // =========================================
-    // Live Search — keystroke by keystroke
+    // Live Search
     // =========================================
     const searchInput = document.getElementById('searchInput');
     const searchContainer = document.querySelector('.search-container');
@@ -434,22 +358,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (searchInput && courseGrid) {
         searchInput.addEventListener('input', () => {
             const query = searchInput.value.trim();
-
             clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                fetchCourses(query);
-            }, 200);
+            searchTimeout = setTimeout(() => fetchCourses(query), 200);
         });
     }
 
     async function fetchCourses(query) {
         try {
-            const response = await fetch(`/syllabus/search?q=${encodeURIComponent(query)}&userId=${encodeURIComponent(userId)}`);
+            const response = await fetch(`/syllabus/prog-chair/search?q=${encodeURIComponent(query)}&userId=${encodeURIComponent(userId)}`);
             const courses = await response.json();
-
-            if (resultCount) {
-                resultCount.textContent = `${courses.length} Results`;
-            }
+            if (resultCount) resultCount.textContent = `${courses.length} Results`;
             renderCourseGrid(courses);
         } catch (error) {
             console.error('Search error:', error);
@@ -458,35 +376,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderCourseGrid(courses) {
         if (!courseGrid) return;
-
         const wasDeleteMode = isDeleteMode;
         const wasListView = courseGrid.classList.contains('list-view');
 
         if (courses.length > 0) {
-            // MERGE FIX: Using dataset attributes so your teammate's click handler can read the Draft status
             courseGrid.innerHTML = courses.map(course => `
                 <div class="course-card" data-id="${course.id}" data-hasdraft="${course.hasDraft}">
-                    <div class="card-image">
-                        <img src="${course.img}" alt="Course Image">
-                    </div>
+                    <div class="card-image"><img src="${course.img}" alt="Course Image"></div>
                     <div class="card-content">
                         <span class="course-code">${course.code}</span>
                         <h3 class="course-title">${course.title}</h3>
                         <p class="course-status">${course.status || 'No Syllabus Draft'}</p>
                     </div>
-                    <div class="card-footer">
-                        <span class="instructor">${course.instructor}</span>
-                    </div>
+                    <div class="card-footer"><span class="instructor">${course.instructor}</span></div>
                 </div>
             `).join('');
         } else {
-            courseGrid.innerHTML = '<p style="text-align: center; color: #777; grid-column: 1 / -1; padding: 40px 0;">No courses found.</p>';
+            courseGrid.innerHTML = '<p style="text-align:center;color:#777;grid-column:1/-1;padding:40px 0;">No courses found.</p>';
         }
 
-        // Restore list-view state after re-render
         if (wasListView) courseGrid.classList.add('list-view');
-
-        // Preserve delete mode and re-attach handlers
         if (wasDeleteMode) {
             courseGrid.classList.add('delete-mode');
             attachCardClickHandlers();
@@ -501,24 +410,21 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* =====================================================================
-   DRAFT STATUS MODAL LOGIC (GLOBAL SCOPE)
-===================================================================== */
+   DRAFT MODAL (Global scope — PC version)
+   ===================================================================== */
 window.openDraftModal = function (syllabusId, hasDraft) {
     const modal = document.getElementById('draftModal');
     const msg = document.getElementById('draftMessage');
     const btn = document.getElementById('draftActionBtn');
 
     if (hasDraft) {
-        msg.innerText = "A syllabus draft already exists for this course.";
-        btn.innerText = "Edit Syllabus Draft";
+        msg.innerText = 'A syllabus draft already exists for this course.';
+        btn.innerText = 'Edit Syllabus Draft';
         btn.onclick = () => window.location.href = `/syllabus/edit/${syllabusId}`;
     } else {
         msg.innerText = "There's no syllabus draft at the moment.";
-        btn.innerText = "+ Add Syllabus Draft";
-        btn.onclick = () => {
-            window.closeDraftModal();
-            window.location.href = '/syllabus/create';
-        };
+        btn.innerText = '+ Add Syllabus Draft';
+        btn.onclick = () => { window.closeDraftModal(); window.location.href = '/syllabus/create'; };
     }
 
     if (modal) modal.style.display = 'flex';
@@ -531,30 +437,24 @@ window.closeDraftModal = function () {
 
 window.addEventListener('click', function (event) {
     const draftModal = document.getElementById('draftModal');
-    if (event.target === draftModal) {
-        draftModal.style.display = "none";
-    }
+    if (event.target === draftModal) draftModal.style.display = 'none';
 });
 
 /* =====================================================================
-   REVIEW SYLLABUS NAVIGATION — close dropdown before leaving
-===================================================================== */
-window.goToReviewSyllabus = function () {
-    // Close the actions dropdown first so it isn't open when user comes back
+   ENDORSE QUEUE NAVIGATION — close dropdown before leaving
+   ===================================================================== */
+window.goToEndorseQueue = function () {
     const wrapper = document.getElementById('actionsDropdownWrapper');
     if (wrapper) wrapper.classList.remove('open');
-
-    // Small delay so the CSS transition finishes before navigation
     setTimeout(() => {
-        window.location.href = '/syllabus/tech-assistant/approve';
+        window.location.href = '/syllabus/prog-chair/endorse';
     }, 80);
 };
 
 /* =====================================================================
    BFCACHE GUARD — force-close dropdown on back navigation
-===================================================================== */
+   ===================================================================== */
 window.addEventListener('pageshow', function (event) {
-    // event.persisted = true when browser restores from bfcache (back/forward)
     if (event.persisted) {
         const wrapper = document.getElementById('actionsDropdownWrapper');
         if (wrapper) wrapper.classList.remove('open');
