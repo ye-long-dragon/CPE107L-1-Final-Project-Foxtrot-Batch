@@ -1,15 +1,13 @@
 import express from 'express';
-import { submitATA, approveATA, getPendingApprovals, viewATAForm } from '../controllers/ataController.js'; 
-import { requireAuth, checkRole } from '../middleware/authMiddleware.js'; // 🚨 NEW: Imported checkRole!
+import { submitATA, approveATA, getPendingApprovals, viewATAForm } from '../../controllers/ataController.js';
+import { requireAuth, checkRole } from '../../middleware/ata_authMiddleware.js';
 
 const router = express.Router();
-
 // ==========================================
 // 🛣️ 1. FACULTY ROUTES
 // ==========================================
-// Only regular Professors can submit forms
-router.post('/submit', requireAuth, checkRole('Professor'), submitATA);
-
+const submitRoles = ['Professor', 'Program-Chair', 'Practicum-Coordinator', 'Dean'];
+router.post('/submit', requireAuth, checkRole(...submitRoles), submitATA);
 // ==========================================
 // 🛣️ 2. ADMIN ROUTES
 // ==========================================

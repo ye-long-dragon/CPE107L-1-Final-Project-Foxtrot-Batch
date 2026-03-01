@@ -28,7 +28,7 @@ if (hamburgerMenu && sidebar && sidebarOverlay) {
 const backButton = document.querySelector('.back-button');
 if (backButton) {
     backButton.addEventListener('click', () => {
-        window.location.href = '/ata-main';
+        window.location.href = '/ata-main'; // window.location.href = '/ata/dashboard/window';
     });
 }
 
@@ -39,8 +39,9 @@ const rawRole = document.body.getAttribute('data-role');
 const rawEmployment = document.body.getAttribute('data-employment');
 const rawPracticum = document.body.getAttribute('data-practicum');
 
-// 👇 Check if we are on the public landing page
-const isPublicPage = window.location.pathname === '/' || window.location.pathname === '/ata' || window.location.pathname.startsWith('/auth');
+// 👇 Check if we are on the public landing page (Now supports trailing slashes!)
+const path = window.location.pathname;
+const isPublicPage = path === '/' || path === '/ata' || path === '/ata/' || path.startsWith('/auth');
 
 // 🚨 THE KILL SWITCH (Only runs on protected pages!)
 if (!isPublicPage) {
@@ -287,7 +288,7 @@ if (nextBtn) {
 
                 if (response.ok) {
                     alert("ATA Form submitted successfully!");
-                    window.location.href = '/dashboard/window'; 
+                    window.location.href = '/ata/dashboard/window';
                 } else {
                     const errorText = await response.text(); 
                     console.error("Server Response:", errorText);

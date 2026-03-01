@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-
+import { mainDB } from '../../database/mongo-dbconnect.js';
 // ==========================================
 // 1. EMBEDDED SUBDOCUMENTS (Mapping to the PDF Sections)
 // ==========================================
@@ -96,5 +96,5 @@ const ataFormSchema = new mongoose.Schema({
 
 }, { timestamps: true });
 
-const ATAForm = mongoose.model('ATAForm', ataFormSchema);
+const ATAForm = mainDB.model('ATAForm', ataFormSchema);
 export default ATAForm;
