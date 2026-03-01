@@ -1,5 +1,3 @@
-// public/js/homepage.js
-
 document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById("projectModal");
     const btn = document.querySelector(".btn-proj-overview");
