@@ -69,6 +69,10 @@ import landingPageRouter from "./routes/Syllabus/landingPage.js";
 // ATA
 import ataPages from "./routes/ATA/ataPages.js";
 
+//TWS
+import twsRoutes from "./routes/TWS/twsRoutes.js";
+
+
 // ========================
 // Routes
 // ========================
@@ -89,6 +93,9 @@ app.use("/syllabus", landingPageRouter);
 
 // ATA Pages
 app.use("/ata", ataPages);
+
+// TWS
+app.use("/twa", twsRoutes);
 
 
 // ========================

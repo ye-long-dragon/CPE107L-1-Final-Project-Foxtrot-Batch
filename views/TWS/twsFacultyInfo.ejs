@@ -1,67 +1,47 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TWS - Faculty Information</title>
-  <link rel="stylesheet" href="/twa/public/twsStyle.css" />
+  <link rel="stylesheet" href="/TWS/css/twsStyle.css" />
 </head>
+<body class="bg">
+  <%- include('../partials/sideMenuBar') %>
 
-<body>
-  <%- include("partials/twsNavBar") %>
+  <div class="main">
+    <div class="shell">
+      <div class="page-title">TWS - Faculty Information</div>
 
-  <main class="main-content">
-    <div class="page-container">
+      <form class="panel panel-form" method="POST" action="/twa/faculty/<%= tws.id %>">
+        <div class="panel-title">Faculty Information</div>
 
-      <div class="header-pill">
-        <h1>TWS - Faculty Information</h1>
-      </div>
+        <div class="form-grid">
+          <label>Faculty Name:</label>
+          <input class="bar-input" type="text" name="name" value="<%= tws.faculty.name %>" />
 
-      <section class="panel">
-        <div class="panel-header">
-          <h2>Faculty Information</h2>
+          <label>Employee ID:</label>
+          <input class="bar-input" type="text" name="empId" value="<%= tws.faculty.empId %>" />
+
+          <label>Department:</label>
+          <input class="bar-input" type="text" name="dept" value="<%= tws.faculty.dept %>" />
+
+          <label>Academic Year:</label>
+          <input class="bar-input" type="text" name="acadYear" placeholder="2025 - 2026" value="<%= tws.faculty.acadYear %>" />
+
+          <label>Term:</label>
+          <input class="bar-input" type="text" name="term" placeholder="1st / 2nd / 3rd" value="<%= tws.faculty.term %>" />
+
+          <label>Employee Status:</label>
+          <input class="bar-input" type="text" name="empStatus" value="<%= tws.faculty.empStatus %>" />
         </div>
 
-        <div class="form-box">
-          <div class="form-row">
-            <div class="form-label">Faculty Name:</div>
-            <div class="form-input"></div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-label">Employee ID:</div>
-            <div class="form-input"></div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-label">Department:</div>
-            <div class="form-input"></div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-label">Academic Year:</div>
-            <div class="form-input"></div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-label">Term:</div>
-            <div class="form-input"></div>
-          </div>
-
-          <div class="form-row">
-            <div class="form-label">Employee Status:</div>
-            <div class="form-input"></div>
-          </div>
+        <div class="bottom-btns">
+          <a class="btn btn-big" href="/twa/dashboard">Back</a>
+          <button class="btn btn-big" type="submit" name="action" value="save">Save Draft</button>
+          <button class="btn btn-big" type="submit" name="action" value="next">Next</button>
         </div>
-      </section>
-
-      <div class="triple-actions">
-        <a href="/twa/dashboard" class="pill-btn">Back</a>
-        <a href="#" class="pill-btn">Save Draft</a>
-        <a href="/twa/teaching-load" class="pill-btn">Next</a>
-      </div>
-
+      </form>
     </div>
-  </main>
+  </div>
 </body>
 </html>

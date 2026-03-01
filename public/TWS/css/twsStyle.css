@@ -6,7 +6,7 @@
 }
 
 body {
-  background: url("background.png") center / cover no-repeat fixed;
+  background: url("../img/background.png") center / cover no-repeat fixed;
   color: white;
 }
 

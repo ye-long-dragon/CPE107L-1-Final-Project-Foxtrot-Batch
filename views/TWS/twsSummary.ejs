@@ -1,56 +1,46 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TWS - Summary And Preview</title>
-  <link rel="stylesheet" href="/twa/public/twsStyle.css" />
+  <link rel="stylesheet" href="/TWS/css/twsStyle.css" />
 </head>
+<body class="bg">
+  <%- include('../partials/sideMenuBar') %>
 
-<body>
-  <%- include("partials/twsNavBar") %>
+  <div class="main">
+    <div class="shell">
+      <div class="page-title">TWS - Summary And Preview</div>
 
-  <main class="main-content">
-    <div class="page-container">
-
-      <div class="header-pill">
-        <h1>TWS - Summary And Preview</h1>
-      </div>
-
-      <section class="panel">
-        <div class="summary-grid">
-          <div>
-            <h3 class="mini-title">Faculty Information</h3>
-            <div class="mini-lines">
-              <div>Faculty Name:</div>
-              <div>Employee ID:</div>
-              <div>Department:</div>
-              <div>Academic Year:</div>
-              <div>Term:</div>
-              <div>Employment Status:</div>
+      <form class="panel summary" method="POST" action="/twa/summary/<%= tws.id %>">
+        <div class="summary-box">
+          <div class="summary-left">
+            <div class="panel-title">Faculty Information</div>
+            <div class="kv">
+              <div>Faculty Name:</div><div><%= tws.faculty.name || "—" %></div>
+              <div>Employee ID:</div><div><%= tws.faculty.empId || "—" %></div>
+              <div>Department:</div><div><%= tws.faculty.dept || "—" %></div>
+              <div>Academic Year:</div><div><%= tws.faculty.acadYear || "—" %></div>
+              <div>Term:</div><div><%= tws.faculty.term || "—" %></div>
+              <div>Employment Status:</div><div><%= tws.faculty.empStatus || "—" %></div>
             </div>
 
-            <h3 class="mini-title" style="margin-top:16px;">Teaching Load Summary</h3>
-            <div class="mini-lines">
-              <div>Total Units: <strong>14</strong></div>
-              <div>Equivalent Load: <strong>14</strong></div>
+            <div class="panel-title mt">Teaching Load Summary</div>
+            <div class="kv two-col">
+              <div>Total Units:</div><div><%= tws.totals.totalUnits %></div>
+              <div>Total Hours (Lec/Lab):</div><div><%= tws.totals.totalHours %></div>
+              <div>Equivalent Load:</div><div><%= tws.totals.equivLoad %></div>
+              <div>Equivalent Non-Teaching Load:</div><div>0</div>
             </div>
           </div>
 
-          <div class="summary-actions">
-            <a href="/twa/dashboard" class="submit-btn">Submit TWS</a>
-            <a href="/twa/faculty-info" class="edit-btn">Edit</a>
+          <div class="summary-right">
+            <button class="btn btn-green btn-stack" type="submit" name="action" value="submit">Submit TWS</button>
+            <button class="btn btn-stack" type="submit" name="action" value="edit">Edit</button>
           </div>
         </div>
-      </section>
-
-      <div class="triple-actions">
-        <a href="/twa/submission-status" class="pill-btn">Back</a>
-        <a href="#" class="pill-btn">Save Draft</a>
-        <a href="/twa/dashboard" class="pill-btn">Home</a>
-      </div>
-
+      </form>
     </div>
-  </main>
+  </div>
 </body>
 </html>
