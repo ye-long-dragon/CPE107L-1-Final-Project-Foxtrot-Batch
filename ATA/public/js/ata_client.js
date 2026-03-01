@@ -136,7 +136,18 @@ window.calculateSummary = function() {
     document.querySelectorAll('#form3 .admin-row').forEach(row => totals.D += getUnit(row, 1));
     
     // Scrape Form 5 (Section G)
-    document.querySelectorAll('#form5 .remedial-row').forEach(row => totals.G += getUnit(row, 3));
+    // Scrape Form 5 (Section G) with Mapua Multipliers
+    document.querySelectorAll('#form5 .remedial-row').forEach(row => {
+        const units = Number(row.querySelectorAll('input')[3]?.value) || 0;
+        const students = Number(row.querySelectorAll('input')[4]?.value) || 0;
+        const type = row.querySelector('select.type-select')?.value || "lecture";
+
+        // Live UI Calculation for the user to see
+        let effective = units * (students / 40);
+        if (type === 'lab') effective *= 2;
+        
+        totals.G += effective;
+    });
 
     // Update the UI Table
     const summaryRows = document.querySelectorAll('.summary-row');
@@ -257,7 +268,8 @@ if (nextBtn) {
                     moduleCode: getVal(row, 1),
                     section: getVal(row, 2),
                     units: getNum(row, 3),
-                    numberOfStudents: getNum(row, 4)
+                    numberOfStudents: getNum(row, 4),
+                    type: row.querySelector('select.type-select')?.value || "lecture"
                 });
             });
 

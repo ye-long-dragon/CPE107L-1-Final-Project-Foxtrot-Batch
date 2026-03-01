@@ -21,7 +21,7 @@ const PORT = process.env.ATAPORT || 8200;
 // DATABASE CONNECTION
 // ========================
 console.log("Attempting to connect to Test DB...");
-mongoose.connect(process.env.ATA_TEST_URI)
+mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log('✅ Connected to MongoDB'))
     .catch(err => console.error('❌ DB Connection Error:', err));
 

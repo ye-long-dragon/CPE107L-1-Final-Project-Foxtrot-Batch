@@ -41,7 +41,12 @@ const sectionG_Schema = new mongoose.Schema({
     moduleCode: String,
     section: String,
     units: Number,
-    numberOfStudents: Number
+    numberOfStudents: Number,
+    type: { 
+        type: String, 
+        enum: ['lecture', 'lab'], 
+        required: true 
+    }
 });
 
 // Handles State Machine Audit Trail
@@ -51,7 +56,7 @@ const approvalHistorySchema = new mongoose.Schema({
         type: String, 
         enum: ['Program-Chair', 'Practicum-Coordinator', 'Dean', 'VPAA', 'HRMO'] 
     },
-    approvalStatus: { type: String, enum: ['ENDORSED', 'APPROVED', 'RETURNED'] },
+    approvalStatus: { type: String, enum: ['ENDORSED', 'VALIDATED', 'APPROVED', 'NOTED', 'RETURNED'] },
     remarks: String, 
     date: { type: Date, default: Date.now } 
 });
