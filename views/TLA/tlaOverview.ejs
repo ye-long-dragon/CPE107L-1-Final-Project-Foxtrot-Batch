@@ -12,11 +12,9 @@
     <link rel="stylesheet" href="/common/css/variables.css">
 
     <!-- Page styles -->
-    <link rel="stylesheet" href="/TLA/css/overview.css">
+    <link rel="stylesheet" href="/TLA/css/tlaOverview.css">
 </head>
 <body>
-
-    <%- include('../partials/sideMenuBar') %>
 
     <main class="main-content">
 
@@ -24,12 +22,12 @@
         <!--  COURSE BANNER                                   -->
         <!-- ================================================ -->
         <div class="course-banner">
-            <button class="back-btn" onclick="window.location.href='/institution'">
+            <button class="back-btn" onclick="window.location.href='/tla/courses'">
                 <span class="material-symbols-outlined">arrow_back_ios</span>
                 Back
             </button>
             <div class="banner-overlay"></div>
-            <h2 class="banner-course-title">LIFE AND WORKS OF MAMBO</h2>
+            <h2 class="banner-course-title"><%= locals.courseInfo ? courseInfo.courseTitle.toUpperCase() : 'LIFE AND WORKS OF MAMBO' %></h2>
         </div>
 
         <!-- ================================================ -->
@@ -114,43 +112,46 @@
 
                     <div class="module-body" id="tla-body">
                         <%
-                            const weekStatuses = [
-                                'approved',     // Week  1
-                                'pending',      // Week  2
-                                'not-started',  // Week  3
-                                'not-started',  // Week  4
-                                'not-started',  // Week  5
-                                'not-started',  // Week  6
-                                'not-started',  // Week  7
-                                'not-started',  // Week  8
-                                'not-started',  // Week  9
-                                'not-started',  // Week 10
-                                'not-started',  // Week 11
-                                'not-started',  // Week 12
-                                'not-started',  // Week 13
-                                'not-started'   // Week 14
-                            ];
-                            const statusText = {
-                                'approved':    'APPROVED',
-                                'pending':     'PENDING',
-                                'not-started': 'NOT GETTING STARTED',
-                                'rejected':    'REJECTED'
+                            const dotClassMap = {
+                                'Approved':      'dot-green',
+                                'Archived':      'dot-green',
+                                'Pending':       'dot-orange',
+                                'Returned':      'dot-red',
+                                'Draft':         'dot-gray',
+                                'Not Submitted': 'dot-gray'
                             };
-                            const dotClass = {
-                                'approved':    'dot-green',
-                                'pending':     'dot-orange',
-                                'not-started': 'dot-gray',
-                                'rejected':    'dot-red'
+                            const stsClassMap = {
+                                'Approved':      'sts-approved',
+                                'Archived':      'sts-approved',
+                                'Pending':       'sts-pending',
+                                'Returned':      'sts-rejected',
+                                'Draft':         'sts-not-started',
+                                'Not Submitted': 'sts-not-started'
+                            };
+                            const stsTextMap = {
+                                'Approved':      'APPROVED',
+                                'Archived':      'ARCHIVED',
+                                'Pending':       'PENDING',
+                                'Returned':      'RETURNED',
+                                'Draft':         'DRAFT',
+                                'Not Submitted': 'NOT GETTING STARTED'
                             };
                         %>
-                        <% for (let w = 0; w < 14; w++) { %>
-                        <a class="form-item" href="/tla/form">
-                            <span class="form-dot <%= dotClass[weekStatuses[w]] %>"></span>
+                        <% weeks.forEach(function(week) { %>
+                        <%
+                            const wStatus = week.status || 'Not Submitted';
+                            const wDot    = dotClassMap[wStatus]  || 'dot-gray';
+                            const wSts    = stsClassMap[wStatus]  || 'sts-not-started';
+                            const wText   = stsTextMap[wStatus]   || 'NOT GETTING STARTED';
+                            const wLink   = week._id ? '/tla/form/' + week._id : '/tla/form';
+                        %>
+                        <a class="form-item" href="<%= wLink %>">
+                            <span class="form-dot <%= wDot %>"></span>
                             <span class="material-symbols-outlined fi-folder">folder</span>
-                            <span class="fi-name">Week <%= w + 1 %> &mdash; TLA Form</span>
-                            <span class="fi-status sts-<%= weekStatuses[w] %>">STATUS:&nbsp;<strong><%= statusText[weekStatuses[w]] %></strong></span>
+                            <span class="fi-name">Week <%= week.weekNumber %> &mdash; TLA Form</span>
+                            <span class="fi-status <%= wSts %>">STATUS:&nbsp;<strong><%= wText %></strong></span>
                         </a>
-                        <% } %>
+                        <% }); %>
                     </div>
                 </div><!-- end tla card -->
 
@@ -168,16 +169,18 @@
                     >
                 </div>
 
-                <p class="panel-username">Emmy Grace Requillo</p>
+                <p class="panel-username">
+                    <%= locals.user ? user.firstName + ' ' + user.lastName : 'Guest User' %>
+                </p>
 
                 <!-- INFORMATION -->
                 <div class="panel-section">
                     <h4 class="panel-section-title">INFORMATION</h4>
-                    <div class="panel-info-row"><span class="pi-key">COURSE CODE:</span> SS067</div>
-                    <div class="panel-info-row"><span class="pi-key">COURSE NAME:</span> Life and Works of Mambo</div>
-                    <div class="panel-info-row"><span class="pi-key">COURSE SECTION:</span> A301</div>
-                    <div class="panel-info-row"><span class="pi-key">ACADEMIC YEAR:</span> 2025-2026</div>
-                    <div class="panel-info-row"><span class="pi-key">ACADEMIC TERM:</span> 2nd Semestral</div>
+                    <div class="panel-info-row"><span class="pi-key">COURSE CODE:</span> <%= locals.courseInfo ? courseInfo.courseCode : 'SS067' %></div>
+                    <div class="panel-info-row"><span class="pi-key">COURSE NAME:</span> <%= locals.courseInfo ? courseInfo.courseTitle : 'Life and Works of Mambo' %></div>
+                    <div class="panel-info-row"><span class="pi-key">COURSE SECTION:</span> <%= locals.courseInfo ? (courseInfo.section || 'A301') : 'A301' %></div>
+                    <div class="panel-info-row"><span class="pi-key">ACADEMIC YEAR:</span> <%= locals.courseInfo ? courseInfo.schoolYear : '2025-2026' %></div>
+                    <div class="panel-info-row"><span class="pi-key">ACADEMIC TERM:</span> <%= locals.courseInfo ? courseInfo.term : '2nd Semestral' %></div>
                 </div>
 
                 <!-- COURSE SCHEDULE -->
@@ -200,6 +203,6 @@
 
     </main>
 
-    <script src="/TLA/js/overview.js"></script>
+    <script src="/TLA/js/tlaOverview.js"></script>
 </body>
 </html>

@@ -6,7 +6,8 @@ const postDigitalSessionSchema = new Schema({
   participantTurnout: String,
   assessmentResults: String,
   remarks: String
-});
+},{ timestamps:true });
 
 const PostDigitalSession = model("PostDigitalSession", postDigitalSessionSchema);
+export { postDigitalSessionSchema };
 export default PostDigitalSession;

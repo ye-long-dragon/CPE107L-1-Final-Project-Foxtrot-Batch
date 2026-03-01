@@ -24,12 +24,17 @@
   "author": "A361 - Foxtrot Batch - Computer Engineering",
   "license": "ISC",
   "dependencies": {
+    "docx-preview": "^0.3.7",
+    "docxtemplater": "^3.68.3",
     "dotenv": "^17.3.1",
     "ejs": "^4.0.1",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
     "mongodb": "^7.1.0",
-    "mongoose": "^9.2.3"
+    "mongoose": "^9.2.1",
+    "pdf-lib": "^1.17.1",
+    "pizzip": "^3.2.0",
+    "puppeteer": "^24.37.5"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
