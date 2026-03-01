@@ -722,3 +722,223 @@ Status / Approval / Archived
   opacity:.55;
   cursor:not-allowed;
 }
+
+/* ======================================================
+   CREATED TWS PAGE (timetable + load details + signatures)
+   Safe add-on: only affects classes used in created-teaching-workload.ejs
+====================================================== */
+
+/* Prevent grid children from overflowing their columns */
+.tws-schedule-layout,
+.tws-timetable,
+.tws-load-details {
+  min-width: 0;
+}
+
+/* 2-column layout: timetable + details */
+.tws-schedule-layout{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 290px;
+  gap: 18px;
+  align-items: start;
+  margin-top: 12px;
+}
+
+/* If screen is small, stack vertically so nothing overlaps */
+@media (max-width: 980px){
+  .tws-schedule-layout{
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Timetable grid --- */
+.tws-timetable{
+  position: relative;
+  display: grid;
+
+  /* 1 time column + 7 day columns */
+  grid-template-columns: 72px repeat(7, minmax(0, 1fr));
+  grid-auto-rows: 44px;
+
+  border: 1px solid rgba(255,255,255,0.35);
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(0,0,0,0.25);
+
+  /* stops browser from stretching rows and creating “gaps” */
+  align-content: start;
+}
+
+/* Cells */
+.tws-timetable .tws-cell{
+  border-right: 1px solid rgba(255,255,255,0.22);
+  border-bottom: 1px solid rgba(255,255,255,0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: rgba(255,255,255,0.9);
+  font-size: 12px;
+  text-align: center;
+  padding: 0 6px;
+  white-space: nowrap;
+}
+
+/* Remove right border ONLY for the last day column (Sunday) */
+/* This is safer than nth-child(8n) because your blocks are also children */
+.tws-timetable .tws-cell:nth-child(8),
+.tws-timetable .tws-cell:nth-child(16),
+.tws-timetable .tws-cell:nth-child(24),
+.tws-timetable .tws-cell:nth-child(32),
+.tws-timetable .tws-cell:nth-child(40),
+.tws-timetable .tws-cell:nth-child(48),
+.tws-timetable .tws-cell:nth-child(56),
+.tws-timetable .tws-cell:nth-child(64),
+.tws-timetable .tws-cell:nth-child(72),
+.tws-timetable .tws-cell:nth-child(80),
+.tws-timetable .tws-cell:nth-child(88),
+.tws-timetable .tws-cell:nth-child(96),
+.tws-timetable .tws-cell:nth-child(104){
+  border-right: none;
+}
+
+/* Header row */
+.tws-timetable .tws-head{
+  background: rgba(0,0,0,0.35);
+  font-weight: 800;
+}
+
+/* Top-left corner */
+.tws-timetable .tws-corner{
+  background: rgba(0,0,0,0.35);
+}
+
+/* Time column (FORCE column 1) */
+.tws-timetable .tws-time{
+  background: rgba(0,0,0,0.35);
+  font-weight: 800;
+  font-size: 11px;
+  grid-column: 1 !important;
+}
+
+/* Empty slots */
+.tws-timetable .tws-slot{
+  background: rgba(0,0,0,0.12);
+}
+
+/* --- Subject blocks overlay (grid overlay) --- */
+.tws-timetable .tws-block{
+  z-index: 5;
+  border-radius: 6px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  text-align: center;
+  font-size: 11px;
+  font-weight: 800;
+
+  border: 1px solid rgba(0,0,0,0.25);
+  overflow: hidden;
+}
+
+/* Labels inside block */
+.tws-block-code{ font-weight: 900; }
+.tws-block-sub{ font-weight: 800; opacity: 0.9; }
+
+/* Colors (only for timetable blocks) */
+.tws-timetable .highlight-yellow{ background: #e6d57a; color: #111; }
+.tws-timetable .highlight-blue{ background: #2a86d6; color: #111; }
+.tws-timetable .highlight-purple{ background: #7a4aa8; color: #111; }
+.tws-timetable .highlight-green{ background: #00c26a; color: #111; }
+
+/* Responsive: slightly smaller */
+@media (max-width: 520px){
+  .tws-timetable{
+    grid-template-columns: 62px repeat(7, minmax(0, 1fr));
+    grid-auto-rows: 40px;
+  }
+  .tws-timetable .tws-cell{
+    font-size: 11px;
+  }
+  .tws-timetable .tws-time{
+    font-size: 10px;
+  }
+  .tws-timetable .tws-block{
+    font-size: 10px;
+  }
+}
+
+/* --- Load details panel --- */
+.tws-load-details{
+  background: rgba(0,0,0,0.18);
+  border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 10px;
+  padding: 14px;
+  color: rgba(255,255,255,0.95);
+  overflow: hidden;
+}
+
+.tws-load-details .ld-title{
+  font-weight: 900;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.tws-load-details .ld-row{
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+  align-items: flex-start;
+}
+
+/* wrap long left text nicely */
+.tws-load-details .ld-row{
+  flex-wrap: wrap;
+}
+
+.tws-load-details .ld-row span{
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.tws-load-details .ld-divider{
+  margin: 10px 0;
+  border-top: 1px solid rgba(255,255,255,0.25);
+}
+
+/* --- Signatures inside card bottom --- */
+.tws-signatures{
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 40px;
+  margin-top: 18px;
+  padding-top: 14px;
+}
+
+@media (max-width: 720px){
+  .tws-signatures{
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+}
+
+.sig-box{
+  text-align: center;
+  color: rgba(255,255,255,0.95);
+  min-width: 0;
+}
+
+.sig-line{
+  height: 1px;
+  background: rgba(255,255,255,0.6);
+  margin: 0 auto 10px;
+  width: 70%;
+}
+
+.sig-name{ font-size: 12px; font-weight: 800; }
+.sig-role{ font-size: 12px; font-weight: 900; margin-top: 4px; }
