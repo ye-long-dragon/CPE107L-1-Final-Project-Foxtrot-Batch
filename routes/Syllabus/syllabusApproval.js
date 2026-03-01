@@ -70,7 +70,10 @@ const DUMMY_DRAFTS = [
 ];
 
 syllabusApprovalRouter.get('/', async (req, res) => {
-    const returnUrl = req.headers.referer || '/syllabus';
+    // Ignore referers from approval detail pages to prevent back-button loops
+    const referer = req.headers.referer || '';
+    const isDetailPage = /\/(dean\/approve|tech-assistant\/review|prog-chair\/endorse)\//.test(referer);
+    const returnUrl = (!referer || isDetailPage) ? '/syllabus' : referer;
 
     try {
         const approvals = await SyllabusApprovalStatus.find({});

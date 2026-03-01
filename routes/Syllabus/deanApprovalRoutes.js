@@ -39,4 +39,21 @@ deanApprovalRouter.get('/:syllabusId', async (req, res) => {
     });
 });
 
+/* -----------------------------------------------------------------------
+   POST /syllabus/dean/approve/:syllabusId  →  Save Draft or Submit Approval
+   ----------------------------------------------------------------------- */
+deanApprovalRouter.post('/:syllabusId', async (req, res) => {
+    const { syllabusId } = req.params;
+    const { comment, status, action } = req.body;
+
+    try {
+        // TODO: Update SyllabusApprovalStatus in DB
+        console.log(`Dean Approval [${action}] syllabusId=${syllabusId} status=${status} comment=${comment}`);
+        res.json({ success: true, message: `Approval ${action} saved.` });
+    } catch (err) {
+        console.error('Dean approval action error:', err);
+        res.status(500).json({ success: false, message: 'Internal server error.' });
+    }
+});
+
 export default deanApprovalRouter;

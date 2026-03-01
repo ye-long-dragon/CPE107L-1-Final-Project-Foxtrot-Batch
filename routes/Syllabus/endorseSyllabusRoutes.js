@@ -221,6 +221,23 @@ endorseSyllabusRouter.get('/endorse/:syllabusId', async (req, res) => {
 });
 
 /* -----------------------------------------------------------------------
+   POST /syllabus/prog-chair/endorse/:syllabusId  →  Save Draft or Submit Endorsement
+   ----------------------------------------------------------------------- */
+endorseSyllabusRouter.post('/endorse/:syllabusId', async (req, res) => {
+    const { syllabusId } = req.params;
+    const { comment, status, action } = req.body;
+
+    try {
+        // TODO: Update SyllabusApprovalStatus in DB
+        console.log(`PC Endorsement [${action}] syllabusId=${syllabusId} status=${status} comment=${comment}`);
+        res.json({ success: true, message: `Endorsement ${action} saved.` });
+    } catch (err) {
+        console.error('PC endorsement action error:', err);
+        res.status(500).json({ success: false, message: 'Internal server error.' });
+    }
+});
+
+/* -----------------------------------------------------------------------
    GET /syllabus/prog-chair/search  →  Live Search API
    ----------------------------------------------------------------------- */
 endorseSyllabusRouter.get('/search', async (req, res) => {
