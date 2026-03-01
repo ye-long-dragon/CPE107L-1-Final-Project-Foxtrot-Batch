@@ -192,12 +192,14 @@ body.dark-mode .hamburger-menu span {
 ================================= */
 .main-content {
     height: 100vh;
-    background: url('/images/bg-image.jpg') center/cover no-repeat;
+    background: url('/ATA/images/bg-image.jpg') center/cover no-repeat;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 40px;
+     margin-left: 250px; /* Adjust based on sidebar width */
+    padding: 20px;
+    width: calc(100% - 250px);
     gap: 30px;
     overflow: hidden;
 }
@@ -281,7 +283,7 @@ body.dark-mode .hamburger-menu span {
 .dashboard-bg {
     height: 100vh;
     width: 100vw;
-    background: url('/images/bg-image.jpg') center/cover no-repeat;
+    background: url('/ATA/images/bg-image.jpg') center/cover no-repeat;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -484,7 +486,7 @@ body.dark-mode .hamburger-menu span {
 .form-bg-fixed {
     height: 100vh;
     width: 100%;
-    background: url('/images/bg-image.jpg') center/cover no-repeat;
+    background: url('/ATA/images/bg-image.jpg') center/cover no-repeat;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1665,7 +1667,8 @@ For ATA FROMS ONLY
 
 @media (max-width: 768px) {
     .main-content { 
-        padding: 20px; 
+        margin-left: 0;
+        width: 100%;
     }
     
     .dashboard-bg {
