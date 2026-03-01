@@ -1,38 +1,34 @@
 import jwt from 'jsonwebtoken'; 
 
 // ==========================================
-// 🛡️ 1. THE GENERAL BOUNCER (Are you logged in?)
+// 🛡️ 1. THE SMART BOUNCER (Production + Dev Simulator)
 // ==========================================
 export const requireAuth = (req, res, next) => {
-    try {
-        // 1. Look for the "badge" in the incoming request headers
-        // Usually formatted as: "Bearer eyJhbGciOiJIUzI1NiIsInR..."
-        const authHeader = req.headers.authorization;
-        const token = authHeader && authHeader.split(" ")[1];
-
-        // If they didn't bring a badge at all, kick them out.
-        if (!token) {
-            return res.status(401).json({ error: "Access Denied: Please log in first." });
-        }
-
-        // 2. Verify the badge isn't fake or expired
-        // (Tell Bastasa to make sure process.env.JWT_SECRET is set up!)
-        const decodedPayload = jwt.verify(token, process.env.JWT_SECRET);
-
-        // 3. Attach the user's data to the request object!
-        // This is exactly how your ataController.js gets access to req.user._id and req.user.role
-        req.user = decodedPayload;
-
-        // 4. They pass the check. Open the door to the next step.
-        next(); 
-
-    } catch (error) {
-        // If the token is fake or expired, jwt.verify throws an error. Catch it here.
-        console.error("Auth Middleware Error:", error.message);
-        return res.status(403).json({ error: "Invalid or expired login session." });
+    
+    // 🌟 SCENARIO A: PRODUCTION (Main Branch) 🌟
+    // Does the Main branch's express-session exist?
+    if (req.session && req.session.user) {
+        req.user = req.session.user; // Use the real database user!
+        return next(); 
     }
-};
 
+    // 🛠️ SCENARIO B: LOCAL DEV (Your Simulator) 🛠️
+    // If no real session, look for our Simulator Cookie
+    const token = req.cookies ? req.cookies.jwt : null;
+    
+    if (token) {
+        try {
+            // Verify the simulator token
+            req.user = jwt.verify(token, process.env.JWT_SECRET || 'fallback_secret');
+            return next(); 
+        } catch (error) {
+            return res.status(403).send("Simulator session expired.");
+        }
+    }
+
+    // 🛑 SCENARIO C: NO LOGIN AT ALL 🛑
+    return res.status(401).send("Access Denied: Please log in first.");
+};
 // ==========================================
 // 👑 2. THE VIP BOUNCER (Do you have the right role?)
 // ==========================================

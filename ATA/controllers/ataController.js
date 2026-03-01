@@ -1,50 +1,80 @@
-const ATAForm = require('../models/ATAForm');
+import ATAForm from '../models/ATAForm.js'; 
 
 // ==========================================
 // 🧠 THE MATH ENGINE (Helper Function)
 // ==========================================
-const calculateUnits = (courseAssignments) => {
+// const calculateUnits = (courseAssignments) => {
+//     let totalTeachingUnits = 0;
+//     let totalEffectiveUnits = 0;
+    
+//     // TODO: Bonzo will send the array of classes. 
+//     // You will write the loop here to add up the units before saving.
+    
+//     return { totalTeachingUnits, totalEffectiveUnits };
+// };
+
+// ==========================================
+// 🧠 THE MATH ENGINE
+// ==========================================
+const calculateUnits = (formData) => {
     let totalTeachingUnits = 0;
-    let totalEffectiveUnits = 0;
     
-    // TODO: Bonzo will send the array of classes. 
-    // You will write the loop here to add up the units before saving.
+    const sumUnits = (array) => {
+        if (!array || !array.length) return 0;
+        return array.reduce((sum, item) => sum + (Number(item.units) || 0), 0);
+    };
+
+    // 👇 Calculate A, B, C, and D 👇
+    totalTeachingUnits += Number(formData.sectionA_AdminUnits) || 0; // Added Section A!
+    totalTeachingUnits += sumUnits(formData.sectionB_WithinCollege);
+    totalTeachingUnits += sumUnits(formData.sectionC_OtherCollege);
+    totalTeachingUnits += sumUnits(formData.sectionD_AdminWork);
+
+    let totalEffectiveUnits = totalTeachingUnits; 
+    let totalRemedialUnits = sumUnits(formData.sectionG_Remedial);
     
-    return { totalTeachingUnits, totalEffectiveUnits };
+    return { totalTeachingUnits, totalEffectiveUnits, totalRemedialUnits };
 };
-
 // ==========================================
-// 📝 1. CREATE / SUBMIT ATA (Faculty Action)
+// 📝 1. CREATE / SUBMIT ATA 
 // ==========================================
-exports.submitATA = async (req, res) => {
+export const submitATA = async (req, res) => { 
     try {
-        // 1. Catch the JSON payload from Bonzo's frontend
-        const { term, academicYear, courseAssignments, action } = req.body;
-        const userID = req.user._id; // We will get this from your Auth Middleware later
+        const formData = req.body; 
+        const userID = req.user._id; 
 
-        // 2. Run the Math Engine
-        const totals = calculateUnits(courseAssignments || []);
+        const totals = calculateUnits(formData);
 
-        // 3. The State Machine (Initial Phase)
-        // If they click "Save Draft", stay DRAFT. If "Submit", move to PENDING_CHAIR.
         let newStatus = 'DRAFT';
-        if (action === 'SUBMIT') {
+        if (formData.action === 'SUBMIT') {
             newStatus = 'PENDING_CHAIR';
         }
 
-        // 4. Package it for the database
         const newForm = new ATAForm({
-            userID,
-            term,
-            academicYear,
-            courseAssignments,
+            userID: userID,
+            facultyName: formData.facultyName, 
+            position: formData.position,
+            college: formData.college,
+            employmentType: formData.employmentType,
+            sectionA_AdminUnits: formData.sectionA_AdminUnits || 0,
+            address: formData.address,
+            term: formData.term,
+            academicYear: formData.academicYear,
+            
+
+            sectionB_WithinCollege: formData.sectionB_WithinCollege,
+            sectionC_OtherCollege: formData.sectionC_OtherCollege,
+            sectionD_AdminWork: formData.sectionD_AdminWork,
+            sectionE_Practicum: formData.sectionE_Practicum,
+            sectionF_OutsideEmployment: formData.sectionF_OutsideEmployment,
+            sectionG_Remedial: formData.sectionG_Remedial,
+
             totalTeachingUnits: totals.totalTeachingUnits,
             totalEffectiveUnits: totals.totalEffectiveUnits,
+            totalRemedialUnits: totals.totalRemedialUnits,
             status: newStatus
         });
 
-        // 5. Save to Database 
-        // Note: Check with Bastasa if Mongoose handles the mainDB/backup replication automatically here!
         await newForm.save(); 
 
         res.status(201).json({ message: "ATA Form saved successfully!", data: newForm });
@@ -54,42 +84,88 @@ exports.submitATA = async (req, res) => {
         res.status(500).json({ error: "Failed to submit ATA Form" });
     }
 };
-
 // ==========================================
-// 🚦 2. ENDORSE / APPROVE / RETURN (Admin Action)
+// 🚦 5. ENDORSE / APPROVE / RETURN (Admin Action)
 // ==========================================
-exports.updateFormStatus = async (req, res) => {
+export const approveATA = async (req, res) => {
     try {
-        const formId = req.params.id;
-        const { action, remarks } = req.body; // e.g., action = 'ENDORSE' or 'RETURN'
-        const approverRole = req.user.role; // e.g., 'CHAIR' or 'DEAN'
+        const { action, remarks, targetStatus } = req.body;
+        const form = await ATAForm.findById(req.params.id);
+        const approverRole = req.user.role;
 
-        // 1. Fetch the form (Asst Lead Rule: Reads hit mainDB only)
-        const form = await ATAForm.findById(formId);
-        if (!form) return res.status(404).json({ error: "Form not found" });
+        if (action === 'RETURN') {
+            form.status = 'DRAFT';
+        } else if (action === 'ENDORSE') {
+            // If the UI sent a specific target (like Skip to Dean), use it.
+            // Otherwise, use the smart logic.
+            if (targetStatus) {
+                form.status = targetStatus;
+            } else {
+                const hasPracticum = form.sectionE_Practicum?.length > 0;
+                form.status = hasPracticum ? 'PENDING_PRACTICUM' : 'PENDING_DEAN';
+            }
+        }
 
-        // 2. The State Machine (Switch-Case Logic goes here!)
-        // TODO: Write your rules mapping what happens when a Chair vs. Dean clicks a button.
-        /* Example Stub:
-           if (approverRole === 'CHAIR' && action === 'ENDORSE' && form.status === 'PENDING_CHAIR') {
-               form.status = 'PENDING_DEAN';
-           }
-        */
-
-        // 3. Update the Audit Trail (Push the new signature into the array)
         form.approvalHistory.push({
-            approverRole: approverRole,
-            approvalStatus: action, 
+            approverRole,
+            approvalStatus: action === 'RETURN' ? 'RETURNED' : 'ENDORSED',
             remarks: remarks || ""
         });
 
-        // 4. Save updates to the DB
         await form.save();
+        res.status(200).json({ message: "Success" });
+    } catch (error) { res.status(500).json({ error: error.message }); }
+};
+// ==========================================
+// 📥 3. GET PENDING APPROVALS (The Inbox)
+// ==========================================
+export const getPendingApprovals = async (req, res) => {
+    try {
+        const userRole = req.user.role; 
+        const userProgram = req.user.program; // 👈 Now pulling "CpE" from Marites's profile
 
-        res.status(200).json({ message: "Form status updated!", data: form });
+        let query = {};
+
+        // 👇 STRICT BUSINESS LOGIC: Match the Program 👇
+        if (userRole === 'Program-Chair') {
+            query = { 
+                status: 'PENDING_CHAIR', 
+                college: userProgram // Looking for forms where the user typed "CpE"
+            };
+        } 
+        else if (userRole === 'Dean') {
+            query = { 
+                status: 'PENDING_DEAN', 
+                // Deans usually oversee the whole department (CEA), but we'll keep it simple forn ow
+            };
+        }
+
+        const pendingForms = await ATAForm.find(query).sort({ createdAt: -1 });
+
+        res.render('pending-approvals', {
+            forms: pendingForms,
+            role: userRole,
+            college: userProgram
+        });
 
     } catch (error) {
-        console.error("Error updating status:", error);
-        res.status(500).json({ error: "Failed to update form status" });
+        console.error("Error fetching pending forms:", error);
+        res.status(500).send("Failed to load pending forms.");
+    }
+};
+
+// ==========================================
+// 📄 4. VIEW SPECIFIC FORM (Read-Only)
+// ==========================================
+export const viewATAForm = async (req, res) => {
+    try {
+        const form = await ATAForm.findById(req.params.id);
+        if (!form) return res.status(404).send("Form not found");
+        
+        // Render the review page and pass the form data
+        res.render('review-ata', { form: form, role: req.user.role });
+    } catch (error) {
+        console.error("Error fetching form:", error);
+        res.status(500).send("Failed to load form.");
     }
 };
