@@ -64,6 +64,7 @@ import syllabusApprovalTechAsstRouter from "./routes/Syllabus/syllabusApprovalTe
 import endorseSyllabusRouter from "./routes/Syllabus/endorseSyllabusRoutes.js";
 import deanApprovalRouter from "./routes/Syllabus/deanApprovalRoutes.js";
 import adminOverviewRouter from "./routes/Syllabus/adminOverviewRoute.js";
+import scheduleSyllabusRoutes from "./routes/Syllabus/scheduleSyllabusRoutes.js";
 
 // ========================
 // Routes
@@ -87,6 +88,7 @@ app.use("/syllabus/create", newSyllabusRoutes);
 app.use("/syllabus/info", infoSyllabusRoutes);
 app.use("/syllabus/approve", syllabusApprovalRoutes);
 app.use("/syllabus/edit", reviewSyllabusRoutes);
+app.use("/syllabus/schedule", scheduleSyllabusRoutes);
 app.use("/syllabus/tech-assistant", syllabusApprovalTechAsstRouter);
 app.use("/syllabus/prog-chair", endorseSyllabusRouter);
 app.use("/syllabus/dean/approve", deanApprovalRouter);
