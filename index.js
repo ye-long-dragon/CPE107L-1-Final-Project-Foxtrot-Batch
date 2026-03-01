@@ -4,8 +4,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import connectDB from "./database/mongo-dbconnect.js";
 import session from 'express-session';
-import cookieParser from 'cookie-parser'; // Added for ATA auth
-import { requireAuth } from './middleware/authMiddleware.js'; // Added for ATA auth
+
 
 // ========================
 // ES Module __dirname fix
@@ -26,7 +25,6 @@ const PORT = process.env.PORT || 3000;
 // JSON
 app.use(express.json()); 
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser()); // Added for ATA auth
 
 // Session
 app.use(session({
@@ -55,7 +53,7 @@ app.use(express.static(path.join(__dirname, "public")));
 // ========================
 // Main Pages
 import loginRoutes from "./routes/MainPages/loginRoutes.js";
-import institutionRoutes from "./routes/MainPages/institutionRoutes.js";
+import professorRoutes from "./routes/MainPages/professorRoutes.js";
 import adminRoutes from "./routes/MainPages/adminRoutes.js";
 import progChairRoutes from "./routes/MainPages/progChairRoutes.js";
 import deanRoutes from "./routes/MainPages/deanRoutes.js";
@@ -79,15 +77,13 @@ import landingPageRouter from "./routes/Syllabus/landingPage.js";
 
 // ATA
 import ataPages from "./routes/ATA/ataPages.js";
-import ataRoutes from './routes/ataRoutes.js'; // Added ATA API logic
-import authRoutes from './routes/authRoutes.js'; // Added Auth logic
 
 // ========================
 // Routes
 // ========================
 // Main Pages
 app.use("/login",loginRoutes);
-app.use("/institution",institutionRoutes);
+app.use("/institution",professorRoutes);
 app.use("/admin/users", userRoutes); //admin user API
 app.use("/admin",adminRoutes);
 app.use("/progChair", progChairRoutes);
@@ -110,31 +106,9 @@ app.use("/api/tla",               tlaApiRoutes);
 //Syllabus
 app.use("/syllabus", landingPageRouter);
 
-// ATA Pages & API
-app.use("/auth", authRoutes); // Auth logic for ATA
+// ATA Pages
 app.use("/ata", ataPages);
-app.use("/api/ata", ataRoutes); // API for ATA submissions
 
-// --- ATA Secured Dashboard Routes ---
-app.get('/dashboard/window', requireAuth, (req, res) => {
-    res.render('dashboard_window', { 
-        user: req.user, 
-        role: req.user.role,
-        employmentType: req.user.employmentType
-    });
-});
-
-app.get('/ata/new', requireAuth, (req, res) => {
-    res.render('new-ata', { 
-        user: req.user, 
-        role: req.user.role,
-        employmentType: req.user.employmentType
-    });
-});
-
-app.get('/submissions', requireAuth, (req, res) => res.render('submissions'));
-app.get('/reports', requireAuth, (req, res) => res.render('reports'));
-app.get('/profile', requireAuth, (req, res) => res.render('profile'));
 
 // ========================
 // 404 (LAST)
