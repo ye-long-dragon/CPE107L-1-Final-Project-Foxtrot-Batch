@@ -100,7 +100,7 @@ body {
 .card-icon svg {
     width: 70px;
     height: 70px;
-    stroke: #555;
+    stroke: var(--text-muted);
 }
 
 .card-title {
@@ -133,9 +133,9 @@ body {
 .week-btn {
     display: flex;
     width: 100%;
-    background: #ffffff;
+    background: var(--color-white);
     border-radius: 171.5px;
-    border: #ffffff;
+    border: var(--color-white);
     padding: 25px;
     position: relative;
     transition: 0.2s;
@@ -239,7 +239,7 @@ body {
 .no-tla-msg {
     padding: 30px;
     text-align: center;
-    color: #555;
+    color: var(--text-muted);
     font-size: 1rem;
 }
 
@@ -261,7 +261,7 @@ body {
     left: 50%;
     transform: translateX(-50%) translateY(20px);
     background: #2e7d32;
-    color: #fff;
+    color: var(--color-white);
     padding: 12px 28px;
     border-radius: 25px;
     font-size: 0.9rem;

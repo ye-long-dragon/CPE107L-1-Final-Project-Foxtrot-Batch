@@ -60,8 +60,10 @@ import userRoutes from './routes/APIs/userRoutes.js';
 
 // TLA
 import dashBoardRoutes from "./routes/TLA/tlaDashboardRoutes.js";
+import coursesRoutes from "./routes/TLA/tlaCoursesRoutes.js";
 import overviewRoutes from "./routes/TLA/tlaOverviewRoutes.js";
 import formRoutes from "./routes/TLA/tlaFormRoutes.js";
+import approvalRoutes from "./routes/TLA/tlaApprovalRoutes.js";
 
 // TLA APIs
 import tlaApiRoutes          from "./routes/APIs/TLA/tlaRoutes.js";
@@ -84,9 +86,11 @@ app.use("/progChair", progChairRoutes);
 
 //TLA Pages
 app.use("/tla/dashboard", dashBoardRoutes);
+app.use("/tla/courses", coursesRoutes);
 app.use("/tla/overview", overviewRoutes);
 app.use("/tla/form", formRoutes);
-app.get("/tla", (req, res) => res.redirect("/tla/overview"));
+app.use("/tla/approval", approvalRoutes);
+app.get("/tla", (req, res) => res.redirect("/tla/courses"));
 
 // TLA APIs
 app.use("/api/tla/approval",      tlaApprovalApiRoutes);

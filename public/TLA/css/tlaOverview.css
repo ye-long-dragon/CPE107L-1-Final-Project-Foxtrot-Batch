@@ -11,7 +11,7 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f0f2f5;
+    background-color: var(--page-bg);
 }
 
 /* ============================================================
@@ -19,9 +19,9 @@ body {
    ============================================================ */
 
 .main-content {
-    margin-left: 260px;
+    margin-left: 0;
     min-height: 100vh;
-    background-color: #f0f2f5;
+    background-color: var(--page-bg);
     display: flex;
     flex-direction: column;
 }
@@ -53,7 +53,7 @@ body {
     z-index: 10;
     background: rgba(0, 0, 0, 0.40);
     border: 1px solid rgba(255, 255, 255, 0.30);
-    color: #ffffff;
+    color: var(--text-on-dark);
     padding: 6px 14px;
     border-radius: 20px;
     font-size: 13px;
@@ -77,7 +77,7 @@ body {
     bottom: 20px;
     left: 24px;
     z-index: 10;
-    color: #ffffff;
+    color: var(--text-on-dark);
     font-size: 20px;
     font-weight: 700;
     letter-spacing: 1px;
@@ -113,7 +113,7 @@ body {
    ============================================================ */
 
 .module-card {
-    background: #ffffff;
+    background: var(--color-white);
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     overflow: hidden;
@@ -164,13 +164,13 @@ body {
 .module-title {
     font-size: 16px;
     font-weight: 700;
-    color: #1a1a1a;
+    color: var(--text-on-light);
     margin-bottom: 2px;
 }
 
 .module-desc {
     font-size: 12px;
-    color: #888;
+    color: var(--text-muted);
     margin-bottom: 4px;
 }
 
@@ -189,7 +189,7 @@ body {
 .module-header-status {
     font-size: 11px;
     font-weight: 600;
-    color: #444;
+    color: var(--text-on-light);
     white-space: nowrap;
     margin-right: 8px;
 }
@@ -243,6 +243,13 @@ body {
     background: #f7f7f7;
 }
 
+/* Disabled week row (no TLA submitted yet — nothing to review) */
+.form-item-disabled {
+    opacity: 0.45;
+    pointer-events: none;
+    cursor: default;
+}
+
 /* Coloured status dot */
 .form-dot {
     width: 12px;
@@ -268,7 +275,7 @@ body {
     flex: 1;
     font-size: 13px;
     font-weight: 500;
-    color: #2d2d2d;
+    color: var(--text-on-light);
 }
 
 /* Form item status text */
@@ -281,10 +288,10 @@ body {
    STATUS COLOUR MAP
    ============================================================ */
 
-.sts-not-started { color: #e11d48; }  /* eye-catching red – needs action  */
-.sts-pending     { color: #f97316; }  /* orange                           */
-.sts-approved    { color: #16a34a; }  /* green                            */
-.sts-rejected    { color: #dc2626; }  /* red                              */
+.sts-not-started { color: var(--accent-primary); }  /* red – needs action  */
+.sts-pending     { color: #f97316; }                  /* orange              */
+.sts-approved    { color: #16a34a; }                  /* green               */
+.sts-rejected    { color: var(--accent-primary); }    /* red                 */
 
 /* ============================================================
    RIGHT: INFO PANEL
@@ -294,7 +301,7 @@ body {
     width: 280px;
     min-width: 260px;
     max-width: 300px;
-    background: #ffffff;
+    background: var(--color-white);
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     border: 1px solid #e8e8e8;
@@ -329,8 +336,22 @@ body {
 .panel-username {
     font-size: 14px;
     font-weight: 700;
-    color: #1a1a1a;
+    color: var(--text-on-light);
     text-align: center;
+}
+
+/* Role badge shown under approver name */
+.panel-role-badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: #fff;
+    background: var(--color-mapua-red, #c0392b);
+    padding: 3px 14px;
+    border-radius: 12px;
+    text-align: center;
+    margin: 4px auto 8px;
 }
 
 /* Info / Schedule sections */
@@ -351,14 +372,14 @@ body {
 
 .panel-info-row {
     font-size: 11px;
-    color: #444;
+    color: var(--text-on-light);
     margin-bottom: 5px;
     line-height: 1.5;
 }
 
 .pi-key {
     font-weight: 700;
-    color: #222;
+    color: var(--color-charcoal);
 }
 
 /* Course schedule card */
@@ -386,7 +407,7 @@ body {
 .sched-primary {
     font-size: 12px;
     font-weight: 700;
-    color: #1a1a1a;
+    color: var(--text-on-light);
     margin-bottom: 2px;
 }
 

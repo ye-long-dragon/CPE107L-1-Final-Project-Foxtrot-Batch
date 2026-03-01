@@ -4,6 +4,7 @@ import {
     Pre_Main,   Pre_B1,   Pre_B2,
     Post_Main,  Post_B1,  Post_B2
 } from '../models/TLA/tlaModels.js';
+import Syllabus from '../models/Syllabus/syllabus.js';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -18,11 +19,55 @@ export function requireLogin(req, res, next) {
     next();
 }
 
+// ─── Allowed roles for the approval page ─────────────────────────────────────
+const APPROVAL_ROLES = ['Program-Chair', 'Dean', 'Admin', 'Super-Admin'];
+
+// ─── Role guard: only reviewers can access the approval page ─────────────────
+// TODO: Re-enable role check before production
+export function requireApprovalRole(req, res, next) {
+    // const role = req.session?.user?.role;
+    // if (!role || !APPROVAL_ROLES.includes(role)) {
+    //     return res.status(403).send('Forbidden — you do not have permission to access this page.');
+    // }
+    next();
+}
+
 // ─── Strip _id for backup copies ────────────────────────────────────────────
 function stripId(doc) {
     const d = doc.toObject ? doc.toObject() : { ...doc };
     delete d._id;
     return d;
+}
+
+// ─── Static course data (shared between getCourses & getOverview) ────────────
+// TODO: Replace with Syllabus DB queries when ready.
+const STATIC_COURSES = [
+    { syllabusId: '1', courseCode: 'SS067',  courseTitle: 'Life and Works of Mambo',        section: 'A301', term: '2nd Trimester', schoolYear: '2025-2026', hasBanner: false },
+    { syllabusId: '2', courseCode: 'CS101',  courseTitle: 'Introduction to Computing',      section: 'B201', term: '2nd Trimester', schoolYear: '2025-2026', hasBanner: false },
+    { syllabusId: '3', courseCode: 'CS201',  courseTitle: 'Data Structures and Algorithms', section: 'A101', term: '2nd Trimester', schoolYear: '2025-2026', hasBanner: false },
+    { syllabusId: '4', courseCode: 'GE104',  courseTitle: 'Understanding the Self',         section: 'C102', term: '1st Trimester', schoolYear: '2025-2026', hasBanner: false },
+    { syllabusId: '5', courseCode: 'IT301',  courseTitle: 'Web Systems and Technologies',   section: 'A301', term: '1st Trimester', schoolYear: '2025-2026', hasBanner: false },
+    { syllabusId: '6', courseCode: 'GE101',  courseTitle: 'Mathematics in the Modern World', section: 'B102', term: '2nd Trimester', schoolYear: '2025-2026', hasBanner: false },
+    { syllabusId: '7', courseCode: 'CS301',  courseTitle: 'Operating Systems',              section: 'A201', term: '1st Trimester', schoolYear: '2025-2026', hasBanner: false },
+    { syllabusId: '8', courseCode: 'IS201',  courseTitle: 'Information Management',         section: 'B301', term: '2nd Trimester', schoolYear: '2025-2026', hasBanner: false },
+];
+
+// ─── GET /tla/courses ────────────────────────────────────────────────────────
+// Lists courses. Currently uses static placeholder data for UI testing.
+// TODO: Replace with Syllabus DB queries when ready.
+export async function getCourses(req, res) {
+    try {
+        const user = req.session.user;
+
+        res.render('TLA/tlaCourses', {
+            currentPageCategory: 'tla',
+            user,
+            courses: STATIC_COURSES
+        });
+    } catch (error) {
+        console.error('getCourses error:', error);
+        res.status(500).send('Server error');
+    }
 }
 
 // ─── GET /tla/dashboard ──────────────────────────────────────────────────────
@@ -265,10 +310,26 @@ export async function updateTLA(req, res) {
     }
 }
 
-// ─── GET /tla/overview ───────────────────────────────────────────────────────
+// ─── GET /tla/overview/:syllabusId ────────────────────────────────────────────
+// Renders the appropriate overview page based on user role.
+// Currently uses static course lookup for UI testing.
 export async function getOverview(req, res) {
     try {
-        const userID = req.session.user.id;
+        const userID   = req.session.user.id;
+        const userRole = req.session.user.role;
+
+        // ── Look up course from static data ──
+        const sid = req.params.syllabusId;
+        const found = sid ? STATIC_COURSES.find(c => c.syllabusId === sid) : null;
+
+        const courseInfo = {
+            syllabusId:  found ? found.syllabusId  : null,
+            courseCode:   found ? found.courseCode   : 'SS067',
+            courseTitle:  found ? found.courseTitle  : 'Life and Works of Mambo',
+            section:      found ? found.section     : 'A301',
+            schoolYear:   found ? found.schoolYear  : '2025-2026',
+            term:         found ? found.term        : '2nd Trimester'
+        };
 
         const tlas = await TLA_Main.find({ userID }).sort({ weekNumber: 1 });
         const tlaIDs = tlas.map(t => t._id);
@@ -290,7 +351,7 @@ export async function getOverview(req, res) {
             }
         }
 
-        // Build all 14 week slots
+        // Build all 14 week slots (auto week numbers 1–14)
         const weeks = [];
         for (let w = 1; w <= 14; w++) {
             if (weekMap[w]) {
@@ -300,10 +361,15 @@ export async function getOverview(req, res) {
             }
         }
 
-        res.render('TLA/tlaOverview', {
+        // Role-based view selection
+        const isApprover = APPROVAL_ROLES.includes(userRole);
+        const viewName = isApprover ? 'TLA/tlaOverviewApproval' : 'TLA/tlaOverview';
+
+        res.render(viewName, {
             currentPageCategory: 'tla',
             user: req.session.user,
-            weeks
+            weeks,
+            courseInfo
         });
     } catch (error) {
         console.error('getOverview error:', error);
@@ -410,5 +476,188 @@ export async function generateDocx(req, res) {
     } catch (err) {
         console.error('generateDocx error:', err);
         res.status(500).send('Failed to generate PDF');
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+//  APPROVAL PAGE — Program-Chair / Dean / Admin / Super-Admin
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ─── Helper: determine step statuses for the approval tracker ────────────────
+// Approval chain: Faculty → Technical → Program Chair → Dean → HR
+// Each step is one of: approved, ongoing, pending, rejected
+function buildApprovalSteps(tlaStatus, approvalDoc) {
+    const steps = {
+        faculty:      'pending',
+        technical:    'pending',
+        programChair: 'pending',
+        dean:         'pending',
+        hr:           'pending'
+    };
+
+    if (!tlaStatus || tlaStatus === 'Draft') return steps;
+
+    // Faculty submitted
+    if (['Pending', 'Approved', 'Returned', 'Archived'].includes(tlaStatus)) {
+        steps.faculty = 'approved';
+    }
+
+    const aStatus = approvalDoc?.status || 'Not Submitted';
+
+    // Walk the chain based on who has approved so far
+    if (aStatus === 'Pending') {
+        // Awaiting technical assessment
+        steps.technical = 'ongoing';
+    } else if (aStatus === 'Returned') {
+        // Something was returned — mark the chain as rejected from the
+        // point that sent it back
+        steps.faculty   = 'rejected';
+        steps.technical = 'rejected';
+    } else if (aStatus === 'Approved') {
+        steps.technical    = 'approved';
+        steps.programChair = 'approved';
+        steps.dean         = 'approved';
+        steps.hr           = 'ongoing';   // Ready for HR archival
+    }
+
+    // Archived = fully completed flow
+    if (tlaStatus === 'Archived') {
+        steps.faculty      = 'approved';
+        steps.technical    = 'approved';
+        steps.programChair = 'approved';
+        steps.dean         = 'approved';
+        steps.hr           = 'approved';
+    }
+
+    return steps;
+}
+
+// ─── GET /tla/approval/:id ───────────────────────────────────────────────────
+// Renders the approval review page for a specific TLA.
+// Also works without :id for static UI preview at /tla/approval
+export async function getApprovalPage(req, res) {
+    try {
+        const tlaID = req.params.id;
+
+        // ── No ID provided → render static placeholder for UI preview ──
+        if (!tlaID) {
+            return res.render('TLA/tlaApproval', {
+                currentPageCategory: 'tla',
+                user: req.session.user,
+                courseName:   '[COURSE NAME]',
+                courseCode:   '[COURSE CODE]',
+                section:      '[COURSE SECTION]',
+                academicYear: '[ACADEMIC YEAR]',
+                fileType:     '[FILE TYPE]',
+                tla:          null,
+                preDigital:   null,
+                postDigital:  null,
+                facultyName:  '—',
+                approvalSteps: null,
+                approvalStatusId: null,
+                currentStatus:    'Pending',
+                existingComment:  '',
+                signatureUrl:     null
+            });
+        }
+
+        const tla = await TLA_Main.findById(tlaID);
+
+        if (!tla) return res.status(404).send('TLA not found');
+
+        const [preDigital, postDigital, approvalStatus] = await Promise.all([
+            Pre_Main.findOne({ tlaID: tla._id }),
+            Post_Main.findOne({ tlaID: tla._id }),
+            Status_Main.findOne({ tlaID: tla._id })
+        ]);
+
+        const approvalSteps = buildApprovalSteps(tla.status, approvalStatus);
+
+        res.render('TLA/tlaApproval', {
+            currentPageCategory: 'tla',
+            user: req.session.user,
+
+            // Header info (static for now — ready for DB connection)
+            courseName:   tla.courseCode || '[COURSE NAME]',
+            courseCode:    tla.courseCode || '[COURSE CODE]',
+            section:      tla.section    || '[COURSE SECTION]',
+            academicYear: '[2025-2026]',
+
+            fileType: 'TLA',
+
+            tla,
+            preDigital:  preDigital  || null,
+            postDigital: postDigital || null,
+            facultyName: tla.facultyFacilitating || '—',
+
+            approvalSteps,
+            approvalStatusId: approvalStatus ? approvalStatus._id : null,
+            currentStatus:    approvalStatus ? approvalStatus.status : 'Pending',
+            existingComment:  approvalStatus ? approvalStatus.remarks : '',
+            signatureUrl:     null
+        });
+    } catch (error) {
+        console.error('getApprovalPage error:', error);
+        res.status(500).send('Server error');
+    }
+}
+
+// ─── POST /tla/approval/:id ─────────────────────────────────────────────────
+// Processes the reviewer's action (draft save or submit verdict).
+export async function postApprovalAction(req, res) {
+    try {
+        const tlaID = req.params.id;
+        const { comment, status, action } = req.body;
+
+        const tla = await TLA_Main.findById(tlaID);
+        if (!tla) return res.status(404).json({ error: 'TLA not found' });
+
+        let newTlaStatus  = tla.status;
+        let newApprStatus = status || 'Pending';
+
+        if (action === 'submit') {
+            if (status === 'Approved') {
+                newTlaStatus  = 'Approved';
+                newApprStatus = 'Approved';
+            } else if (status === 'Returned') {
+                newTlaStatus  = 'Returned';
+                newApprStatus = 'Returned';
+            } else {
+                newTlaStatus  = 'Pending';
+                newApprStatus = 'Pending';
+            }
+        }
+
+        if (action === 'submit') {
+            await TLA_Main.findByIdAndUpdate(tlaID, { status: newTlaStatus });
+        }
+
+        const approvalUpdate = {
+            tlaID,
+            status:       newApprStatus,
+            remarks:      comment || '',
+            approvedBy:   req.session.user
+                          ? `${req.session.user.firstName} ${req.session.user.lastName}`
+                          : 'Unknown',
+            approvalDate: action === 'submit' ? new Date() : undefined
+        };
+
+        await Promise.all([
+            Status_Main.findOneAndUpdate({ tlaID }, approvalUpdate, { upsert: true }),
+            Status_B1.findOneAndUpdate({ tlaID },   approvalUpdate, { upsert: true }),
+            Status_B2.findOneAndUpdate({ tlaID },   approvalUpdate, { upsert: true })
+        ]);
+
+        if (req.headers['content-type']?.includes('application/json')) {
+            return res.json({ success: true, status: newApprStatus });
+        }
+        res.redirect('/tla/approval/' + tlaID);
+
+    } catch (error) {
+        console.error('postApprovalAction error:', error);
+        if (req.headers['content-type']?.includes('application/json')) {
+            return res.status(500).json({ error: 'Server error' });
+        }
+        res.status(500).send('Server error');
     }
 }
