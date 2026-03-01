@@ -95,7 +95,7 @@ app.use("/syllabus", landingPageRouter);
 app.use("/ata", ataPages);
 
 // TWS
-app.use("/twa", twsRoutes);
+app.use("/tws", twsRoutes);
 
 
 // ========================

@@ -1,51 +1,57 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <title>TWS - Archived Teaching Workload Sheets</title>
-    <link rel="stylesheet" href="/TWS/css/twsStyle.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TWS - Approval Routing</title>
+
+  <link rel="stylesheet" href="/common/css/variables.css" />
+  <link rel="stylesheet" href="/TWS/css/twsStyle.css" />
 </head>
-<body class="bg">
-  <%- include('../partials/sideMenuBar') %>
 
-  <div class="main">
-    <div class="shell">
-      <div class="page-title">TWS - Archived Teaching Workload Sheets</div>
+<body class="tws-app-body">
+  <div class="tws-app-layout">
+    <aside class="tws-app-sidebar">
+      <%- include("../partials/sideMenuBar", { currentPageCategory: "tws" }) %>
+    </aside>
 
-      <div class="panel">
-        <div class="panel-title">Archived Teaching Workload Sheets</div>
+    <main class="tws-app-main">
+      <div class="tws-app-center">
 
-        <div class="table">
-          <div class="row head">
-            <div>Academic Year</div>
-            <div>Term</div>
-            <div>Date Submitted</div>
-            <div class="right">Action</div>
+        <div class="tws-app-title-pill">
+          <h1>TWS - Approval Routing</h1>
+        </div>
+
+        <section class="tws-card">
+          <div class="tws-routing-box">
+            <div class="tws-routing-top">
+              <div class="tws-routing-approvedby">APPROVED BY:</div>
+              <div class="tws-routing-role">DEAN</div>
+              <div class="tws-routing-small">Signature: [ Insert ]</div>
+              <div class="tws-routing-small">Date: __ / __ / __</div>
+            </div>
+
+            <div class="tws-routing-bottom">
+              <div class="tws-routing-label">
+                <span class="tws-routing-arrow">⬇</span> Approve
+              </div>
+
+              <div class="tws-routing-line"></div>
+
+              <form class="tws-routing-actions" method="POST" action="/tws/approval/<%= tws.id %>">
+                <button class="tws-pill-btn tws-pill-green" type="submit" name="action" value="approve">Approve</button>
+                <button class="tws-pill-btn tws-pill-white" type="submit" name="action" value="reject">Reject</button>
+              </form>
+            </div>
           </div>
 
-          <% if (!list.length) { %>
-            <div class="row">
-              <div style="grid-column: 1 / -1; opacity:.8;">No archived/submitted TWS yet.</div>
-            </div>
-          <% } %>
+          <div class="tws-footer-actions" style="justify-content:flex-start;">
+            <a class="tws-btn-white" href="/tws/archived">Back</a>
+          </div>
+        </section>
 
-          <% list.forEach((tws) => { %>
-            <div class="row">
-              <div><%= tws.faculty.acadYear || "2025 - 2026" %></div>
-              <div><%= tws.faculty.term || "1st" %></div>
-              <div><%= new Date(tws.createdAt).toLocaleDateString() %></div>
-              <div class="right">
-                <a class="pill" href="/twa/summary/<%= tws.id %>">View</a>
-              </div>
-            </div>
-          <% }) %>
-        </div>
-
-        <div class="center">
-          <a class="btn btn-big" href="/twa/dashboard">OK</a>
-        </div>
       </div>
-    </div>
+    </main>
   </div>
 </body>
 </html>

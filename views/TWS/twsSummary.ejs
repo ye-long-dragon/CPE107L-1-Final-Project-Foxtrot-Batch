@@ -1,46 +1,88 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TWS - Summary And Preview</title>
+
+  <link rel="stylesheet" href="/common/css/variables.css" />
   <link rel="stylesheet" href="/TWS/css/twsStyle.css" />
 </head>
-<body class="bg">
-  <%- include('../partials/sideMenuBar') %>
 
-  <div class="main">
-    <div class="shell">
-      <div class="page-title">TWS - Summary And Preview</div>
+<body class="tws-app-body">
+  <div class="tws-app-layout">
+    <aside class="tws-app-sidebar">
+      <%- include("../partials/sideMenuBar", { currentPageCategory: "tws" }) %>
+    </aside>
 
-      <form class="panel summary" method="POST" action="/twa/summary/<%= tws.id %>">
-        <div class="summary-box">
-          <div class="summary-left">
-            <div class="panel-title">Faculty Information</div>
-            <div class="kv">
-              <div>Faculty Name:</div><div><%= tws.faculty.name || "—" %></div>
-              <div>Employee ID:</div><div><%= tws.faculty.empId || "—" %></div>
-              <div>Department:</div><div><%= tws.faculty.dept || "—" %></div>
-              <div>Academic Year:</div><div><%= tws.faculty.acadYear || "—" %></div>
-              <div>Term:</div><div><%= tws.faculty.term || "—" %></div>
-              <div>Employment Status:</div><div><%= tws.faculty.empStatus || "—" %></div>
-            </div>
+    <main class="tws-app-main">
+      <div class="tws-app-center">
 
-            <div class="panel-title mt">Teaching Load Summary</div>
-            <div class="kv two-col">
-              <div>Total Units:</div><div><%= tws.totals.totalUnits %></div>
-              <div>Total Hours (Lec/Lab):</div><div><%= tws.totals.totalHours %></div>
-              <div>Equivalent Load:</div><div><%= tws.totals.equivLoad %></div>
-              <div>Equivalent Non-Teaching Load:</div><div>0</div>
-            </div>
-          </div>
-
-          <div class="summary-right">
-            <button class="btn btn-green btn-stack" type="submit" name="action" value="submit">Submit TWS</button>
-            <button class="btn btn-stack" type="submit" name="action" value="edit">Edit</button>
-          </div>
+        <!-- Header pill -->
+        <div class="tws-app-title-pill">
+          <h1>TWS - Summary And Preview</h1>
         </div>
-      </form>
-    </div>
+
+        <section class="tws-card">
+          <form method="POST" action="/tws/summary/<%= tws.id %>">
+
+            <div style="display:flex; gap:18px; align-items:flex-start; justify-content:space-between; flex-wrap:wrap;">
+              
+              <!-- LEFT: info -->
+              <div style="flex: 1; min-width: 520px;">
+                
+                <div class="tws-card-title" style="margin-bottom:10px;">Faculty Information</div>
+
+                <div style="display:grid; grid-template-columns: 180px 1fr; gap:10px 14px; font-size:12px;">
+                  <div style="font-weight:800;">Faculty Name:</div><div><%= tws.faculty?.name || "—" %></div>
+                  <div style="font-weight:800;">Employee ID:</div><div><%= tws.faculty?.empId || "—" %></div>
+                  <div style="font-weight:800;">Department:</div><div><%= tws.faculty?.dept || "—" %></div>
+                  <div style="font-weight:800;">Academic Year:</div><div><%= tws.faculty?.acadYear || "—" %></div>
+                  <div style="font-weight:800;">Term:</div><div><%= tws.faculty?.term || "—" %></div>
+                  <div style="font-weight:800;">Employment Status:</div><div><%= tws.faculty?.empStatus || "—" %></div>
+                </div>
+
+                <div class="tws-card-title" style="margin-top:18px;">Teaching Load Summary</div>
+
+                <div style="display:grid; grid-template-columns: 180px 1fr 220px 1fr; gap:10px 14px; font-size:12px; margin-top:10px;">
+                  <div style="font-weight:800;">Total Units:</div><div><%= tws.totals?.totalUnits ?? 0 %></div>
+                  <div style="font-weight:800;">Total Hours (Lec/Lab):</div><div><%= tws.totals?.totalHours ?? 0 %></div>
+
+                  <div style="font-weight:800;">Equivalent Load:</div><div><%= tws.totals?.equivLoad ?? 0 %></div>
+                  <div style="font-weight:800;">Equivalent Non-Teaching Load:</div><div>0</div>
+                </div>
+
+              </div>
+
+              <!-- RIGHT: actions -->
+              <div style="width: 220px; display:flex; flex-direction:column; gap:12px; align-items:flex-end;">
+                <button
+                  type="submit"
+                  name="action"
+                  value="submit"
+                  style="border:none; cursor:pointer; background: var(--tws-green); color:#fff; border-radius:999px; padding: 14px 22px; font-weight:900;"
+                >
+                  Submit to Dean
+                </button>
+
+                <button
+                  type="submit"
+                  name="action"
+                  value="edit"
+                  class="tws-btn-white"
+                  style="cursor:pointer;"
+                >
+                  Edit
+                </button>
+              </div>
+
+            </div>
+
+          </form>
+        </section>
+
+      </div>
+    </main>
   </div>
 </body>
 </html>

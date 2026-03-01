@@ -1,43 +1,75 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <title>TWS - Approval Routing</title>
-    <link rel="stylesheet" href="/TWS/css/twsStyle.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TWS - Submission Status</title>
+
+  <link rel="stylesheet" href="/common/css/variables.css" />
+  <link rel="stylesheet" href="/TWS/css/twsStyle.css" />
 </head>
-<body class="bg">
-  <%- include('../partials/sideMenuBar') %>
-  <div class="main">
-    <div class="shell">
-      <div class="page-title">TWS - Approval Routing</div>
 
-      <form class="panel routing" method="POST" action="/twa/approval/<%= tws.id %>">
-        <div class="routing-box">
-          <div class="routing-top">
-            <div class="routing-title">APPROVED BY:</div>
-            <div class="routing-role">DEAN</div>
-            <div class="routing-small">Signature: [ Insert ]</div>
-            <div class="routing-small">Date: __ / __ / __</div>
-          </div>
+<body class="tws-app-body">
+  <div class="tws-app-layout">
+    <aside class="tws-app-sidebar">
+      <%- include("../partials/sideMenuBar", { currentPageCategory: "tws" }) %>
+    </aside>
 
-          <div class="routing-bottom">
-            <div class="approve-label">
-              <span class="arrow-down">⬇</span> Approve
-            </div>
-            <div class="progress-line"></div>
+    <main class="tws-app-main">
+      <div class="tws-app-center">
 
-            <div class="routing-actions">
-              <button class="btn btn-green" type="submit" name="action" value="approve">Approve</button>
-              <button class="btn" type="submit" name="action" value="reject">Reject</button>
-            </div>
-          </div>
+        <div class="tws-app-title-pill">
+          <h1>TWS - Submission Status</h1>
         </div>
-      </form>
 
-      <div class="bottom-btns">
-        <a class="btn btn-big" href="/twa/archived">Back</a>
+        <section class="tws-card">
+          <div class="tws-card-title" style="margin-bottom:10px;">
+            Your Teaching Workload Sheet has been <b><%= tws.status || "Submitted" %></b>.
+          </div>
+
+          <!-- Stepper -->
+          <div class="tws-stepper">
+            <div class="tws-step tws-step-done">
+              <div class="tws-dot">✔</div>
+              <div class="tws-step-text">Submitted</div>
+            </div>
+
+            <div class="tws-line"></div>
+
+            <div class="tws-step tws-step-pending">
+              <div class="tws-dot"></div>
+              <div class="tws-step-text">Secretary Review</div>
+            </div>
+
+            <div class="tws-line"></div>
+
+            <div class="tws-step tws-step-pending">
+              <div class="tws-dot"></div>
+              <div class="tws-step-text">Chair Endorsement</div>
+            </div>
+
+            <div class="tws-line"></div>
+
+            <div class="tws-step tws-step-wait">
+              <div class="tws-dot"></div>
+              <div class="tws-step-text">Dean Approval</div>
+            </div>
+          </div>
+
+          <!-- Metrics -->
+          <div class="tws-metrics">
+            <div>Total Units:</div><div><%= tws.totals?.totalUnits ?? 0 %></div>
+            <div>Total Hours:</div><div><%= tws.totals?.totalHours ?? 0 %></div>
+          </div>
+
+          <div class="tws-footer-actions">
+            <a class="tws-next" href="/tws/approval/<%= tws.id %>">Next</a>
+            <a class="tws-btn-white" href="/tws/dashboard">Back to Dashboard</a>
+          </div>
+        </section>
+
       </div>
-    </div>
+    </main>
   </div>
 </body>
 </html>

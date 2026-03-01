@@ -1,47 +1,107 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TWS - Faculty Information</title>
+
+  <link rel="stylesheet" href="/common/css/variables.css" />
   <link rel="stylesheet" href="/TWS/css/twsStyle.css" />
 </head>
-<body class="bg">
-  <%- include('../partials/sideMenuBar') %>
 
-  <div class="main">
-    <div class="shell">
-      <div class="page-title">TWS - Faculty Information</div>
+<body class="tws-app-body">
+  <div class="tws-app-layout">
+    <aside class="tws-app-sidebar">
+      <%- include("../partials/sideMenuBar", { currentPageCategory: "tws" }) %>
+    </aside>
 
-      <form class="panel panel-form" method="POST" action="/twa/faculty/<%= tws.id %>">
-        <div class="panel-title">Faculty Information</div>
+    <main class="tws-app-main">
+      <div class="tws-app-center">
 
-        <div class="form-grid">
-          <label>Faculty Name:</label>
-          <input class="bar-input" type="text" name="name" value="<%= tws.faculty.name %>" />
-
-          <label>Employee ID:</label>
-          <input class="bar-input" type="text" name="empId" value="<%= tws.faculty.empId %>" />
-
-          <label>Department:</label>
-          <input class="bar-input" type="text" name="dept" value="<%= tws.faculty.dept %>" />
-
-          <label>Academic Year:</label>
-          <input class="bar-input" type="text" name="acadYear" placeholder="2025 - 2026" value="<%= tws.faculty.acadYear %>" />
-
-          <label>Term:</label>
-          <input class="bar-input" type="text" name="term" placeholder="1st / 2nd / 3rd" value="<%= tws.faculty.term %>" />
-
-          <label>Employee Status:</label>
-          <input class="bar-input" type="text" name="empStatus" value="<%= tws.faculty.empStatus %>" />
+        <!-- Header pill -->
+        <div class="tws-app-title-pill">
+          <h1>TWS - Faculty Information</h1>
         </div>
 
-        <div class="bottom-btns">
-          <a class="btn btn-big" href="/twa/dashboard">Back</a>
-          <button class="btn btn-big" type="submit" name="action" value="save">Save Draft</button>
-          <button class="btn btn-big" type="submit" name="action" value="next">Next</button>
-        </div>
-      </form>
-    </div>
+        <!-- Card -->
+        <section class="tws-card">
+
+          <div class="tws-card-title" style="margin-bottom: 10px;">Faculty Information</div>
+
+          <form method="POST" action="/tws/faculty/<%= tws.id %>">
+
+            <div style="display:grid; grid-template-columns: 160px 1fr; gap: 12px; align-items:center; font-size:12px;">
+
+              <div style="font-weight:800;">Faculty Name:</div>
+              <input
+                type="text"
+                name="name"
+                value="<%= tws.faculty?.name || '' %>"
+                style="height: 16px; border-radius: 999px; border: none; background: rgba(255,255,255,0.25); color:#fff; padding: 12px 14px; outline:none;"
+              />
+
+              <div style="font-weight:800;">Employee ID:</div>
+              <input
+                type="text"
+                name="empId"
+                value="<%= tws.faculty?.empId || '' %>"
+                style="height: 16px; border-radius: 999px; border: none; background: rgba(255,255,255,0.25); color:#fff; padding: 12px 14px; outline:none;"
+              />
+
+              <div style="font-weight:800;">Department:</div>
+              <input
+                type="text"
+                name="dept"
+                value="<%= tws.faculty?.dept || '' %>"
+                style="height: 16px; border-radius: 999px; border: none; background: rgba(255,255,255,0.25); color:#fff; padding: 12px 14px; outline:none;"
+              />
+
+              <div style="font-weight:800;">Academic Year:</div>
+              <input
+                type="text"
+                name="acadYear"
+                placeholder="2025 - 2026"
+                value="<%= tws.faculty?.acadYear || '' %>"
+                style="height: 16px; border-radius: 999px; border: none; background: rgba(255,255,255,0.25); color:#fff; padding: 12px 14px; outline:none;"
+              />
+
+              <div style="font-weight:800;">Term:</div>
+              <input
+                type="text"
+                name="term"
+                placeholder="1st / 2nd / 3rd"
+                value="<%= tws.faculty?.term || '' %>"
+                style="height: 16px; border-radius: 999px; border: none; background: rgba(255,255,255,0.25); color:#fff; padding: 12px 14px; outline:none;"
+              />
+
+              <div style="font-weight:800;">Employee Status:</div>
+              <input
+                type="text"
+                name="empStatus"
+                value="<%= tws.faculty?.empStatus || '' %>"
+                style="height: 16px; border-radius: 999px; border: none; background: rgba(255,255,255,0.25); color:#fff; padding: 12px 14px; outline:none;"
+              />
+            </div>
+
+            <div class="tws-next-wrap" style="margin-top: 16px;">
+              <a class="tws-btn-white" href="/tws/dashboard">Back</a>
+
+              <button class="tws-btn-white" type="submit" name="action" value="save"
+                style="cursor:pointer;">
+                Save Draft
+              </button>
+
+              <button class="tws-next" type="submit" name="action" value="next"
+                style="cursor:pointer;">
+                Next
+              </button>
+            </div>
+
+          </form>
+        </section>
+
+      </div>
+    </main>
   </div>
 </body>
 </html>

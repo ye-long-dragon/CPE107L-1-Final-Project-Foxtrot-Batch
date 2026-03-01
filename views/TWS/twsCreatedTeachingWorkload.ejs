@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>TWS - Created Teaching Workload Sheet</title>
+  <link rel="stylesheet" href="/TWS/css/twsStyle.css" />
+</head>
+
+<body class="tws-app-body">
+<div class="tws-app-layout">
+
+  <aside class="tws-app-sidebar">
+    <%- include("../partials/sideMenuBar", { currentPageCategory: "tws" }) %>
+  </aside>
+
+  <main class="tws-app-main">
+  <div class="tws-app-center">
+
+    <div class="tws-app-title-pill">
+      <h1>TWS: Teaching Workload Sheet</h1>
+    </div>
+
+    <section class="tws-card tws-card-wide">
+      <div class="tws-card-title">Created Teaching Workload Sheet</div>
+
+      <div class="tws-schedule-layout">
+
+        <!-- GRID -->
+        <div class="tws-schedule-grid">
+          <!-- static grid cells for now -->
+          <div class="tws-grid-cell highlight-yellow">ELT1011<br>Mon</div>
+          <div class="tws-grid-cell highlight-blue">CPE2114<br>Tue</div>
+          <div class="tws-grid-cell highlight-purple">GE1033<br>Thu</div>
+          <div class="tws-grid-cell highlight-green">NSTP<br>Wed</div>
+        </div>
+
+        <!-- LOAD DETAILS -->
+        <div class="tws-load-details">
+        <div class="ld-title">Load Details</div>
+
+        <div class="ld-row">Tracking Hours <span><%= (tws.totals?.totalHours || 0).toFixed(2) %></span></div>
+
+        <div style="margin:10px 0; border-top:1px solid rgba(255,255,255,0.25);"></div>
+
+        <% (tws.createdWorkload || []).forEach(s => { %>
+            <div class="ld-row">
+            <%= s.code %> - <%= s.title %>
+            <span><%= Number(s.units || 0).toFixed(2) %></span>
+            </div>
+        <% }) %>
+
+        <div style="margin:10px 0; border-top:1px solid rgba(255,255,255,0.25);"></div>
+
+  <div class="ld-row"><b>Total Units</b> <span><b><%= (tws.createdWorkload || []).reduce((a,x)=>a+Number(x.units||0),0).toFixed(2) %></b></span></div>
+</div>
+
+      <!-- SIGNATURES -->
+      <div class="tws-signatures">
+        <div>
+          <div class="sig-line"></div>
+          <div>Name: test</div>
+          <div>DEAN</div>
+        </div>
+        <div>
+          <div class="sig-line"></div>
+          <div>Name:</div>
+          <div>Program Chair</div>
+        </div>
+      </div>
+
+    </section>
+
+    <div class="tws-footer-actions">
+      
+      <a class="tws-btn-white" href="/tws/create-teaching-workload/<%= tws.id %>">Back</a>  
+      <a class="tws-next" href="/tws/faculty/<%= tws.id %>">Next</a>
+    </div>
+
+  </div>
+  </main>
+</div>
+</body>
+</html>
