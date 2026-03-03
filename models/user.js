@@ -34,7 +34,7 @@ const userSchema = new Schema({
 
 	department: {
         type: String,
-        enum: ["ATYCB", "CAS", "CCIS", "CEA", "CHS"],
+        enum: ["ATYCB", "CAS", "CCIS", "CEA", "CHS", "N/A"],
         required: true
     },
 
@@ -51,7 +51,8 @@ const userSchema = new Schema({
             // CEA
             "AR", "ChE", "CE", "CpE", "EE", "ECE", "IE", "ME",
             // CHS
-            "BIO", "PHARM", "PSYCH", "PT", "MEDTECH"
+            "BIO", "PHARM", "PSYCH", "PT", "MEDTECH" ,
+			"N/A"
         ]
     },
 
