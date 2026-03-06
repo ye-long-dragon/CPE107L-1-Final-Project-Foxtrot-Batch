@@ -48,7 +48,7 @@ function computeTotals(loads = []) {
 ====================================================== */
 router.get("/dashboard", (req, res) => {
   const list = Array.from(twsStore.values()).sort((a, b) => b.createdAt - a.createdAt);
-  res.render("TWS/twsCreatePage", { list, currentPageCategory: "tws" });
+  res.render("TWS/twsFacultyDashboard", { list, currentPageCategory: "tws" });
 });
 
 /* ======================================================
@@ -188,6 +188,19 @@ router.get("/summary/:id", (req, res) => {
   res.render("TWS/twsSummary", { tws, currentPageCategory: "tws" });
 });
 
+router.post("/summary/:id", (req, res) => {
+  const tws = getOr404(req, res);
+  if (!tws) return;
+
+  const { action } = req.body;
+  if (action === "submit") {
+    tws.status = "Submitted";
+    tws.approval = { status: "Submitted", submittedAt: Date.now() };
+    return res.redirect(`/tws/status/${tws.id}`);
+  }
+  // edit — go back to faculty info
+  res.redirect(`/tws/faculty/${tws.id}`);
+});
 /* ======================================================
    SUBMISSION STATUS
 ====================================================== */
@@ -196,6 +209,40 @@ router.get("/status/:id", (req, res) => {
   if (!tws) return;
 
   res.render("TWS/twsSubmissionStatus", { tws, currentPageCategory: "tws" });
+});
+
+/* ======================================================
+   APPROVAL ROUTING
+====================================================== */
+router.get("/approval/:id", (req, res) => {
+  const tws = getOr404(req, res);
+  if (!tws) return;
+  res.render("TWS/twsApprovalRouting", { tws, currentPageCategory: "tws" });
+});
+
+router.post("/approval/:id", (req, res) => {
+  const tws = getOr404(req, res);
+  if (!tws) return;
+
+  const { action } = req.body;
+  if (action === "approve") {
+    tws.status = "Approved";
+    tws.approval = { status: "Approved", approvedAt: Date.now() };
+    tws.archived = true;
+    tws.archivedAt = Date.now();
+  } else {
+    tws.status = "Returned for Revision";
+    tws.approval = { status: "Returned for Revision" };
+  }
+  res.redirect(`/tws/summary/${tws.id}`);
+});
+
+/* ======================================================
+   FACULTY SIGNATURE
+====================================================== */
+router.post("/signature", (req, res) => {
+  // Signature saved — redirect back to dashboard
+  res.redirect("/tws/dashboard");
 });
 
 /* ======================================================
@@ -234,6 +281,42 @@ router.get("/program-chair", (req, res) => {
     personal: submitted,
     currentPageCategory: "tws",
   });
+});
+
+router.post("/program-chair/action", (req, res) => {
+  const { id, action } = req.body;
+  const tws = twsStore.get(id);
+  if (!tws) return res.status(404).send("TWS not found");
+
+  if (action === "approve") {
+    tws.status = "For Chair Review";
+    tws.approval = { status: "For Chair Review" };
+  } else if (action === "return") {
+    tws.status = "Returned for Revision";
+    tws.approval = { status: "Returned for Revision" };
+  }
+  res.redirect("/tws/program-chair");
+});
+
+/* ======================================================
+   DEAN
+====================================================== */
+router.get("/dean", (req, res) => {
+  const pending = Array.from(twsStore.values()).filter(
+    t => ["Submitted", "For Chair Review", "Returned for Revision"].includes(t.status)
+  );
+  const details = Array.from(twsStore.values()).filter(
+    t => t.status === "Approved"
+  );
+  res.render("TWS/twsDean", { pending, details, currentPageCategory: "tws" });
+});
+
+/* ======================================================
+   REVIEW DETAILS (Dean / Secretary view)
+====================================================== */
+router.get("/review-details", (req, res) => {
+  const list = Array.from(twsStore.values()).sort((a, b) => b.createdAt - a.createdAt);
+  res.render("TWS/twsReviewDetails", { list, currentPageCategory: "tws" });
 });
 
 export default router;
