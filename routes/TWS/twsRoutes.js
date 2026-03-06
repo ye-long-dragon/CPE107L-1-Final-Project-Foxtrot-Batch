@@ -207,6 +207,21 @@ router.get("/archived", (req, res) => {
 });
 
 /* ======================================================
+   TA / HR ARCHIVES
+====================================================== */
+router.get("/ta-archive", (req, res) => {
+  // show archived TWS records (TA view)
+  const list = Array.from(twsStore.values()).filter(t => t.archived);
+  res.render("TWS/twsTAArchive", { list, currentPageCategory: "tws" });
+});
+
+router.get("/hr-archive", (req, res) => {
+  // show archived TWS records (HR view)
+  const list = Array.from(twsStore.values()).filter(t => t.archived);
+  res.render("TWS/twsHRArchive", { list, currentPageCategory: "tws" });
+});
+
+/* ======================================================
    PROGRAM CHAIR
 ====================================================== */
 router.get("/program-chair", (req, res) => {
