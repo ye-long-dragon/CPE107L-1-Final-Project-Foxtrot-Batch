@@ -212,7 +212,9 @@ export const getPendingApprovals = async (req, res) => {
         res.render('ATA/pending-approvals', {
             forms: pendingForms,
             role: userRole,
-            college: userProgram
+            college: userProgram,
+            user: req.user,              
+            currentPageCategory: 'ata'
         });
 
     } catch (error) {

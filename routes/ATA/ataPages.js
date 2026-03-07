@@ -5,13 +5,21 @@ import ATAForm from "../../models/ATA/ATAForm.js";
 const router = express.Router();
 
 const getSafeUser = (reqUser) => {
+    // 1. Grab whatever program data they have, or default to an empty string
+    let rawProgram = reqUser.program || reqUser.department || reqUser.college || "";
+    
+    // 2. If the database literally says "N/A", clear it out so the UI ignores it
+    if (rawProgram === "N/A") {
+        rawProgram = "";
+    }
+
     return {
         ...reqUser,
         name: reqUser.name || `${reqUser.firstName || ''} ${reqUser.lastName || ''}`.trim() || "Faculty Member",
         role: reqUser.role || "Professor",
         employmentType: reqUser.employmentType || "Full-Time",
         isPracticumCoordinator: reqUser.isPracticumCoordinator || false,
-        program: reqUser.program || reqUser.department || reqUser.college || "CpE" 
+        program: rawProgram // 👈 Now safely passes the cleaned data
     };
 };
 
@@ -83,9 +91,9 @@ router.get("/dashboard/window", requireAuth, async (req, res) => {
 
 // Other pages
 // 📄 VIEW MY SUBMISSIONS
+// 📄 VIEW MY SUBMISSIONS (With Smart Filtering)
 router.get("/submissions", requireAuth, async (req, res) => {
     try {
-        // 1. Get the logged-in user's ID safely
         let userID = "unknown";
         if (req.user) {
             if (req.user._id && req.user._id.$oid) userID = req.user._id.$oid;
@@ -94,15 +102,47 @@ router.get("/submissions", requireAuth, async (req, res) => {
             else if (req.user.employeeId) userID = req.user.employeeId;
         }
 
-        // 2. Find ONLY the forms belonging to this user, newest first
-        const myForms = await ATAForm.find({ userID: userID }).sort({ createdAt: -1 });
+        // 1. Check the URL to see what the user clicked
+        const filterType = req.query.filter || 'all';
+        let dbQuery = { userID: userID };
 
-        // 3. Render the new page and pass the forms to the HTML table!
-        res.render("ATA/submissions", { forms: myForms });
+        // 2. Adjust the database search based on the filter
+        if (filterType === 'approved') {
+            dbQuery.status = 'FINALIZED'; 
+        } else if (filterType === 'pending') {
+            dbQuery.status = { $ne: 'FINALIZED' };
+        }
+
+        // 3. Fetch the filtered forms
+        const myForms = await ATAForm.find(dbQuery).sort({ createdAt: -1 });
+
+        res.render("ATA/submissions", { 
+            forms: myForms,
+            user: req.user,                 
+            currentPageCategory: 'ata',
+            filterType: filterType 
+        });
 
     } catch (error) {
         console.error("Error loading submissions:", error);
         res.status(500).send("Error loading submissions page.");
+    }
+});
+// 📄 VIEW MY SUBMISSION (Read-Only UI Viewer)
+router.get("/view-submission/:id", requireAuth, async (req, res) => {
+    try {
+        const form = await ATAForm.findById(req.params.id);
+        if (!form) return res.status(404).send("Form not found");
+
+        res.render("ATA/view-submission", {
+            form: form,
+            user: req.user,
+            role: req.user.role,
+            currentPageCategory: 'ata'
+        });
+    } catch (error) {
+        console.error("Error loading view submission page:", error);
+        res.status(500).send("Server Error loading page.");
     }
 });
 

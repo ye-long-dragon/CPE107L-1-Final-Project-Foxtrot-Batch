@@ -7,7 +7,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body class="dashboard-bg">
-    <main class="main-content" style="padding: 40px;">
+    <%- include('../partials/sideMenuBar') %>
+    <main class="main-content" style="padding: 40px; margin-left: 260px; width: calc(100vw - 260px); min-height: 100vh;">
         
         <div class="dashboard-title">
             Forms to Approve (<%= role %> - <%= college %>)

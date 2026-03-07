@@ -17,7 +17,7 @@
         <div class="dashboard-title">ACCEPTANCE OF TEACHING ASSIGNMENT</div>
 
         <div class="welcome-box">
-            <h2>Welcome, <%= user.name %> | <%= role %> | <%= user.program %></h2>
+            <h2>Welcome, <%= user.name %> | <%= role %><%= user.program ? ' | ' + user.program : '' %></h2>
         </div>
 
         <div class="action-cards">
@@ -41,14 +41,14 @@
                     </div>
                 </a>
             <% } %>
-            <a href="/ata/submissions" class="action-card-link-wrapper">
+            <a href="/ata/submissions?filter=pending" class="action-card-link-wrapper">
                 <div class="action-card pending-card">
                     <div class="action-card-title">My Pending Forms (<span id="myPendingCount"><%= myPendingCount %></span>)</div>
                     <div class="action-card-link">View My Forms →</div>
                 </div>
             </a>
 
-            <a href="/ata/submissions" class="action-card-link-wrapper">
+            <a href="/ata/submissions?filter=approved" class="action-card-link-wrapper">
                 <div class="action-card approved-card">
                     <div class="action-card-title">My Approved Forms (<span id="myApprovedCount"><%= myApprovedCount %></span>)</div>
                     <div class="action-card-link">View My Forms →</div>
