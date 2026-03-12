@@ -46,7 +46,7 @@ export const previewVipSignaturePdf = async (req, res) => {
     try {
         const { signatureImage, role } = req.body;
         
-        // 👇 FIXED: Fetch the live user to get their REAL NAME!
+        // 👇 Fetch the live user to get their REAL NAME!
         let sessionUserID = "unknown";
         if (req.user) {
             if (req.user._id && req.user._id.$oid) sessionUserID = req.user._id.$oid;
@@ -91,7 +91,6 @@ export const previewVipSignaturePdf = async (req, res) => {
 
         const field = pdfForm.getTextField(targetBox);
         if (role === 'Practicum-Coordinator') {
-            // 👇 FIXED: Uses your real name instead of Jane Doe!
             field.setText(actualName); 
             field.setFontSize(7);
         } else {
@@ -117,7 +116,37 @@ export const previewVipSignaturePdf = async (req, res) => {
             }
         }
 
-        pdfForm.getFields().forEach(f => f.enableReadOnly());
+        // 👇 FIXED: The Ultimate PDF Locker (Removes dropdowns entirely!)
+        const allFields = pdfForm.getFields();
+        const firstPage = pdfDoc.getPages()[0];
+        
+        const dropdownData = [];
+        
+        allFields.forEach(f => {
+            if (f.constructor.name === 'PDFDropdown') {
+                const selected = f.getSelected();
+                const val = selected && selected.length > 0 ? selected[0] : '';
+                
+                const widgets = f.acroField.getWidgets();
+                if (widgets && widgets.length > 0) {
+                    dropdownData.push({ field: f, val: val, rect: widgets[0].getRectangle() });
+                }
+            } else {
+                f.enableReadOnly();
+            }
+        });
+
+        dropdownData.forEach(data => {
+            pdfForm.removeField(data.field); 
+            if (data.val) {
+                firstPage.drawText(data.val, {
+                    x: data.rect.x + 2,
+                    y: data.rect.y + 4, 
+                    size: 8
+                });
+            }
+        });
+
         const pdfBytes = await pdfDoc.save();
         res.setHeader('Content-Type', 'application/pdf');
         res.send(Buffer.from(pdfBytes));
