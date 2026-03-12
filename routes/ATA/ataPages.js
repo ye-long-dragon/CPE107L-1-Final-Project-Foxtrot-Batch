@@ -201,6 +201,44 @@ router.get("/view-submission/:id", requireAuth, async (req, res) => {
     }
 });
 
+const archivedViewRoles = ['Program-Chair', 'Dean', 'VPAA', 'HR', 'HRMO'];
+ 
+router.get("/archived-atas", requireAuth, async (req, res) => {
+    try {
+        const userRole = req.user.role || "";
+ 
+        // 🔒 SECURITY: Only admin roles can view archived ATAs
+        if (!archivedViewRoles.includes(userRole) && !req.user.isPracticumCoordinator) {
+            return res.redirect('/ata/dashboard/window');
+        }
+ 
+        const safeUser = getSafeUser(req.user);
+ 
+        // Fetch all ATAForms with status ARCHIVED
+        // Exclude heavy fields not needed for the list view
+        const forms = await ATAForm.find({ status: 'ARCHIVED' })
+            .select('facultyName userID college program position employmentType term academicYear approvalHistory archivedAt updatedAt status')
+            .sort({ archivedAt: -1, updatedAt: -1 });
+ 
+        const totalCount = forms.length;
+ 
+        res.render("ATA/archived-atas", {
+            user:                  safeUser,
+            role:                  safeUser.role,
+            employmentType:        safeUser.employmentType,
+            isPracticumCoordinator: safeUser.isPracticumCoordinator,
+            forms:                 forms,
+            totalCount:            totalCount,
+            currentPageCategory:   'ata'
+        });
+ 
+    } catch (error) {
+        console.error("[Archived ATAs] Error loading page:", error);
+        res.status(500).send("Server Error loading Archived ATAs.");
+    }
+});
+
+
 router.get("/reports", requireAuth, (req, res) => res.render("ATA/reports"));
 router.get("/profile", requireAuth, (req, res) => res.render("ATA/profile"));
 router.get("/admin/courses", requireAuth, (req, res) => res.render("ATA/admin-courses"));

@@ -147,7 +147,7 @@ app.use("/faculty", courseOverviewFacultyRoutes);
 // ATA Pages
 app.use("/ata", ataPages);
 app.use("/ata", ataApiRoutes); 
-app.use("/auth", ataAuthRoutes);
+app.use("/ata/auth", ataAuthRoutes);
 
 
 // ========================
