@@ -45,6 +45,10 @@ export const previewVipSignaturePdf = async (req, res) => {
     try {
         const { signatureImage, role } = req.body;
         
+<<<<<<< HEAD
+=======
+        // 👇 Fetch the live user to get their REAL NAME!
+>>>>>>> fa23f7b75f9e35279c1fc6e542a87f4c43d66293
         let sessionUserID = "unknown";
         if (req.user) {
             if (req.user._id && req.user._id.$oid) sessionUserID = req.user._id.$oid;
@@ -114,7 +118,37 @@ export const previewVipSignaturePdf = async (req, res) => {
             }
         }
 
-        pdfForm.getFields().forEach(f => f.enableReadOnly());
+        // 👇 FIXED: The Ultimate PDF Locker (Removes dropdowns entirely!)
+        const allFields = pdfForm.getFields();
+        const firstPage = pdfDoc.getPages()[0];
+        
+        const dropdownData = [];
+        
+        allFields.forEach(f => {
+            if (f.constructor.name === 'PDFDropdown') {
+                const selected = f.getSelected();
+                const val = selected && selected.length > 0 ? selected[0] : '';
+                
+                const widgets = f.acroField.getWidgets();
+                if (widgets && widgets.length > 0) {
+                    dropdownData.push({ field: f, val: val, rect: widgets[0].getRectangle() });
+                }
+            } else {
+                f.enableReadOnly();
+            }
+        });
+
+        dropdownData.forEach(data => {
+            pdfForm.removeField(data.field); 
+            if (data.val) {
+                firstPage.drawText(data.val, {
+                    x: data.rect.x + 2,
+                    y: data.rect.y + 4, 
+                    size: 8
+                });
+            }
+        });
+
         const pdfBytes = await pdfDoc.save();
         res.setHeader('Content-Type', 'application/pdf');
         res.send(Buffer.from(pdfBytes));
