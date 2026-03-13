@@ -4,7 +4,8 @@
     Pre_Main,   Pre_B1,   Pre_B2,
     Post_Main,  Post_B1,  Post_B2
 } from '../models/TLA/tlaModels.js';
-import User from '../models/user.js';
+import userSchema from "../models/user.js";
+import { mainDB } from "../database/mongo-dbconnect.js";
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -12,6 +13,7 @@ import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PDF_TEMPLATE = join(__dirname, '../public/common/img/TLA_TEMPLATE_BLANK.pdf');
+const User = mainDB.model("User", userSchema);
 
 // ===============================================================================
 //  ROLE DEFINITIONS
