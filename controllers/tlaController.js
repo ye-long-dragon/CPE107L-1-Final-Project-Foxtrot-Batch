@@ -13,19 +13,16 @@ import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PDF_TEMPLATE = join(__dirname, '../public/common/img/TLA_TEMPLATE_BLANK.pdf');
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ===============================================================================
 //  ROLE DEFINITIONS
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ===============================================================================
 
-// All non-faculty roles that participate in the review chain
+// All non-faculty roles that participate in the review chain (also used as reviewer check)
 const APPROVAL_ROLES = ['Technical', 'Program-Chair', 'Dean', 'HR', 'Admin', 'Super-Admin'];
 
-// Roles that can view the approval sidebar (review mode)
-const REVIEWER_ROLES = ['Technical', 'Program-Chair', 'Dean', 'HR', 'Admin', 'Super-Admin'];
-
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ===============================================================================
 //  MIDDLEWARE GUARDS
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ===============================================================================
 
 export function requireLogin(req, res, next) {
     if (!req.session?.user) return res.redirect('/login');
@@ -35,7 +32,7 @@ export function requireLogin(req, res, next) {
 // Guard: only reviewer roles may access the approval pages
 export function requireApprovalRole(req, res, next) {
     const role = req.session?.user?.role;
-    if (!role || !REVIEWER_ROLES.includes(role)) {
+    if (!role || !APPROVAL_ROLES.includes(role)) {
         return res.status(403).send('Forbidden - you do not have permission to access this page.');
     }
     next();
@@ -50,9 +47,9 @@ export function requireHRRole(req, res, next) {
     next();
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ===============================================================================
 //  HELPERS
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ===============================================================================
 
 function stripId(doc) {
     const d = doc.toObject ? doc.toObject() : { ...doc };
@@ -65,13 +62,13 @@ function actorName(user) {
     return `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'Unknown';
 }
 
-// â”€â”€â”€ Determine step status labels for the UI tracker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Determine step status labels for the UI tracker ------------------------
 // Each step: "approved" | "ongoing" | "pending" | "rejected"
 function buildApprovalSteps(tlaDoc, statusDoc) {
     const macroStatus = statusDoc?.status || 'Not Submitted';
     const stepDocs    = statusDoc || {};
 
-    // â”€â”€ Helper: map DB step status into UI dot state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // -- Helper: map DB step status into UI dot state ----------------------
     const dot = (stepStatus) => {
         if (!stepStatus) return 'pending';
         if (stepStatus === 'Approved' || stepStatus === 'Archived') return 'approved';
@@ -80,13 +77,13 @@ function buildApprovalSteps(tlaDoc, statusDoc) {
         return 'pending';
     };
 
-    // â”€â”€ Faculty step: submitted = tla left Draft state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // -- Faculty step: submitted = tla left Draft state -------------------
     const facultyDone = tlaDoc?.status && tlaDoc.status !== 'Draft';
     const facultyStep = facultyDone
         ? (macroStatus === 'Returned' ? 'rejected' : 'approved')
         : 'pending';
 
-    // â”€â”€ Technical step â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // -- Technical step ---------------------------------------------------
     let techStep = 'pending';
     if (facultyDone) {
         if (macroStatus === 'Not Submitted') techStep = 'pending';
@@ -94,21 +91,21 @@ function buildApprovalSteps(tlaDoc, statusDoc) {
         else techStep = dot(stepDocs.technical?.status);
     }
 
-    // â”€â”€ Program Chair step â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // -- Program Chair step -----------------------------------------------
     let chairStep = 'pending';
     if (['Tech-Approved', 'Chair-Approved', 'Dean-Approved', 'Archived'].includes(macroStatus)) {
         chairStep = dot(stepDocs.programChair?.status);
         if (macroStatus === 'Tech-Approved' && !stepDocs.programChair?.status) chairStep = 'ongoing';
     }
 
-    // â”€â”€ Dean step â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // -- Dean step --------------------------------------------------------
     let deanStep = 'pending';
     if (['Chair-Approved', 'Dean-Approved', 'Archived'].includes(macroStatus)) {
         deanStep = dot(stepDocs.dean?.status);
         if (macroStatus === 'Chair-Approved' && !stepDocs.dean?.status) deanStep = 'ongoing';
     }
 
-    // â”€â”€ HR step â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // -- HR step ----------------------------------------------------------
     let hrStep = 'pending';
     if (['Dean-Approved', 'Archived'].includes(macroStatus)) {
         hrStep = dot(stepDocs.hr?.status);
@@ -124,7 +121,7 @@ function buildApprovalSteps(tlaDoc, statusDoc) {
     };
 }
 
-// â”€â”€â”€ Determine what action the current user can take â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- Determine what action the current user can take ------------------------
 // Returns: null (no action) | "technical" | "programChair" | "dean" | "hr"
 function activeStep(role, macroStatus) {
     if (role === 'Technical'     && macroStatus === 'Pending')       return 'technical';
@@ -141,9 +138,9 @@ function activeStep(role, macroStatus) {
     return null;
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ===============================================================================
 //  STATIC COURSE DATA (TODO: replace with Syllabus DB queries)
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ===============================================================================
 const STATIC_COURSES = [
     { syllabusId: '1', courseCode: 'SS067',  courseTitle: 'Life and Works of Mambo',         section: 'A301', term: '2nd Trimester', schoolYear: '2025-2026', hasBanner: false },
     { syllabusId: '2', courseCode: 'CS101',  courseTitle: 'Introduction to Computing',       section: 'B201', term: '2nd Trimester', schoolYear: '2025-2026', hasBanner: false },
@@ -155,9 +152,9 @@ const STATIC_COURSES = [
     { syllabusId: '8', courseCode: 'IS201',  courseTitle: 'Information Management',          section: 'B301', term: '2nd Trimester', schoolYear: '2025-2026', hasBanner: false },
 ];
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ===============================================================================
 //  COURSES PAGE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ===============================================================================
 
 export async function getCourses(req, res) {
     try {
@@ -182,9 +179,9 @@ export async function getCourses(req, res) {
     }
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ===============================================================================
 //  DASHBOARD  (Faculty's own TLA weeks)
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ===============================================================================
 
 export async function getDashboard(req, res) {
     try {
@@ -216,9 +213,9 @@ export async function getDashboard(req, res) {
     }
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ===============================================================================
 //  TLA FORM (GET new / GET existing)
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ===============================================================================
 
 export function getNewForm(req, res) {
     res.render('TLA/tlaForm', {
@@ -260,9 +257,9 @@ export async function getFormById(req, res) {
     }
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ===============================================================================
 //  TLA FORM (POST create)
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ===============================================================================
 
 export async function createTLA(req, res) {
     try {
@@ -308,9 +305,9 @@ export async function createTLA(req, res) {
     }
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ===============================================================================
 //  TLA FORM (POST update)
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ===============================================================================
 
 export async function updateTLA(req, res) {
     try {
@@ -417,9 +414,9 @@ export async function updateTLA(req, res) {
     }
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-//  OVERVIEW â€” Faculty's own weekly cards
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ===============================================================================
+//  OVERVIEW — Faculty's own weekly cards
+// ===============================================================================
 
 export async function getOverview(req, res) {
     try {
@@ -487,10 +484,10 @@ export async function getOverview(req, res) {
     }
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ===============================================================================
 //  ADMIN / APPROVER SUBMISSION OVERVIEW
-//  GET /tla/admin-overview  â€” lists ALL submitted TLAs for reviewer roles
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//  GET /tla/admin-overview  — lists ALL submitted TLAs for reviewer roles
+// ===============================================================================
 
 export async function getAdminOverview(req, res) {
     try {
@@ -535,8 +532,8 @@ export async function getAdminOverview(req, res) {
                 section:     t.section,
                 weekNumber:  t.weekNumber,
                 dateofDigitalDay: t.dateofDigitalDay,
-                facultyName: faculty ? `${faculty.firstName} ${faculty.lastName}` : 'â€”',
-                macroStatus: sd?.status || 'â€”',
+                facultyName: faculty ? `${faculty.firstName} ${faculty.lastName}` : '—',
+                macroStatus: sd?.status || '—',
                 updatedAt:   sd?.updatedAt || t.updatedAt
             };
         });
@@ -553,10 +550,10 @@ export async function getAdminOverview(req, res) {
     }
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-//  HR DASHBOARD  â€” all TLAs ready for archiving (Dean-Approved) + already archived
+// ===============================================================================
+//  HR DASHBOARD  — all TLAs ready for archiving (Dean-Approved) + already archived
 //  GET /tla/hr
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ===============================================================================
 
 export async function getHRDashboard(req, res) {
     try {
@@ -587,11 +584,11 @@ export async function getHRDashboard(req, res) {
                 courseCode:  t.courseCode,
                 section:     t.section,
                 weekNumber:  t.weekNumber,
-                facultyName: faculty ? `${faculty.firstName} ${faculty.lastName}` : 'â€”',
-                department:  faculty?.department || 'â€”',
+                facultyName: faculty ? `${faculty.firstName} ${faculty.lastName}` : '—',
+                department:  faculty?.department || '—',
                 deanApprovedAt:  sd?.dean?.approvalDate || null,
                 hrArchivedAt:    sd?.hr?.approvalDate   || null,
-                macroStatus: sd?.status || 'â€”'
+                macroStatus: sd?.status || '—'
             };
             if (sd?.status === 'Archived') archived.push(entry);
             else                           toArchive.push(entry);
@@ -609,17 +606,17 @@ export async function getHRDashboard(req, res) {
     }
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ===============================================================================
 //  APPROVAL PAGE  (GET)
 //  GET /tla/approval/:id
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ===============================================================================
 
 export async function getApprovalPage(req, res) {
     try {
         const tlaID   = req.params.id;
         const role    = req.session.user.role;
 
-        // â”€â”€ No ID â†’ static placeholder preview â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // -- No ID -> static placeholder preview ---------------------------
         if (!tlaID) {
             return res.render('TLA/tlaApproval', {
                 currentPageCategory: 'tla',
@@ -632,7 +629,7 @@ export async function getApprovalPage(req, res) {
                 tla:              null,
                 preDigital:       null,
                 postDigital:      null,
-                facultyName:      'â€”',
+                facultyName:      '—',
                 approvalSteps:    null,
                 approvalStatusId: null,
                 currentStatus:    'Pending',
@@ -657,7 +654,7 @@ export async function getApprovalPage(req, res) {
         const macroStatus    = approvalStatus?.status || 'Not Submitted';
         const userActiveStep = activeStep(role, macroStatus);
 
-        // â”€â”€ Pull this role's current step data for prefilling â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // -- Pull this role's current step data for prefilling -------------
         let stepData = null;
         if (userActiveStep && approvalStatus?.[userActiveStep]) {
             stepData = approvalStatus[userActiveStep];
@@ -674,7 +671,7 @@ export async function getApprovalPage(req, res) {
             tla,
             preDigital:       preDigital  || null,
             postDigital:      postDigital || null,
-            facultyName:      tla.facultyFacilitating || 'â€”',
+            facultyName:      tla.facultyFacilitating || '—',
             approvalSteps,
             approvalStatusId: approvalStatus ? approvalStatus._id : null,
             currentStatus:    approvalStatus ? approvalStatus.status : 'Not Submitted',
@@ -690,11 +687,11 @@ export async function getApprovalPage(req, res) {
     }
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ===============================================================================
 //  APPROVAL ACTION  (POST)
 //  POST /tla/approval/:id
 //  Body: { comment, verdict ("Approved"|"Returned"), action ("submit"|"draft") }
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ===============================================================================
 
 export async function postApprovalAction(req, res) {
     try {
@@ -712,7 +709,7 @@ export async function postApprovalAction(req, res) {
         const macroNow  = statusDoc.status;
         const step      = activeStep(role, macroNow);
 
-        // â”€â”€ Draft save: just store the comment without advancing the chain â”€â”€
+        // -- Draft save: just store the comment without advancing the chain --
         if (action === 'draft' && step) {
             const draftUpdate = {
                 [`${step}.remarks`]: comment || ''
@@ -729,7 +726,7 @@ export async function postApprovalAction(req, res) {
             return res.redirect('/tla/approval/' + tlaID);
         }
 
-        // â”€â”€ Actual verdict submission â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // -- Actual verdict submission -------------------------------------
         if (action === 'submit' && step) {
             if (!verdict || !['Approved', 'Returned'].includes(verdict)) {
                 const msg = 'Invalid verdict. Must be "Approved" or "Returned".';
@@ -747,7 +744,7 @@ export async function postApprovalAction(req, res) {
                 nextMacro     = 'Returned';
                 nextTlaStatus = 'Returned';
             } else {
-                // Approved â€” advance the chain
+                // Approved — advance the chain
                 const advanceMap = {
                     technical:    'Tech-Approved',
                     programChair: 'Chair-Approved',
@@ -793,7 +790,7 @@ export async function postApprovalAction(req, res) {
             return res.redirect('/tla/approval/' + tlaID);
         }
 
-        // â”€â”€ Fallback: no matching action â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        // -- Fallback: no matching action ----------------------------------
         if (req.headers['content-type']?.includes('application/json')) {
             return res.status(400).json({ error: 'Invalid action or role not authorised for current step.' });
         }
@@ -808,10 +805,10 @@ export async function postApprovalAction(req, res) {
     }
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ===============================================================================
 //  HR ARCHIVE ACTION  (POST)
-//  POST /tla/hr/archive/:id  â€” HR archives a Dean-Approved TLA
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+//  POST /tla/hr/archive/:id  — HR archives a Dean-Approved TLA
+// ===============================================================================
 
 export async function postHRArchive(req, res) {
     try {
@@ -847,10 +844,10 @@ export async function postHRArchive(req, res) {
     }
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ===============================================================================
 //  PDF GENERATION
 //  POST /tla/form/generate-docx
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ===============================================================================
 
 export async function generateDocx(req, res) {
     try {
