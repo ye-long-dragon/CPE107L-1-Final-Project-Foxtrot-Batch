@@ -2,6 +2,7 @@ import express from 'express';
 import { submitATA, approveATA, getPendingApprovals, viewATAForm, viewAtaPdf, renderNewATA, getAdminHistory, previewAtaPdf, discoverPdfFields, saveVipSignature, previewVipSignaturePdf } from '../../controllers/ataController.js';
 import { requireAuth, checkRole } from '../../middleware/ata_authMiddleware.js';
 
+
 const router = express.Router();
 // ==========================================
 // 🛣️ 1. FACULTY ROUTES

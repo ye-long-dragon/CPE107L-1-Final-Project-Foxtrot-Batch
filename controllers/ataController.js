@@ -441,8 +441,10 @@ export const approveATA = async (req, res) => {
 
                 case 'PENDING_HR':
                     if (['HR', 'HRMO'].includes(primaryRole) && action === 'NOTE') {
-                        newStatus = 'FINALIZED'; 
-                        historyStatus = 'FINALIZED';
+                        newStatus = 'ARCHIVED';
+                        historyStatus = 'ARCHIVED';
+                        form.archivedAt   = new Date();
+                        form.archivedById = sessionUserID;
                     } else return res.status(403).json({ error: "Invalid action for HR." });
                     break;
 
@@ -639,7 +641,7 @@ export const getAdminHistory = async (req, res) => {
             queryConditions.push({
                 $or: [
                     { 'approvalHistory.approverRole': 'VPAA' },
-                    { status: { $in: ['PENDING_HR', 'FINALIZED'] } }
+                    { status: { $in: ['PENDING_HR', 'ARCHIVED'] } } // ✅ PATCHED
                 ]
             });
         }
@@ -647,7 +649,7 @@ export const getAdminHistory = async (req, res) => {
             queryConditions.push({
                 $or: [
                     { 'approvalHistory.approverRole': { $in: ['HR', 'HRMO'] } },
-                    { status: 'FINALIZED' }
+                    { status: 'ARCHIVED' }
                 ]
             });
         }
@@ -919,7 +921,6 @@ export const viewAtaPdf = async (req, res) => {
                     const matchingLog = allPracLogs.find(log => 
                         log.approverName.toLowerCase() === row.coordinator.trim().toLowerCase()
                     );
-
                     if (matchingLog) {
                         await stampAdminSignature(matchingLog, pracBoxes[i], 45, -8, 0.12);
                     }
@@ -1031,9 +1032,10 @@ export const renderDashboard = async (req, res) => {
             status: { $regex: 'PENDING' } 
         });
 
+        // ✅ PATCHED: Now counts ARCHIVED instead of FINALIZED
         const myApprovedCount = await ATAForm.countDocuments({ 
             userID: sessionUserID, 
-            status: 'FINALIZED' 
+            status: 'ARCHIVED'
         });
 
         const latestForm = await ATAForm.findOne({ userID: sessionUserID }).sort({ createdAt: -1 });
@@ -1320,7 +1322,6 @@ export const discoverPdfFields = async (req, res) => {
 
         pdfForm.flatten(); 
         const pdfBytes = await pdfDoc.save();
-
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', 'inline; filename=Visual_PDF_Map.pdf');
         res.send(Buffer.from(pdfBytes));
