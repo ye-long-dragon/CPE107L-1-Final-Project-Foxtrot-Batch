@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TLA | HR Archiving Dashboard</title>
+
+    <link rel="stylesheet" href="/common/css/variables.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet" href="/TLA/css/tlaAdminOverview.css">
+</head>
+<body>
+
+<main class="main-content">
+    <div class="background-overlay"></div>
+
+    <!-- ═══════════ HEADER ═══════════ -->
+    <header class="admin-header">
+        <div class="header-logo">
+            <img src="/common/img/schoolLogo.png" alt="School Logo">
+        </div>
+        <div class="header-divider"></div>
+        <div class="header-info">
+            <h1 class="header-title">HR Archiving Dashboard</h1>
+            <p class="header-sub">Human Resources &mdash; TLA Records Management</p>
+        </div>
+        <div class="header-user">
+            <span class="material-symbols-outlined">manage_accounts</span>
+            <span><%= locals.user ? user.firstName + ' ' + user.lastName : 'HR Staff' %></span>
+        </div>
+    </header>
+
+    <div class="admin-body">
+
+        <!-- ── BACK / NAV ── -->
+        <div class="nav-bar">
+            <a href="/tla/courses" class="back-btn">
+                <span class="material-symbols-outlined">arrow_back</span> Back to Courses
+            </a>
+            <div class="nav-tabs">
+                <span class="nav-tab active">
+                    <span class="material-symbols-outlined">inventory</span> HR Archive Queue
+                </span>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════
+             SECTION: PENDING ARCHIVAL
+        ═══════════════════════════════════ -->
+        <section class="submissions-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="material-symbols-outlined">pending_actions</span>
+                    Pending Archival
+                    <span class="count-badge badge-orange"><%= toArchive.length %></span>
+                </h2>
+                <p class="section-desc">
+                    Approved by the Dean &mdash; ready to be archived by HR.
+                </p>
+            </div>
+
+            <% if (toArchive.length === 0) { %>
+                <div class="empty-state">
+                    <span class="material-symbols-outlined empty-icon">check_circle</span>
+                    <p>No TLAs are currently pending archival.</p>
+                </div>
+            <% } else { %>
+                <div class="submissions-grid">
+                    <% toArchive.forEach(function(s) { %>
+                    <div class="submission-card card-pending">
+                        <div class="card-main">
+                            <div class="card-col">
+                                <span class="card-label">Course / Week</span>
+                                <span class="card-value"><%= s.courseCode %> — Week <%= s.weekNumber || '—' %></span>
+                            </div>
+                            <div class="card-col">
+                                <span class="card-label">Section</span>
+                                <span class="card-value"><%= s.section || '—' %></span>
+                            </div>
+                            <div class="card-col">
+                                <span class="card-label">Faculty</span>
+                                <span class="card-value"><%= s.facultyName %></span>
+                            </div>
+                            <div class="card-col">
+                                <span class="card-label">Dept</span>
+                                <span class="card-value"><%= s.department %></span>
+                            </div>
+                            <div class="card-col">
+                                <span class="card-label">Dean Approved</span>
+                                <span class="card-value">
+                                    <%= s.deanApprovedAt ? new Date(s.deanApprovedAt).toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'numeric' }) : '—' %>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="card-actions">
+                            <!-- View in approval page -->
+                            <a href="/tla/approval/<%= s._id %>" class="btn-view">
+                                <span class="material-symbols-outlined">visibility</span> View
+                            </a>
+                            <!-- Archive form -->
+                            <form method="POST" action="/tla/hr/archive/<%= s._id %>"
+                                  onsubmit="return confirm('Archive this TLA permanently?');"
+                                  class="archive-form">
+                                <input type="hidden" name="comment" value="Archived by HR">
+                                <button type="submit" class="btn-archive">
+                                    <span class="material-symbols-outlined">archive</span> Archive
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    <% }); %>
+                </div>
+            <% } %>
+        </section>
+
+        <!-- ══════════════════════════════════
+             SECTION: ARCHIVED RECORDS
+        ═══════════════════════════════════ -->
+        <section class="submissions-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="material-symbols-outlined">archive</span>
+                    Archived Records
+                    <span class="count-badge badge-green"><%= archived.length %></span>
+                </h2>
+                <p class="section-desc">Fully processed and archived TLA submissions.</p>
+            </div>
+
+            <% if (archived.length === 0) { %>
+                <div class="empty-state">
+                    <span class="material-symbols-outlined empty-icon">folder_open</span>
+                    <p>No archived records yet.</p>
+                </div>
+            <% } else { %>
+                <div class="submissions-grid">
+                    <% archived.forEach(function(s) { %>
+                    <div class="submission-card card-archived">
+                        <div class="card-main">
+                            <div class="card-col">
+                                <span class="card-label">Course / Week</span>
+                                <span class="card-value"><%= s.courseCode %> — Week <%= s.weekNumber || '—' %></span>
+                            </div>
+                            <div class="card-col">
+                                <span class="card-label">Section</span>
+                                <span class="card-value"><%= s.section || '—' %></span>
+                            </div>
+                            <div class="card-col">
+                                <span class="card-label">Faculty</span>
+                                <span class="card-value"><%= s.facultyName %></span>
+                            </div>
+                            <div class="card-col">
+                                <span class="card-label">Dept</span>
+                                <span class="card-value"><%= s.department %></span>
+                            </div>
+                            <div class="card-col">
+                                <span class="card-label">Archived On</span>
+                                <span class="card-value">
+                                    <%= s.hrArchivedAt ? new Date(s.hrArchivedAt).toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'numeric' }) : '—' %>
+                                </span>
+                            </div>
+                            <div class="card-col">
+                                <span class="status-badge sts-archived">ARCHIVED</span>
+                            </div>
+                        </div>
+                        <div class="card-actions">
+                            <a href="/tla/approval/<%= s._id %>" class="btn-view">
+                                <span class="material-symbols-outlined">visibility</span> View
+                            </a>
+                        </div>
+                    </div>
+                    <% }); %>
+                </div>
+            <% } %>
+        </section>
+
+    </div><!-- end .admin-body -->
+</main>
+
+<script src="/TLA/js/tlaAdminOverview.js"></script>
+</body>
+</html>
