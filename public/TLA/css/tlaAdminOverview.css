@@ -1,0 +1,440 @@
+/* ═══════════════════════════════════════════════════════════
+   TLA Admin Overview & HR Dashboard — tlaAdminOverview.css
+   Shared stylesheet for approver-facing review/archive pages
+   ═══════════════════════════════════════════════════════════ */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f3f4f6;
+}
+
+/* ─── Main Content ──────────────────────────────────────── */
+.main-content {
+    min-height: 100vh;
+    background-image: url('/common/img/background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    position: relative;
+}
+
+.background-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.86);
+    z-index: 1;
+}
+
+/* ─── Header ────────────────────────────────────────────── */
+.admin-header {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: linear-gradient(135deg, var(--color-charcoal) 0%, var(--grey-lines) 100%);
+    padding: 16px 30px;
+    color: var(--text-on-dark);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+
+.header-logo img {
+    height: 48px;
+    width: auto;
+    filter: brightness(0) invert(1);
+    opacity: 0.85;
+}
+
+.header-divider {
+    width: 1px;
+    height: 40px;
+    background: rgba(255,255,255,0.3);
+    margin: 0 18px;
+    flex-shrink: 0;
+}
+
+.header-info { flex: 1; }
+
+.header-title {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.header-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.header-user {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    background: rgba(255,255,255,0.1);
+    padding: 6px 14px;
+    border-radius: 20px;
+}
+
+.header-user .material-symbols-outlined { font-size: 18px; }
+
+/* ─── Body ──────────────────────────────────────────────── */
+.admin-body {
+    position: relative;
+    z-index: 2;
+    padding: 24px 32px 48px;
+    max-width: 1300px;
+    margin: 0 auto;
+}
+
+/* ─── Nav Bar ───────────────────────────────────────────── */
+.nav-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    color: var(--text-on-dark);
+    background: rgba(0,0,0,0.55);
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.back-btn:hover { background: rgba(0,0,0,0.75); }
+.back-btn .material-symbols-outlined { font-size: 16px; }
+
+.nav-tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.nav-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 18px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    background: rgba(0,0,0,0.08);
+    color: var(--text-on-light);
+    transition: background 0.2s, color 0.2s;
+    cursor: pointer;
+    border: none;
+}
+
+.nav-tab:hover { background: var(--accent-secondary); color: #fff; }
+.nav-tab.active { background: var(--color-mapua-red); color: #fff; }
+.nav-tab .material-symbols-outlined { font-size: 17px; }
+
+/* ─── Legend Bar ────────────────────────────────────────── */
+.legend-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 22px;
+    background: rgba(255,255,255,0.70);
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 12px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+}
+
+/* ─── Status dots ───────────────────────────────────────── */
+.dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.dot-gray    { background: #aaa; }
+.dot-orange  { background: #e07b22; }
+.dot-blue    { background: #2563eb; }
+.dot-purple  { background: #7c3aed; }
+.dot-teal    { background: #0f766e; }
+.dot-green   { background: #1a7f4e; }
+.dot-red     { background: #a00100; }
+
+/* ─── Filter Bar ────────────────────────────────────────── */
+.filter-bar {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.filter-input {
+    flex: 1;
+    min-width: 220px;
+    padding: 8px 14px;
+    border: 1.5px solid #ddd;
+    border-radius: 8px;
+    font-size: 13px;
+    transition: border-color 0.2s;
+}
+
+.filter-input:focus { outline: none; border-color: var(--color-mapua-blue); }
+
+.filter-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.filter-select {
+    padding: 7px 12px;
+    border: 1.5px solid #ddd;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+/* ─── Section ───────────────────────────────────────────── */
+.submissions-section {
+    margin-bottom: 40px;
+    background: rgba(255,255,255,0.80);
+    border-radius: 14px;
+    padding: 24px 28px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+}
+
+.section-header { margin-bottom: 16px; }
+
+.section-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-on-light);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.section-title .material-symbols-outlined { font-size: 20px; opacity: 0.7; }
+
+.section-desc {
+    margin-top: 4px;
+    font-size: 13px;
+    color: #666;
+}
+
+/* ─── Count Badge ───────────────────────────────────────── */
+.count-badge {
+    font-size: 12px;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 12px;
+    color: #fff;
+}
+
+.badge-orange  { background: #e07b22; }
+.badge-green   { background: #1a7f4e; }
+.badge-blue    { background: #2563eb; }
+.badge-purple  { background: #7c3aed; }
+.badge-teal    { background: #0f766e; }
+.badge-red     { background: #a00100; }
+.badge-gray    { background: #888; }
+
+/* ─── Empty State ───────────────────────────────────────── */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #888;
+}
+
+.empty-icon {
+    font-size: 48px;
+    display: block;
+    margin-bottom: 10px;
+    opacity: 0.4;
+}
+
+/* ─── Submission Cards (HR dashboard) ──────────────────── */
+.submissions-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.submission-card {
+    background: #fff;
+    border-radius: 10px;
+    border-left: 4px solid #ccc;
+    padding: 16px 20px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.card-pending  { border-left-color: #e07b22; }
+.card-archived { border-left-color: #1a7f4e; }
+
+.card-main {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    flex: 1;
+}
+
+.card-col {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 100px;
+}
+
+.card-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #888;
+    font-weight: 600;
+}
+
+.card-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-on-light);
+}
+
+.card-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.btn-view {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: var(--color-mapua-blue);
+    color: #fff;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s;
+}
+
+.btn-view:hover { background: var(--blue-soft); }
+
+.btn-archive {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: var(--color-mapua-red);
+    color: #fff;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-archive:hover { background: var(--red-hover); }
+.btn-archive .material-symbols-outlined { font-size: 16px; }
+.btn-view .material-symbols-outlined    { font-size: 16px; }
+
+.archive-form { display: inline; }
+
+/* ─── Submissions Table ─────────────────────────────────── */
+.submissions-table-wrap {
+    overflow-x: auto;
+    border-radius: 10px;
+    border: 1px solid #eee;
+}
+
+.submissions-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.submissions-table thead tr {
+    background: var(--color-charcoal);
+    color: #fff;
+}
+
+.submissions-table th {
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.submissions-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    color: var(--text-on-light);
+    vertical-align: middle;
+}
+
+.table-row:last-child td { border-bottom: none; }
+.table-row:hover { background: #f9f9f9; }
+
+.date-cell { font-size: 12px; color: #777; }
+
+.btn-review {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    background: var(--color-mapua-blue);
+    color: #fff;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s;
+    white-space: nowrap;
+}
+
+.btn-review:hover { background: var(--blue-soft); }
+.btn-review .material-symbols-outlined { font-size: 15px; }
+
+/* ─── Status Badges ─────────────────────────────────────── */
+.status-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.sts-archived { background: #d1fae5; color: #065f3a; }
+.sts-pending  { background: #fde68a; color: #78350f; }
+.sts-approved { background: #d1fae5; color: #065f3a; }
+.sts-rejected { background: #fee2e2; color: #7f1d1d; }

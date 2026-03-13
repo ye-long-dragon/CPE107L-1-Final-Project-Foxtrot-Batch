@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TLA | Review Queue</title>
+
+    <link rel="stylesheet" href="/common/css/variables.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet" href="/TLA/css/tlaAdminOverview.css">
+</head>
+<body>
+
+<main class="main-content">
+    <div class="background-overlay"></div>
+
+    <!-- ═══════════ HEADER ═══════════ -->
+    <header class="admin-header">
+        <div class="header-logo">
+            <img src="/common/img/schoolLogo.png" alt="School Logo">
+        </div>
+        <div class="header-divider"></div>
+        <div class="header-info">
+            <h1 class="header-title">TLA Review Queue</h1>
+            <p class="header-sub">
+                <%
+                    const roleLabel = {
+                        'Technical':     'Technical Assessment',
+                        'Program-Chair': 'Program Chair Approval',
+                        'Dean':          'Dean\'s Approval',
+                        'HR':            'HR Archiving',
+                        'Admin':         'Administrator',
+                        'Super-Admin':   'Super Administrator'
+                    };
+                %>
+                <%= roleLabel[locals.role] || locals.role %> — Pending Submissions
+            </p>
+        </div>
+        <div class="header-user">
+            <span class="material-symbols-outlined">manage_accounts</span>
+            <span><%= locals.user ? user.firstName + ' ' + user.lastName : 'Reviewer' %></span>
+        </div>
+    </header>
+
+    <div class="admin-body">
+
+        <!-- ── BACK / NAV ── -->
+        <div class="nav-bar">
+            <a href="/tla/courses" class="back-btn">
+                <span class="material-symbols-outlined">arrow_back</span> Back to Courses
+            </a>
+            <div class="nav-tabs">
+                <a href="/tla/admin-overview" class="nav-tab active">
+                    <span class="material-symbols-outlined">queue</span> Review Queue
+                </a>
+                <% if (['HR','Admin','Super-Admin'].includes(locals.role)) { %>
+                <a href="/tla/hr" class="nav-tab">
+                    <span class="material-symbols-outlined">archive</span> HR Archive
+                </a>
+                <% } %>
+            </div>
+        </div>
+
+        <!-- ══════════════════════════════════
+             STATUS LEGEND
+        ═══════════════════════════════════ -->
+        <div class="legend-bar">
+            <span class="legend-item"><span class="dot dot-orange"></span> Pending (Awaiting Technical)</span>
+            <span class="legend-item"><span class="dot dot-blue"></span> Tech-Approved (Awaiting Chair)</span>
+            <span class="legend-item"><span class="dot dot-purple"></span> Chair-Approved (Awaiting Dean)</span>
+            <span class="legend-item"><span class="dot dot-teal"></span> Dean-Approved (Awaiting HR)</span>
+            <span class="legend-item"><span class="dot dot-red"></span> Returned</span>
+        </div>
+
+        <!-- ══════════════════════════════════
+             SUBMISSIONS TABLE
+        ═══════════════════════════════════ -->
+        <section class="submissions-section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <span class="material-symbols-outlined">assignment</span>
+                    Submissions Awaiting Your Action
+                    <span class="count-badge badge-orange"><%= submissions.length %></span>
+                </h2>
+            </div>
+
+            <% if (submissions.length === 0) { %>
+                <div class="empty-state">
+                    <span class="material-symbols-outlined empty-icon">check_circle</span>
+                    <p>No submissions are currently in your queue.</p>
+                </div>
+            <% } else { %>
+
+                <!-- Filter bar -->
+                <div class="filter-bar">
+                    <input type="text" id="searchInput" class="filter-input"
+                           placeholder="Search by course, section, faculty..." />
+                    <label class="filter-label">
+                        Status:
+                        <select id="statusFilter" class="filter-select">
+                            <option value="">All</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Tech-Approved">Tech-Approved</option>
+                            <option value="Chair-Approved">Chair-Approved</option>
+                            <option value="Dean-Approved">Dean-Approved</option>
+                            <option value="Returned">Returned</option>
+                        </select>
+                    </label>
+                </div>
+
+                <div class="submissions-table-wrap">
+                    <table class="submissions-table" id="submissionsTable">
+                        <thead>
+                            <tr>
+                                <th>Course</th>
+                                <th>Week</th>
+                                <th>Section</th>
+                                <th>Faculty</th>
+                                <th>Status</th>
+                                <th>Last Updated</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <%
+                            const dotMap = {
+                                'Pending':       'dot-orange',
+                                'Tech-Approved': 'dot-blue',
+                                'Chair-Approved':'dot-purple',
+                                'Dean-Approved': 'dot-teal',
+                                'Returned':      'dot-red',
+                                'Archived':      'dot-green',
+                                'Not Submitted': 'dot-gray'
+                            };
+                            const badgeMap = {
+                                'Pending':       'badge-orange',
+                                'Tech-Approved': 'badge-blue',
+                                'Chair-Approved':'badge-purple',
+                                'Dean-Approved': 'badge-teal',
+                                'Returned':      'badge-red',
+                                'Archived':      'badge-green',
+                                'Not Submitted': 'badge-gray'
+                            };
+                        %>
+                        <% submissions.forEach(function(s) { %>
+                        <tr class="table-row" data-status="<%= s.macroStatus %>">
+                            <td><strong><%= s.courseCode %></strong></td>
+                            <td>Week <%= s.weekNumber || '—' %></td>
+                            <td><%= s.section || '—' %></td>
+                            <td><%= s.facultyName %></td>
+                            <td>
+                                <span class="status-badge <%= badgeMap[s.macroStatus] || 'badge-gray' %>">
+                                    <%= s.macroStatus %>
+                                </span>
+                            </td>
+                            <td class="date-cell">
+                                <%= s.updatedAt ? new Date(s.updatedAt).toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'numeric' }) : '—' %>
+                            </td>
+                            <td>
+                                <a href="/tla/approval/<%= s._id %>" class="btn-review">
+                                    <span class="material-symbols-outlined">rate_review</span> Review
+                                </a>
+                            </td>
+                        </tr>
+                        <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+
+            <% } %>
+        </section>
+
+    </div><!-- end .admin-body -->
+</main>
+
+<script src="/TLA/js/tlaAdminOverview.js"></script>
+</body>
+</html>
