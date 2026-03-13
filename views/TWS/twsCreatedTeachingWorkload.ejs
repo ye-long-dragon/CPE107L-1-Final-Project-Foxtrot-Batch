@@ -4,6 +4,12 @@
   <meta charset="UTF-8" />
   <title>TWS - Created Teaching Workload Sheet</title>
   <link rel="stylesheet" href="/TWS/css/twsStyle.css" />
+  <style>
+    .tws-block {
+      grid-column: var(--col, auto);
+      grid-row: var(--row, auto);
+    }
+  </style>
 </head>
 
 <body class="tws-app-body">
@@ -123,7 +129,7 @@
                   const row = timeMap[p.startStr] || 2;
                   const colorClass = block.isConflict ? "tws-block-conflict" : "tws-block-assigned";
               %>
-              <div class="tws-block <%= colorClass %>" style="grid-column: <%= col %>; grid-row: <%= row %>;">
+              <div class="tws-block <%= colorClass %>" style="--col: <%= col %>; --row: <%= row %>;">
                 <div class="tws-block-code"><%= s.code %></div>
                 <div class="tws-block-sub"><%= s.sectionRoom || "" %></div>
               </div>
