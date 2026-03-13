@@ -1,5 +1,5 @@
 import express from "express";
-import { mainDB } from "../../database/mongo-dbconnect.js"; 
+import { mainDB } from "../../database/mongo-dbconnect.js";
 import userSchema from "../../models/user.js";
 import { isAuthenticated, authorizeRoles } from "../../middleware/authMiddleware.js";
 
@@ -13,6 +13,10 @@ progChairRoutes.get("/institution", isAuthenticated, authorizeRoles("Dean"), asy
         announcements: [],
         user: req.session.user
     });
+});
+
+progChairRoutes.get("/syllabus", isAuthenticated, authorizeRoles("Dean"), async (req, res) => {
+    res.redirect(`/syllabus/${req.session.user.id}`);
 });
 
 

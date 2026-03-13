@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MMCM Chalkboard | Login</title>
 
     <!--inside the public file, for colors-->
-    <link rel="stylesheet" href="/common/css/variables.css"> 
+    <link rel="stylesheet" href="/common/css/variables.css">
 
     <style>
         body {
@@ -54,14 +55,14 @@
             left: 0;
             font-size: 1.1rem;
             color: white;
-            pointer-events: none;   
+            pointer-events: none;
             transition: all 0.3s ease;
             font-weight: bold;
         }
 
         /* Animation Trigger:*/
-        .input-container input:focus + label,
-        .input-container input:not(:placeholder-shown) + label {
+        .input-container input:focus+label,
+        .input-container input:not(:placeholder-shown)+label {
             top: -20px;
             font-size: 0.85rem;
             color: white;
@@ -115,14 +116,16 @@
         }
 
         .error-message {
-        color: #ff4d4d;
-        font-size: 0.85rem;
-        margin-bottom: 15px;
-        text-align: center;
-        display: none; /* Hidden by default */
+            color: #ff4d4d;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+            text-align: center;
+            display: none;
+            /* Hidden by default */
         }
     </style>
 </head>
+
 <body>
 
     <section id="logo">
@@ -131,13 +134,13 @@
 
     <section id="credentials">
         <div id="error-box" class="error-message">Invalid username or password.</div>
-        
+
         <form id="loginForm">
             <div class="input-container">
                 <input type="text" id="username" name="username" placeholder=" " autocomplete="off" required>
                 <label for="username">Username</label>
             </div>
-            
+
             <div class="input-container">
                 <input type="password" id="password" name="password" placeholder=" " autocomplete="off" required>
                 <label for="password">Password</label>
@@ -176,14 +179,18 @@
                 const result = await response.json();
 
                 if (response.ok) {
-                    if (result.role === 'Admin') {
+                    const role = result.role ? result.role.toLowerCase() : '';
+                    if (role === 'admin') {
                         window.location.href = '/admin/institution';
-                    } else if (result.role === 'Professor') {
+                    } else if (role === 'professor') {
                         window.location.href = '/institution';
-                    } else if (result.role === 'Program-Chair') {
+                    } else if (role === 'program-chair') {
                         window.location.href = '/progchair/institution';
+                    } else if (role === 'dean') {
+                        window.location.href = '/dean/institution';
+                    } else if (role === 'hr' || role === 'hr-admin') {
+                        window.location.href = '/syllabus/hr';
                     } else {
-                        // Add all the users here:
                         window.location.href = '/institution';
                     }
                 } else {
@@ -197,4 +204,5 @@
         });
     </script>
 </body>
+
 </html>

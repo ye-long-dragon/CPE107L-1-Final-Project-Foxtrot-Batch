@@ -15,5 +15,9 @@ progChairRoutes.get("/institution", isAuthenticated, authorizeRoles("Program-Cha
     });
 });
 
+progChairRoutes.get("/syllabus", isAuthenticated, authorizeRoles("Program-Chair"), async (req, res) => {
+    res.redirect("/syllabus/prog-chair");
+});
+
 
 export default progChairRoutes;

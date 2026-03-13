@@ -105,6 +105,12 @@ coursesOverviewRouter.get('/:userId', async (req, res) => {
         const userId = req.params.userId;
         const searchQuery = req.query.search ? req.query.search.toLowerCase() : '';
 
+        // Safety check: Avoid Mongoose CastError if userId is "undefined" or invalid ObjectID
+        if (userId === "undefined" || !mongoose.Types.ObjectId.isValid(userId)) {
+            console.warn(`Invalid userId received in Course Overview: ${userId}. Redirecting to login.`);
+            return res.redirect("/login");
+        }
+
         let userCourses = await Syllabus.find({ userID: userId });
 
         if (mainDB.models.User) {

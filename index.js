@@ -23,7 +23,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // JSON
-app.use(express.json()); 
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Session
@@ -31,11 +31,17 @@ app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: { 
+    cookie: {
         maxAge: 1000 * 60 * 60 * 12,
-        secure: false 
+        secure: false
     }
 }));
+
+// ADDED: Make session user available to all templates via res.locals.user
+app.use((req, res, next) => {
+    res.locals.user = req.session.user || null;
+    next();
+});
 
 // ========================
 // Middleware
@@ -74,10 +80,10 @@ import formRoutes from "./routes/TLA/tlaFormRoutes.js";
 import approvalRoutes from "./routes/TLA/tlaApprovalRoutes.js";
 
 // TLA APIs
-import tlaApiRoutes          from "./routes/APIs/TLA/tlaRoutes.js";
-import tlaApprovalApiRoutes  from "./routes/APIs/TLA/tlaApprovalStatusRoutes.js";
-import tlaPreDigitalRoutes   from "./routes/APIs/TLA/tlaPreDigitalSessionRoutes.js";
-import tlaPostDigitalRoutes  from "./routes/APIs/TLA/tlaPostDigitalSessionRoutes.js";
+import tlaApiRoutes from "./routes/APIs/TLA/tlaRoutes.js";
+import tlaApprovalApiRoutes from "./routes/APIs/TLA/tlaApprovalStatusRoutes.js";
+import tlaPreDigitalRoutes from "./routes/APIs/TLA/tlaPreDigitalSessionRoutes.js";
+import tlaPostDigitalRoutes from "./routes/APIs/TLA/tlaPostDigitalSessionRoutes.js";
 
 // Syllabus
 import courseOverviewRoutes from "./routes/Syllabus/courseOverview.js";
@@ -101,10 +107,10 @@ import ataPages from "./routes/ATA/ataPages.js";
 // Routes
 // ========================
 // Main Pages
-app.use("/login",loginRoutes);
-app.use("/institution",professorRoutes);
+app.use("/login", loginRoutes);
+app.use("/institution", professorRoutes);
 app.use("/admin/users", userRoutes); //admin user API
-app.use("/admin",adminRoutes);
+app.use("/admin", adminRoutes);
 app.use("/progChair", progChairRoutes);
 app.use("/dean", deanRoutes);
 
@@ -117,14 +123,23 @@ app.use("/tla/approval", approvalRoutes);
 app.get("/tla", (req, res) => res.redirect("/tla/courses"));
 
 // TLA APIs
-app.use("/api/tla/approval",      tlaApprovalApiRoutes);
-app.use("/api/tla/pre-digital",   tlaPreDigitalRoutes);
-app.use("/api/tla/post-digital",  tlaPostDigitalRoutes);
-app.use("/api/tla",               tlaApiRoutes);
+app.use("/api/tla/approval", tlaApprovalApiRoutes);
+app.use("/api/tla/pre-digital", tlaPreDigitalRoutes);
+app.use("/api/tla/post-digital", tlaPostDigitalRoutes);
+app.use("/api/tla", tlaApiRoutes);
 
 //Syllabus
 app.get("/syllabus", (req, res) => {
-    res.redirect("/syllabus/507f1f77bcf86cd799439011");
+    // Role-based redirection for the generic /syllabus path
+    if (req.session.user) {
+        const role = req.session.user.role;
+        if (role === 'Admin' || role === 'HR') return res.redirect('/syllabus/hr');
+        if (role === 'Dean' || role === 'dean') return res.redirect('/dean/syllabus');
+        if (role === 'Program-Chair' || role === 'program-chair') return res.redirect('/syllabus/prog-chair');
+        if (role === 'Professor' || role === 'professor') return res.redirect('/faculty');
+        return res.redirect(`/syllabus/${req.session.user.id}`);
+    }
+    res.redirect("/login");
 });
 app.use("/syllabus/api", syllabusCourseOverviewActions);
 app.use("/syllabus/approval", syllabusApprovalStatusActions);

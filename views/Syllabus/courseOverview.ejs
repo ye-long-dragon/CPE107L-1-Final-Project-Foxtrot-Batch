@@ -13,7 +13,11 @@
 
 <body>
     <div class="dashboard">
-        <%- include('../partials/sideMenuBar') %>
+        <% if (locals.user && (user.role === 'Dean' || user.role === 'dean')) { %>
+            <%- include('../MainPages/dean/partials/deanMenuBar') %>
+        <% } else { %>
+            <%- include('../partials/sideMenuBar') %>
+        <% } %>
 
             <main class="main-content" style="background: #ffffff !important;">
 

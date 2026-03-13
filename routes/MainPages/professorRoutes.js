@@ -12,4 +12,8 @@ professorRoutes.get("/", isAuthenticated, authorizeRoles("Professor"), async(req
     }
 );
 
+professorRoutes.get("/syllabus", isAuthenticated, authorizeRoles("Professor"), async(req, res) => {
+    res.redirect("/faculty");
+});
+
 export default professorRoutes;
