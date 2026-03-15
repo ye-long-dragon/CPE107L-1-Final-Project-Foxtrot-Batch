@@ -17,17 +17,17 @@
 
 /* ---------- VARIABLES ---------- */
 :root{
-  --tws-bg-overlay: rgba(0,0,0,0.30);
-  --tws-glass: rgba(110, 120, 135, 0.42);
-  --tws-pill: rgba(110, 120, 135, 0.62);
-  --tws-card: rgba(0,0,0,0.58);
-  --tws-border: rgba(255,255,255,0.68);
+  --tws-bg-overlay: var(--surface-overlay-dark);
+  --tws-glass: var(--surface-glass);
+  --tws-pill: var(--surface-pill);
+  --tws-card: var(--surface-card-dark);
+  --tws-border: var(--surface-border-strong);
   --tws-shadow: 0 16px 30px rgba(0,0,0,0.32);
-  --tws-green: #18b06b;
-  --tws-blue: #2e6cff;
-  --tws-white: rgba(255,255,255,0.92);
-  --tws-text: #fff;
-  --tws-text-dark: #111;
+  --tws-green: var(--status-approved);
+  --tws-blue: var(--accent-secondary);
+  --tws-white: var(--surface-elevated-light);
+  --tws-text: var(--text-on-dark);
+  --tws-text-dark: var(--text-on-light);
 }
 
 *{ box-sizing: border-box; }
@@ -130,7 +130,7 @@ button, input, select{ font-family: inherit; }
   display: inline-block;
   margin-top: 16px;
   background: var(--tws-green);
-  color: #fff;
+  color: var(--tws-text);
   padding: 12px 46px;
   border-radius: 999px;
   font-weight: 800;
@@ -176,7 +176,7 @@ button, input, select{ font-family: inherit; }
 .pc-body{
   margin: 0;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  color: #fff;
+  color: var(--tws-text);
   background:
     linear-gradient(var(--tws-bg-overlay), var(--tws-bg-overlay)),
     url("/TWS/img/background.png") no-repeat center center / cover fixed;
@@ -271,7 +271,7 @@ button, input, select{ font-family: inherit; }
 .pc-chip{
   background: rgba(255,255,255,0.10);
   border: 1px solid rgba(255,255,255,0.45);
-  color: #fff;
+  color: var(--tws-text);
   border-radius: 999px;
   padding: 6px 12px;
   font-size: 12px;
@@ -343,7 +343,7 @@ button, input, select{ font-family: inherit; }
 
 .pc-blue{
   background: var(--tws-blue);
-  color: #fff;
+  color: var(--tws-text);
   border-color: rgba(255,255,255,0.35);
 }
 
@@ -360,8 +360,8 @@ button, input, select{ font-family: inherit; }
   font-weight: 800;
 }
 
-.pc-yellow{ color: #ffd66b; }
-.pc-red{ color: #ff8b8b; }
+.pc-yellow{ color: var(--status-for-signing); }
+.pc-red{ color: var(--status-returned); }
 
 /* Program Chair next button */
 .pc-next-wrap{
@@ -407,7 +407,7 @@ button, input, select{ font-family: inherit; }
 .tws-app-body{
   margin: 0;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  color: #fff;
+  color: var(--tws-text);
   background:
     linear-gradient(var(--tws-bg-overlay), var(--tws-bg-overlay)),
     url("/TWS/img/background.png") no-repeat center center / cover fixed;
@@ -500,7 +500,7 @@ button, input, select{ font-family: inherit; }
 
 .tws-create-pill{
   background: var(--tws-green);
-  color: #fff;
+  color: var(--tws-text);
   border-radius: 999px;
   padding: 8px 14px;
   font-size: 12px;
@@ -577,8 +577,8 @@ button, input, select{ font-family: inherit; }
 }
 
 .tws-btn-danger{
-  background: #b91c1c;
-  color: #fff;
+  background: var(--status-rejected);
+  color: var(--tws-text);
   border-color: rgba(255,255,255,0.35);
 }
 
@@ -653,7 +653,7 @@ button, input, select{ font-family: inherit; }
 }
 
 .tws-modal{
-  background: #1e1e1e;
+  background: var(--page-bg-dark);
   padding: 18px;
   width: 360px;
   border-radius: 16px;
@@ -682,20 +682,20 @@ button, input, select{ font-family: inherit; }
   border-radius: 10px;
   border: 1px solid rgba(255,255,255,0.18);
   background: rgba(255,255,255,0.08);
-  color: #fff;
+  color: var(--tws-text);
   outline: none;
   appearance: auto;
 }
 
 /* dropdown options */
 .tws-modal select option{
-  background: #1f1f1f;
-  color: #fff;
+  background: var(--page-bg-dark);
+  color: var(--tws-text);
 }
 
 /* default placeholder option like -- Select -- */
 .tws-modal select option[value=""]{
-  color: #d1d5db;
+  color: var(--text-muted);
 }
 
 .tws-modal select:focus{
@@ -712,7 +712,7 @@ button, input, select{ font-family: inherit; }
 
 .tws-modal-cancel{
   background: rgba(255,255,255,0.22);
-  color: #fff;
+  color: var(--tws-text);
   border: none;
   padding: 8px 16px;
   border-radius: 999px;
@@ -722,7 +722,7 @@ button, input, select{ font-family: inherit; }
 
 .tws-modal-add{
   background: var(--tws-green);
-  color: #fff;
+  color: var(--tws-text);
   border: none;
   padding: 8px 16px;
   border-radius: 999px;
@@ -886,7 +886,7 @@ button, input, select{ font-family: inherit; }
 
 .tws-pill-green{
   background: var(--tws-green);
-  color: #fff;
+  color: var(--tws-text);
   border-color: rgba(255,255,255,0.25);
 }
 
@@ -1030,14 +1030,14 @@ button, input, select{ font-family: inherit; }
 .tws-block-sub{ font-weight: 800; opacity: 0.9; }
 
 /* Timetable block colors */
-.tws-timetable .highlight-yellow{ background: #e6d57a; color: #111; }
-.tws-timetable .highlight-blue{ background: #2a86d6; color: #111; }
-.tws-timetable .highlight-purple{ background: #7a4aa8; color: #111; }
-.tws-timetable .highlight-green{ background: #00c26a; color: #111; }
+.tws-timetable .highlight-yellow{ background: var(--status-for-signing); color: var(--tws-text-dark); }
+.tws-timetable .highlight-blue{ background: var(--accent-secondary); color: var(--tws-text); }
+.tws-timetable .highlight-purple{ background: var(--accent-primary-hover); color: var(--tws-text); }
+.tws-timetable .highlight-green{ background: var(--status-approved); color: var(--tws-text); }
 
 /* Semantic timetable coloring */
-.tws-timetable .tws-block-assigned{ background: #00c26a; color: #111; }
-.tws-timetable .tws-block-conflict{ background: #d93a2f; color: #fff; }
+.tws-timetable .tws-block-assigned{ background: var(--status-approved); color: var(--tws-text); }
+.tws-timetable .tws-block-conflict{ background: var(--status-rejected); color: var(--tws-text); }
 
 /* Small screen tweaks */
 @media (max-width: 520px){
