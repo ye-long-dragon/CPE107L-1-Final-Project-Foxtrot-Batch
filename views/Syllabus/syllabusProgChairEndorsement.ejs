@@ -57,7 +57,7 @@
             <section class="ad-document-panel">
 
                 <!-- Back button -->
-                <a href="/syllabus/prog-chair/endorse" class="ad-back-btn">
+                <a href="<%= locals.actionUrlPrefix || '/syllabus/prog-chair/endorse' %>" class="ad-back-btn">
                     <span class="material-symbols-outlined">arrow_back</span> BACK
                 </a>
 
@@ -78,14 +78,33 @@
             <!-- ─── RIGHT: Endorsement Sidebar ─────────────────────── -->
             <aside class="ad-sidebar">
 
-                <h3 class="ad-sidebar-title">Program Chair Endorsement</h3>
+                <h3 class="ad-sidebar-title"><%= locals.actionTitle || 'Program Chair Endorsement' %></h3>
 
                 <!-- ── Approval Progress Tracker ── -->
                 <div class="ad-tracker">
-                    <% const steps=[ { role: 'Faculty' , label: 'Submitted' , status: 'approved' }, { role: 'Technical'
-                        , label: 'Reviewed' , status: 'approved' }, { role: 'Program Chair' , label: 'On-Going' ,
-                        status: 'ongoing' }, { role: 'Dean' , label: 'Pending' , status: 'pending' }, { role: 'HR' ,
-                        label: 'Pending' , status: 'pending' } ]; %>
+                    <% 
+                    let pcStatus = 'ongoing';
+                    let pcLabel = 'On-Going';
+                    
+                    if (locals.workflowStep === 'approval') {
+                        if (locals.approvalState === 'PC_Approved') {
+                            pcStatus = 'approved';
+                            pcLabel = 'Approved';
+                        }
+                    } else if (locals.workflowStep === 'endorsement') {
+                        if (locals.currentStatus === 'Approved') {
+                            pcStatus = 'approved';
+                            pcLabel = 'Endorsed';
+                        }
+                    }
+
+                    const steps = [
+                        { role: 'Faculty', label: 'Submitted', status: 'approved' },
+                        { role: 'Program Chair', label: pcLabel, status: pcStatus },
+                        { role: 'Dean', label: 'Pending', status: 'pending' },
+                        { role: 'HR', label: 'Pending', status: 'pending' }
+                    ]; 
+                    %>
 
                         <div class="ad-tracker-steps">
                             <% steps.forEach(function(step, idx) { %>
@@ -120,18 +139,20 @@
                     <div class="ad-status-select-wrapper">
                         <span class="ad-status-indicator" id="status-indicator"></span>
                         <select id="approval-status" class="ad-status-select">
-                            <option value="Endorsed" <%=locals.currentStatus==='Endorsed' ? 'selected' : '' %>>Endorsed
+                            <option value="" disabled <%= (!locals.approvalState || locals.approvalState === 'Pending') && locals.currentStatus === 'Pending' ? 'selected' : '' %>>-- Select Status --</option>
+                            <option value="<%= locals.optionApproveValue || 'Endorsed' %>" 
+                                <%= (locals.approvalState === locals.optionApproveValue || locals.currentStatus === locals.optionApproveValue) ? 'selected' : '' %>>
+                                <%= locals.workflowStep === 'approval' ? 'Approve' : 'Endorse' %>
                             </option>
-                            <option value="Returned" <%=locals.currentStatus==='Returned' ? 'selected' : '' %>>Returned
-                            </option>
-                            <option value="Pending" <%=locals.currentStatus==='Pending' ? 'selected' : '' %>>Pending
+                            <option value="Reject" <%= (locals.approvalState === 'Rejected' || locals.currentStatus === 'Rejected' || locals.approvalState === 'Returned') ? 'selected' : '' %>>Reject
                             </option>
                         </select>
                     </div>
                 </div>
 
-                <!-- ── Signature Box ── -->
-                <div class="ad-sidebar-section">
+                <!-- ── Signature Box (Approval Only) ── -->
+                <% if (locals.workflowStep === 'approval') { %>
+                <div class="ad-sidebar-section" id="signature-section" style="display: none;">
                     <label class="ad-sidebar-label">E-Signature</label>
                     <div class="ad-signature-wrapper">
                         <div class="ad-signature-box" id="signature-box">
@@ -144,6 +165,7 @@
                         </button>
                     </div>
                 </div>
+                <% } %>
 
                 <!-- ── Action Buttons ── -->
                 <div class="ad-sidebar-actions">
@@ -156,7 +178,7 @@
                         Save as Draft
                     </button>
                     <button type="button" class="ad-btn-action ad-btn-submit" id="btn-submit">
-                        Submit Endorsement
+                        <%= locals.workflowStep === 'approval' ? 'Submit Decision' : 'Submit Endorsement' %>
                     </button>
                 </div>
             </aside>
@@ -168,11 +190,16 @@
     ═══════════════════════════════════════════════════════════ -->
     <script>
         const SYLLABUS_APPROVAL_DATA = {
-            syllabusID: '<%= locals.syllabusId || "" %>',
-            userRole: 'program_chair',
-            postUrl: '/syllabus/prog-chair/endorse/<%= locals.syllabusId || "" %>',
-            backUrl: '/syllabus/prog-chair/endorse',
-            actionLabel: 'endorsement'
+            syllabusId: '<%= locals.syllabusId || syllabusId || "" %>',
+            currentStatus: '<%= locals.currentStatus || currentStatus || "" %>',
+            approvalState: '<%= locals.approvalState || approvalState || "" %>',
+            existingComment: '<%= locals.existingComment || existingComment || "" %>',
+            actionUrlPrefix: '<%= locals.actionUrlPrefix || actionUrlPrefix || "" %>',
+            optionApproveValue: '<%= locals.optionApproveValue || optionApproveValue || "" %>',
+            workflowStep: '<%= locals.workflowStep || workflowStep || "" %>',
+            postUrl: '<%= (locals.actionUrlPrefix || actionUrlPrefix) %>/<%= (locals.syllabusId || syllabusId) %>',
+            backUrl: '<%= (locals.actionUrlPrefix || actionUrlPrefix) %>',
+            actionLabel: '<%= (locals.workflowStep || workflowStep) === "approval" ? "Approval" : "Endorsement" %>'
         };
     </script>
     <script src="/Syllabus/js/syllabusApprovalDetail.js"></script>
