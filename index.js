@@ -23,8 +23,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // JSON
-app.use(express.json()); 
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Session
 app.use(session({
@@ -65,6 +65,7 @@ import adminRoutes from "./routes/MainPages/adminRoutes.js";
 import progChairRoutes from "./routes/MainPages/progChairRoutes.js";
 import deanRoutes from "./routes/MainPages/deanRoutes.js";
 import userRoutes from './routes/APIs/userRoutes.js';
+import announcementRoutes from "./routes/APIs/MainPages/adminAnnouncementsApi.js"
 
 // TLA
 import dashBoardRoutes from "./routes/TLA/tlaDashboardRoutes.js";
@@ -109,6 +110,7 @@ app.use("/admin/users", userRoutes); //admin user API
 app.use("/admin",adminRoutes);
 app.use("/progChair", progChairRoutes);
 app.use("/dean", deanRoutes);
+app.use("/api", announcementRoutes)
 
 //TLA Pages
 app.use("/tla/dashboard", dashBoardRoutes);
