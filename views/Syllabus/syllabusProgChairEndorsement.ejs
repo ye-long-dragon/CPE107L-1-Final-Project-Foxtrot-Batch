@@ -140,18 +140,19 @@
                         <span class="ad-status-indicator" id="status-indicator"></span>
                         <select id="approval-status" class="ad-status-select">
                             <option value="" disabled <%= (!locals.approvalState || locals.approvalState === 'Pending') && locals.currentStatus === 'Pending' ? 'selected' : '' %>>-- Select Status --</option>
-                            <option value="<%= locals.optionApproveValue || 'Endorsed' %>" 
+                            <option value="<%= locals.optionApproveValue || 'PC_Approved' %>" 
                                 <%= (locals.approvalState === locals.optionApproveValue || locals.currentStatus === locals.optionApproveValue) ? 'selected' : '' %>>
-                                <%= locals.workflowStep === 'approval' ? 'Approve' : 'Endorse' %>
+                                Approve Syllabus
                             </option>
-                            <option value="Reject" <%= (locals.approvalState === 'Rejected' || locals.currentStatus === 'Rejected' || locals.approvalState === 'Returned') ? 'selected' : '' %>>Reject
+                            <option value="Reject" <%= (locals.approvalState === 'Rejected' || locals.currentStatus === 'Rejected' || locals.approvalState === 'Returned' || locals.approvalState === 'Rejected') ? 'selected' : '' %>>
+                                Reject Syllabus
                             </option>
                         </select>
                     </div>
                 </div>
 
-                <!-- ── Signature Box (Approval Only) ── -->
-                <% if (locals.workflowStep === 'approval') { %>
+                <!-- ── Signature Box (Approval or Endorsement Only) ── -->
+                <% if (locals.workflowStep === 'approval' || locals.workflowStep === 'endorsement') { %>
                 <div class="ad-sidebar-section" id="signature-section" style="display: none;">
                     <label class="ad-sidebar-label">E-Signature</label>
                     <div class="ad-signature-wrapper">
@@ -178,7 +179,7 @@
                         Save as Draft
                     </button>
                     <button type="button" class="ad-btn-action ad-btn-submit" id="btn-submit">
-                        <%= locals.workflowStep === 'approval' ? 'Submit Decision' : 'Submit Endorsement' %>
+                        Endorse Syllabus
                     </button>
                 </div>
             </aside>

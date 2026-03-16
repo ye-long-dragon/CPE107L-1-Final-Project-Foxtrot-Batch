@@ -44,14 +44,12 @@
                                             <%= endorsedCount %> <%= locals.approvedLabel || 'Endorsed' %>
                                         </span>
                                     </div>
-                                    <% if (typeof rejectedCount !== 'undefined') { %>
                                     <div class="stat-pill returned" style="background: rgba(217, 48, 37, 0.1); color: #d93025;">
                                         <i class="fas fa-times-circle"></i>
                                         <span>
-                                            <%= rejectedCount %> <%= locals.rejectedLabel || 'Rejected' %>
+                                            <%= locals.rejectedCount || 0 %> Rejected
                                         </span>
                                     </div>
-                                    <% } %>
                                 </div>
                             </div>
                         </div>
@@ -60,9 +58,7 @@
                             <button class="tab-btn active" data-filter="all">All Drafts</button>
                             <button class="tab-btn" data-filter="Pending">Pending</button>
                             <button class="tab-btn" data-filter="<%= locals.approvedFilter || 'Endorsed' %>"><%= locals.approvedLabel || 'Endorsed' %></button>
-                            <% if (typeof rejectedFilter !== 'undefined') { %>
-                            <button class="tab-btn" data-filter="<%= locals.rejectedFilter %>"><%= locals.rejectedLabel || 'Rejected' %></button>
-                            <% } %>
+                            <button class="tab-btn" data-filter="Rejected">Rejected</button>
                         </div>
 
                         <div class="approval-search-bar">

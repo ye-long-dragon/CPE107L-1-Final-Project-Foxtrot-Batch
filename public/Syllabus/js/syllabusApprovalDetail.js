@@ -31,23 +31,41 @@ document.addEventListener('DOMContentLoaded', () => {
             statusDot.classList.add('indicator-pending');
         }
 
-        // Conditional Logic for Program Chair Approval
-        if (workflowStep === 'approval' && btnSubmit) {
-            if (val === 'PC_Approved') {
-                // Show sig section, disable submit unless file exists
+        // Conditional Logic for Program Chair Endorsement
+        if (workflowStep === 'endorsement' && btnSubmit) {
+            const approveVal = typeof SYLLABUS_APPROVAL_DATA !== 'undefined' ? (SYLLABUS_APPROVAL_DATA.optionApproveValue || 'PC_Approved') : 'PC_Approved';
+            
+            // Reset button styles initially
+            btnSubmit.style.backgroundColor = '';
+            btnSubmit.style.color = '';
+            btnSubmit.textContent = 'Endorse Syllabus';
+
+            if (val === approveVal) {
+                // APPROVE SYLLABUS CASE
+                btnSubmit.textContent = 'Endorse Syllabus';
+                btnSubmit.style.backgroundColor = '#00875a'; // Green
+                btnSubmit.style.color = '#ffffff';
+                
                 if (sigSection) sigSection.style.display = 'block';
                 const hasFile = sigInput && sigInput.files && sigInput.files.length > 0;
                 btnSubmit.disabled = !hasFile;
                 btnSubmit.style.opacity = hasFile ? '1' : '0.5';
                 btnSubmit.style.cursor = hasFile ? 'pointer' : 'not-allowed';
-            } else if (val === 'Reject' || val === 'Returned') {
-                // Hide sig section, enable submit immediately
+
+            } else if (val === 'Reject' || val === 'Rejected' || val === 'Returned') {
+                // REJECT SYLLABUS CASE
+                btnSubmit.textContent = 'Return to Faculty';
+                btnSubmit.style.backgroundColor = '#d93025'; // Red
+                btnSubmit.style.color = '#ffffff';
+
                 if (sigSection) sigSection.style.display = 'none';
                 btnSubmit.disabled = false;
                 btnSubmit.style.opacity = '1';
                 btnSubmit.style.cursor = 'pointer';
+
             } else {
-                // 'Select Status' or empty - hide sig, disable submit
+                // SELECT STATUS CASE (Default/Empty)
+                btnSubmit.textContent = 'Endorse Syllabus';
                 if (sigSection) sigSection.style.display = 'none';
                 btnSubmit.disabled = true;
                 btnSubmit.style.opacity = '0.5';
@@ -69,10 +87,13 @@ document.addEventListener('DOMContentLoaded', () => {
         sigInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) {
-                 if (workflowStep === 'approval' && btnSubmit && statusSelect.value === 'PC_Approved') {
-                     btnSubmit.disabled = true;
-                     btnSubmit.style.opacity = '0.5';
-                     btnSubmit.style.cursor = 'not-allowed';
+                 if (workflowStep === 'endorsement' && btnSubmit) {
+                     const approveVal = typeof SYLLABUS_APPROVAL_DATA !== 'undefined' ? (SYLLABUS_APPROVAL_DATA.optionApproveValue || 'PC_Approved') : 'PC_Approved';
+                     if (statusSelect.value === approveVal) {
+                         btnSubmit.disabled = true;
+                         btnSubmit.style.opacity = '0.5';
+                         btnSubmit.style.cursor = 'not-allowed';
+                     }
                  }
                  return;
             }
@@ -83,10 +104,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 sigBox.appendChild(sigInput); // keep the hidden input in the DOM
                 if (sigRemove) sigRemove.style.display = 'flex';
                 
-                if (workflowStep === 'approval' && btnSubmit && statusSelect.value === 'PC_Approved') {
-                    btnSubmit.disabled = false;
-                    btnSubmit.style.opacity = '1';
-                    btnSubmit.style.cursor = 'pointer';
+                if (workflowStep === 'endorsement' && btnSubmit) {
+                    const approveVal = typeof SYLLABUS_APPROVAL_DATA !== 'undefined' ? (SYLLABUS_APPROVAL_DATA.optionApproveValue || 'PC_Approved') : 'PC_Approved';
+                    if (statusSelect.value === approveVal) {
+                        btnSubmit.disabled = false;
+                        btnSubmit.style.opacity = '1';
+                        btnSubmit.style.cursor = 'pointer';
+                    }
                 }
             };
             reader.readAsDataURL(file);
@@ -101,10 +125,13 @@ document.addEventListener('DOMContentLoaded', () => {
             sigInput.value = ''; // clear file selection
             sigRemove.style.display = 'none';
             
-            if (workflowStep === 'approval' && btnSubmit && statusSelect.value === 'PC_Approved') {
-                btnSubmit.disabled = true;
-                btnSubmit.style.opacity = '0.5';
-                btnSubmit.style.cursor = 'not-allowed';
+            if (workflowStep === 'endorsement' && btnSubmit) {
+                const approveVal = typeof SYLLABUS_APPROVAL_DATA !== 'undefined' ? (SYLLABUS_APPROVAL_DATA.optionApproveValue || 'PC_Approved') : 'PC_Approved';
+                if (statusSelect.value === approveVal) {
+                    btnSubmit.disabled = true;
+                    btnSubmit.style.opacity = '0.5';
+                    btnSubmit.style.cursor = 'not-allowed';
+                }
             }
         });
     }

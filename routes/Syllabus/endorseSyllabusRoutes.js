@@ -168,7 +168,7 @@ endorseSyllabusRouter.get('/approve', async (req, res) => {
                     statusDateLabel = 'Rejected';
                 } else if (approval.approvedBy === 'PC_Approved' || approval.approvedBy === 'Program Chair') {
                     displayStatus = 'PC_Approved';
-                    statusDateLabel = 'Approved';
+                    statusDateLabel = 'Endorsed';
                 }
 
                 return {
@@ -231,12 +231,12 @@ endorseSyllabusRouter.get('/approve', async (req, res) => {
             currentPageCategory: 'syllabus',
             actionUrlPrefix: '/syllabus/prog-chair/approve',
             actionLabel: 'Review',
-            approvedLabel: 'Approved',
+            approvedLabel: 'Endorsed',
             approvedFilter: 'PC_Approved',
             rejectedFilter: 'Rejected',
             rejectedLabel: 'Rejected',
-            queueTitle: 'Program Chair Approval Queue',
-            queueSubtitle: 'Review and approve syllabuses submitted by faculty before endorsing them to the Dean.'
+            queueTitle: 'Syllabus Endorsement Queue',
+            queueSubtitle: 'Review and endorse syllabuses submitted by faculty to the Dean.'
         });
     } catch (error) {
         console.error('Approval Queue error:', error);
@@ -271,8 +271,9 @@ endorseSyllabusRouter.get('/approve/:syllabusId', async (req, res) => {
                     currentPageCategory: 'syllabus',
                     actionUrlPrefix: '/syllabus/prog-chair/approve',
                     optionApproveValue: 'PC_Approved',
-                    actionTitle: 'Program Chair Approval',
-                    workflowStep: 'approval'
+                    actionTitle: 'Syllabus Endorsement',
+                    workflowStep: 'endorsement',
+                    actionLabel: 'Endorse Syllabus'
                 });
             }
         }
@@ -294,8 +295,9 @@ endorseSyllabusRouter.get('/approve/:syllabusId', async (req, res) => {
                 currentPageCategory: 'syllabus',
                 actionUrlPrefix: '/syllabus/prog-chair/approve',
                 optionApproveValue: 'PC_Approved', // Value submitted when approved
-                actionTitle: 'Program Chair Approval',
-                workflowStep: 'approval'
+                actionTitle: 'Syllabus Endorsement',
+                workflowStep: 'endorsement',
+                actionLabel: 'Endorse Syllabus'
             });
         }
     } catch (err) { console.error('Approval detail error:', err); }
@@ -319,10 +321,13 @@ endorseSyllabusRouter.post('/approve/:syllabusId', async (req, res) => {
                     if (status === 'Reject' || status === 'Returned') {
                         dummy.status = 'Rejected';
                         dummy.endorsedBy = 'Rejected';
-                    } else if (status === 'PC_Approved') {
-                        dummy.status = 'PC_Approved';
-                        dummy.endorsedBy = 'PC_Approved';
+                    } else if (status === 'PC_Approved' || status === 'Approved') {
+                        dummy.status = 'Approved';
+                        dummy.endorsedBy = 'Program Chair';
                         dummy.endorsedDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+                    } else if (status === 'Reject' || status === 'Rejected') {
+                        dummy.status = 'Rejected';
+                        dummy.endorsedBy = 'Rejected';
                     }
                 }
             }
@@ -342,10 +347,13 @@ endorseSyllabusRouter.post('/approve/:syllabusId', async (req, res) => {
         if (status === 'Reject' || status === 'Returned') {
             approval.approvedBy = 'Rejected';
             // Keeping status Pending as requested, just marking the approvedBy to Rejected
-        } else if (status === 'PC_Approved') {
-            approval.status = 'Approved'; // Update database status to Approved
-            approval.approvedBy = 'PC_Approved';
+        } else if (status === 'PC_Approved' || status === 'Approve Syllabus') {
+            approval.status = 'Approved'; 
+            approval.approvedBy = 'Program Chair';
             approval.approvalDate = new Date();
+        } else if (status === 'Reject' || status === 'Reject Syllabus' || status === 'Rejected') {
+            approval.status = 'Pending';
+            approval.approvedBy = 'Rejected';
         }
 
         await approval.save();
