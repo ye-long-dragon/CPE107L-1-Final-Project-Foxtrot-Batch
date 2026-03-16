@@ -144,7 +144,7 @@ export function validateChairAction(body) {
   const errors = [];
   const action = (body.action || "").trim();
   const id = (body.id || "").trim();
-  const validActions = ["send", "return", "sendToDean"];
+  const validActions = ["send", "return", "sendToDean", "sendToFaculty"];
 
   if (!id) errors.push("TWS ID is required.");
   if (!validActions.includes(action)) errors.push(`Invalid action. Must be one of: ${validActions.join(", ")}.`);

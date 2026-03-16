@@ -98,12 +98,10 @@
                var statusLabel = t.status || 'Draft';
                var badge = 's-draft';
 
-               if (st === 'approved') badge = 's-approved';
-               else if (st === 'submitted' || st === 'sent to dean') badge = 's-submitted';
-               else if (st === 'sent to faculty') {
-                 badge = 's-for-review';
-                 statusLabel = t.facultySigned ? 'Signed' : 'For Signing';
-               }
+               if (st === 'approved' || st === 'archived') badge = 's-approved';
+               else if (st === 'sent to dean') badge = 's-submitted';
+               else if (st === 'sent to faculty') badge = 's-for-review';
+               else if (st === 'rejected') badge = 's-rejected';
                else if (st.includes('chair') || st.includes('review')) badge = 's-for-review';
                else if (st.includes('returned')) badge = 's-returned';
 
@@ -124,7 +122,7 @@
               </div>
               <div class="tcell-right">
                 <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; align-items:center;">
-                  <a class="pill pill-view" href="/tws/summary/<%= t.id %>">View</a>
+                  <a class="pill pill-view" href="/tws/summary/<%= t.id %>?from=faculty">View</a>
 
                   <% if (canSignNow) { %>
                     <% if (hasSavedSignature) { %>
@@ -235,7 +233,7 @@
         </p>
         <div class="bottom-btns">
           <% if (signable.length) { %>
-            <a class="btn btn-green" href="/tws/summary/<%= signable[0].id %>">Open First For-Signing TWS</a>
+            <a class="btn btn-green" href="/tws/summary/<%= signable[0].id %>?from=faculty">Open First For-Signing TWS</a>
           <% } else { %>
             <button class="btn" type="button" disabled style="opacity:.5; cursor:not-allowed;">
               No TWS Waiting For Signature

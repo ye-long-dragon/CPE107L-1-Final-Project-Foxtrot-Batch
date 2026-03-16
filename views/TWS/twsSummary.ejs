@@ -28,14 +28,17 @@
           <h1>TWS - Summary And Preview</h1>
         </div>
 
-        <section class="tws-card">
+        <section class="tws-card tws-created-sheet">
           <% const currentStatus = tws.status || "Draft"; %>
           <% const isChair = !!canManageAsChair; %>
           <% const isProfessor = !!(user && user.role === "Professor"); %>
-          <% const canFacultyAct = isProfessor && currentStatus === "Sent to Faculty"; %>
+          <% const isProgramChair = !!(user && user.role === "Program-Chair"); %>
+          <% const isDean = !!(user && user.role === "Dean"); %>
+          <% const canFacultyAct = isProfessor && currentStatus === "Sent to Faculty" && !tws.facultySigned; %>
           <% const canSendToFaculty = isChair && ["Draft", "Returned to Program Chair"].includes(currentStatus); %>
-          <% const canSendToDean = isChair && ["Draft", "Returned to Program Chair"].includes(currentStatus); %>
+          <% const canSendToDean = isChair && isProgramChair && currentStatus === "Sent to Faculty" && !!tws.facultySigned; %>
           <% const canEdit = isChair && ["Draft", "Returned to Program Chair", "Rejected"].includes(currentStatus); %>
+          <% const canDownloadPdf = currentStatus === "Approved" || currentStatus === "Archived"; %>
 
           <% if (typeof errorMessage !== "undefined" && errorMessage) { %>
             <div style="margin-bottom:12px; background: rgba(220,38,38,0.2); border:1px solid rgba(220,38,38,0.45); color:#fff; border-radius:12px; padding:10px 12px; font-size:12px;">
@@ -65,7 +68,27 @@
                     <div>
                       Signed
                       <% if (tws.facultySignedAt) { %>
-                        • <%= new Date(tws.facultySignedAt).toLocaleString("en-US", { timeZone: "Asia/Manila" }) %> (PHT)
+                        - <%= new Date(tws.facultySignedAt).toLocaleString("en-US", { timeZone: "Asia/Manila" }) %> (PHT)
+                      <% } %>
+                    </div>
+                  <% } %>
+
+                  <% if (tws.programChairSigned) { %>
+                    <div style="font-weight:800;">Program Chair Signature:</div>
+                    <div>
+                      Signed
+                      <% if (tws.programChairSignedAt) { %>
+                        - <%= new Date(tws.programChairSignedAt).toLocaleString("en-US", { timeZone: "Asia/Manila" }) %> (PHT)
+                      <% } %>
+                    </div>
+                  <% } %>
+
+                  <% if (tws.deanSigned) { %>
+                    <div style="font-weight:800;">Dean Signature:</div>
+                    <div>
+                      Signed
+                      <% if (tws.deanSignedAt) { %>
+                        - <%= new Date(tws.deanSignedAt).toLocaleString("en-US", { timeZone: "Asia/Manila" }) %> (PHT)
                       <% } %>
                     </div>
                   <% } %>
@@ -93,7 +116,9 @@
                   >
                     Send to Faculty
                   </button>
+                <% } %>
 
+                <% if (canSendToDean) { %>
                   <button
                     type="submit"
                     name="action"
@@ -102,22 +127,20 @@
                   >
                     Send to Dean
                   </button>
-                <% } else if (canSendToDean) { %>
-                  <button
-                    type="submit"
-                    name="action"
-                    value="sendToDean"
-                    style="border:none; cursor:pointer; background: var(--tws-green); color:#fff; border-radius:999px; padding: 14px 22px; font-weight:900; width:100%;"
-                  >
-                    Send to Dean
-                  </button>
-                <% } else if (isChair) { %>
+                <% } %>
+
+                <% if (isChair && !canSendToFaculty && !canSendToDean) { %>
                   <div style="width:100%; border-radius:12px; background: rgba(255,255,255,0.12); color:#fff; padding:10px 12px; font-size:12px; text-align:left;">
-                    Current status is <b><%= currentStatus %></b>. This record cannot be re-sent from this page.
+                    Current status is <b><%= currentStatus %></b>.
+                    <% if (isProgramChair && currentStatus === "Sent to Faculty" && !tws.facultySigned) { %>
+                      Waiting for faculty signature before sending to Dean.
+                    <% } else { %>
+                      This record cannot be re-sent from this page.
+                    <% } %>
                   </div>
                 <% } %>
 
-                <% if (user && user.role === "Dean" && tws.status === "Approved") { %>
+                <% if (isDean && tws.status === "Approved") { %>
                   <button
                     type="submit"
                     formaction="/tws/send-to-hr/<%= tws.id %>"
@@ -128,7 +151,7 @@
                   </button>
                 <% } %>
 
-                <% if (tws.status === "Approved" || tws.status === "Archived") { %>
+                <% if (canDownloadPdf) { %>
                   <a
                     href="/tws/pdf/<%= tws.id %>"
                     class="tws-btn-white"
@@ -136,6 +159,10 @@
                   >
                     Download PDF
                   </a>
+                <% } else { %>
+                  <button class="tws-btn-white" type="button" disabled style="width:100%;">
+                    Download PDF (Final Approval Required)
+                  </button>
                 <% } %>
 
                 <% if (canEdit) { %>
@@ -150,8 +177,8 @@
                   </button>
                 <% } %>
 
-                <a href="/tws/dashboard" class="tws-btn-white" style="text-decoration:none; text-align:center; width:100%;">
-                  Back to Dashboard
+                <a href="<%= viewBackUrl || '/tws/dashboard' %>" class="tws-btn-white" style="text-decoration:none; text-align:center; width:100%;">
+                  Back
                 </a>
 
                 <% if (canFacultyAct) { %>
@@ -213,17 +240,21 @@
                   <div class="tws-cell tws-head"><%= day %></div>
                 <% }) %>
 
-                <% times.forEach(function(time) { %>
-                  <div class="tws-cell tws-time" style="grid-column: 1;"><%= time %></div>
+                <% times.forEach(function(time, rowIndex) {
+                     const row = rowIndex + 2;
+                %>
+                  <div class="tws-cell tws-time" style="--row: <%= row %>;"><%= time %></div>
                   <% for (let c = 0; c < 7; c++) { %>
-                    <div class="tws-cell tws-slot"></div>
+                    <div class="tws-cell tws-slot" style="--row: <%= row %>; --col: <%= c + 2 %>;"></div>
                   <% } %>
                 <% }) %>
 
                 <%
                   const dayMap = { Mon: 2, Tue: 3, Wed: 4, Thu: 5, Fri: 6, Sat: 7, Sun: 8 };
-                  const timeMap = {};
-                  times.forEach(function(time, index) { timeMap[time] = index + 2; });
+                  const dayAlias = { mon: "Mon", tue: "Tue", wed: "Wed", thu: "Thu", fri: "Fri", sat: "Sat", sun: "Sun" };
+                  const GRID_START_MINUTES = 7 * 60;
+                  const GRID_MIN_ROW = 2;
+                  const GRID_MAX_SLOT = times.length - 1;
 
                   function toMinutes(timeStr) {
                     if (!timeStr) return null;
@@ -258,20 +289,29 @@
 
                     const startMin = toMinutes(startStr);
                     const endMin = toMinutes(endStr);
+                    const normalizedDay = dayAlias[String(day).slice(0, 3).toLowerCase()] || day;
 
-                    if (!dayMap[day] || startMin === null || endMin === null || endMin <= startMin) {
+                    if (!dayMap[normalizedDay] || startMin === null || endMin === null || endMin <= startMin) {
                       return null;
                     }
 
-                    const durationMinutes = endMin - startMin;
-                    const span = Math.max(1, Math.ceil(durationMinutes / SLOT_MINUTES));
+                    const startSlot = Math.round((startMin - GRID_START_MINUTES) / SLOT_MINUTES);
+                    const endSlot = Math.round((endMin - GRID_START_MINUTES) / SLOT_MINUTES);
+                    const clampedStartSlot = Math.max(0, Math.min(GRID_MAX_SLOT, startSlot));
+                    const clampedEndSlot = Math.max(
+                      clampedStartSlot + 1,
+                      Math.min(times.length, endSlot)
+                    );
+                    const row = clampedStartSlot + GRID_MIN_ROW;
+                    const span = Math.max(1, clampedEndSlot - clampedStartSlot);
 
                     return {
-                      day: day,
+                      day: normalizedDay,
                       startStr: startStr,
                       endStr: endStr,
                       startMin: startMin,
                       endMin: endMin,
+                      row: row,
                       span: span
                     };
                   }
@@ -301,16 +341,18 @@
                     const p = block.parsed;
                     if (!p) return;
                     const col = dayMap[p.day];
-                    const row = timeMap[p.startStr] || 2;
+                    const row = p.row;
                     const colorClass = block.isConflict ? "tws-block-conflict" : "tws-block-assigned";
+                    const compactSectionRoom = String(block.item.sectionRoom || "").replace(/\s*\|\s*/g, "|");
+                    const compactTimeRange = `${p.startStr} - ${p.endStr}`.replace(/\s*-\s*/g, "-");
                 %>
                   <div
                     class="tws-block <%= colorClass %>"
                     style="--col: <%= col %>; --row: <%= row %>; --span: <%= p.span %>;"
                   >
                     <div class="tws-block-code"><%= block.item.code || "—" %></div>
-                    <div class="tws-block-sub"><%= block.item.sectionRoom || "" %></div>
-                    <div class="tws-block-sub"><%= p.startStr %> - <%= p.endStr %></div>
+                    <div class="tws-block-sub"><%= compactSectionRoom %></div>
+                    <div class="tws-block-sub"><%= compactTimeRange %></div>
                   </div>
                 <%
                   });
@@ -413,3 +455,4 @@
   </div>
 </body>
 </html>
+

@@ -30,7 +30,6 @@
 
         <div class="pc-glass">
 
-          <!-- ===== Submitted Teaching Workload Sheets ===== -->
           <section class="pc-card pc-card-wide">
             <div class="pc-card-header">
               <div class="pc-card-title">Submitted Teaching Workload Sheets</div>
@@ -59,30 +58,41 @@
 
               <% (submitted || []).forEach(tws => { %>
                 <div class="pc-row">
-                  <div><%= tws.faculty?.name || "—" %></div>
-                  <div><%= tws.faculty?.dept || "—" %></div>
-                  <div><%= tws.faculty?.acadYear || "—" %></div>
-                  <div><%= tws.faculty?.term || "—" %></div>
+                  <div><%= tws.faculty?.name || "-" %></div>
+                  <div><%= tws.faculty?.dept || "-" %></div>
+                  <div><%= tws.faculty?.acadYear || "-" %></div>
+                  <div><%= tws.faculty?.term || "-" %></div>
 
                   <div class="pc-status">
-                    <% 
-                      const st = (tws.approval?.status || "").toLowerCase();
+                    <%
+                      const st = (tws.status || "Draft").toLowerCase();
                       const isReturned = st.includes("returned");
-                      const isEval = st.includes("forwarded") || st.includes("evaluation") || st.includes("pending");
-                      const statusText = tws.approval?.status || "For Evaluation (Assigned)";
+                      const isDeanStage = st === "sent to dean";
+                      const statusText = tws.status || "Draft";
                     %>
 
-                    <span class="pc-status-text <%= isReturned ? 'pc-red' : (isEval ? 'pc-yellow' : 'pc-yellow') %>">
+                    <span class="pc-status-text <%= isReturned ? 'pc-red' : (isDeanStage ? '' : 'pc-yellow') %>">
                       <%= statusText %>
+                      <% if (st === "sent to faculty" && tws.facultySigned) { %>
+                        (Faculty Signed)
+                      <% } %>
                     </span>
                   </div>
 
                   <div class="pc-btns">
-                    <!-- FIXED: View should open the created TWS page -->
                     <a class="pc-btn pc-white" href="/tws/created-teaching-workload/<%= tws.id %>?mode=view&from=program-chair">View</a>
 
-                    <% const canChairSendToDean = ["Sent to Faculty", "Returned to Program Chair", "Draft"].includes(tws.status || ""); %>
+                    <% const canChairSendToFaculty = ["Draft", "Returned to Program Chair"].includes(tws.status || ""); %>
+                    <% const canChairSendToDean = (tws.status || "") === "Sent to Faculty" && !!tws.facultySigned; %>
                     <% const canChairReturnDraft = ["Returned to Program Chair", "Rejected"].includes(tws.status || ""); %>
+
+                    <% if (canChairSendToFaculty) { %>
+                    <form method="post" action="/tws/program-chair/action" class="pc-form-inline">
+                      <input type="hidden" name="id" value="<%= tws.id %>" />
+                      <input type="hidden" name="action" value="sendToFaculty" />
+                      <button class="pc-btn pc-white" type="submit">Send to Faculty</button>
+                    </form>
+                    <% } %>
 
                     <% if (canChairSendToDean) { %>
                     <form method="post" action="/tws/program-chair/action" class="pc-form-inline">
@@ -100,8 +110,12 @@
                     </form>
                     <% } %>
 
-                    <% if (!canChairSendToDean && !canChairReturnDraft) { %>
-                      <span class="pc-btn pc-white pc-btn-disabled">No action</span>
+                    <% if (!canChairSendToFaculty && !canChairSendToDean && !canChairReturnDraft) { %>
+                      <% if ((tws.status || "") === "Sent to Faculty" && !tws.facultySigned) { %>
+                        <span class="pc-btn pc-white pc-btn-disabled">Waiting Faculty Sign</span>
+                      <% } else { %>
+                        <span class="pc-btn pc-white pc-btn-disabled">No action</span>
+                      <% } %>
                     <% } %>
                   </div>
                 </div>
@@ -109,7 +123,6 @@
             </div>
           </section>
 
-          <!-- ===== Personal Course Load ===== -->
           <section class="pc-card pc-card-small">
             <div class="pc-card-header">
               <div class="pc-card-title">TWS - PERSONAL COURSE LOAD</div>
@@ -131,22 +144,38 @@
 
               <% (personal || []).forEach(tws => { %>
                 <div class="pc-row pc-row-small">
-                  <div><%= tws.faculty?.name || "—" %></div>
-                  <div><%= tws.faculty?.dept || "—" %></div>
-                  <div><%= tws.faculty?.term || "—" %></div>
+                  <div><%= tws.faculty?.name || "-" %></div>
+                  <div><%= tws.faculty?.dept || "-" %></div>
+                  <div><%= tws.faculty?.term || "-" %></div>
 
                   <div class="pc-btns pc-btns-right">
                     <a class="pc-btn pc-white" href="/tws/created-teaching-workload/<%= tws.id %>?mode=view&from=program-chair">View</a>
 
-                    <% const canPersonalSendToDean = ["Draft", "Returned to Program Chair"].includes(tws.status || ""); %>
+                    <% const canPersonalSendToFaculty = ["Draft", "Returned to Program Chair"].includes(tws.status || ""); %>
+                    <% const canPersonalSendToDean = (tws.status || "") === "Sent to Faculty" && !!tws.facultySigned; %>
+
+                    <% if (canPersonalSendToFaculty) { %>
+                    <form method="post" action="/tws/program-chair/action" class="pc-form-inline">
+                      <input type="hidden" name="id" value="<%= tws.id %>" />
+                      <input type="hidden" name="action" value="sendToFaculty" />
+                      <button class="pc-btn pc-blue" type="submit">Send to Faculty</button>
+                    </form>
+                    <% } %>
+
                     <% if (canPersonalSendToDean) { %>
                     <form method="post" action="/tws/program-chair/action" class="pc-form-inline">
                       <input type="hidden" name="id" value="<%= tws.id %>" />
                       <input type="hidden" name="action" value="sendToDean" />
-                      <button class="pc-btn pc-blue" type="submit">✉ Send to Dean</button>
+                      <button class="pc-btn pc-blue" type="submit">Send to Dean</button>
                     </form>
-                    <% } else { %>
-                      <span class="pc-btn pc-white pc-btn-disabled"><%= tws.status || "No action" %></span>
+                    <% } %>
+
+                    <% if (!canPersonalSendToFaculty && !canPersonalSendToDean) { %>
+                      <% if ((tws.status || "") === "Sent to Faculty" && !tws.facultySigned) { %>
+                        <span class="pc-btn pc-white pc-btn-disabled">Waiting Faculty Sign</span>
+                      <% } else { %>
+                        <span class="pc-btn pc-white pc-btn-disabled"><%= tws.status || "No action" %></span>
+                      <% } %>
                     <% } %>
                   </div>
                 </div>
@@ -155,7 +184,7 @@
           </section>
 
           <div class="pc-next-wrap">
-            <a class="pc-next" href="/tws/dashboard">Next</a>
+            <a class="pc-next" href="/tws/dashboard">Refresh</a>
           </div>
 
         </div>

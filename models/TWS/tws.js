@@ -60,6 +60,20 @@ const twsSchema = new Schema(
     facultySignerEmpId: { type: String, default: "" },
     facultySignerEmail: { type: String, default: "" },
 
+    programChairSigned: { type: Boolean, default: false },
+    programChairSignedAt: { type: Date, default: null },
+    programChairSignatureImage: { type: String, default: "" },
+    programChairSignerName: { type: String, default: "" },
+    programChairSignerEmpId: { type: String, default: "" },
+    programChairSignerEmail: { type: String, default: "" },
+
+    deanSigned: { type: Boolean, default: false },
+    deanSignedAt: { type: Date, default: null },
+    deanSignatureImage: { type: String, default: "" },
+    deanSignerName: { type: String, default: "" },
+    deanSignerEmpId: { type: String, default: "" },
+    deanSignerEmail: { type: String, default: "" },
+
     status: {
       type: String,
       enum: [

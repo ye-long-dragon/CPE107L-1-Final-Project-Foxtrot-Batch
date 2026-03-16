@@ -282,15 +282,17 @@ button, input, select{ font-family: inherit; }
 /* Program Chair table layout */
 .pc-table{
   display: grid;
-  gap: 10px;
+  gap: 2px;
 }
 
 .pc-row{
   display: grid;
   grid-template-columns: 1.4fr 1.1fr 1fr 0.55fr 1.2fr 1.25fr;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
   font-size: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.11);
 }
 
 .pc-table-small .pc-row{
@@ -314,7 +316,7 @@ button, input, select{ font-family: inherit; }
 /* Program Chair buttons */
 .pc-btns{
   display: flex;
-  gap: 10px;
+  gap: 8px;
   justify-content: flex-end;
   flex-wrap: wrap;
 }
@@ -353,6 +355,12 @@ button, input, select{ font-family: inherit; }
 
 .pc-btns-right{
   justify-content: flex-end;
+}
+
+.pc-btn-disabled{
+  opacity: .55;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 /* Program Chair status colors */
@@ -436,11 +444,13 @@ button, input, select{ font-family: inherit; }
   display: flex;
   justify-content: center;
   align-items: flex-start;
+  min-width: 0;
 }
 
 .tws-app-center{
   width: min(1040px, 92%);
   margin-top: 60px;
+  min-width: 0;
 }
 
 .tws-app-title-pill{
@@ -468,6 +478,7 @@ button, input, select{ font-family: inherit; }
   padding: 14px;
   margin: 0 auto 14px auto;
   max-width: 980px;
+  overflow: hidden;
 }
 
 .tws-app-glass{
@@ -510,15 +521,17 @@ button, input, select{ font-family: inherit; }
 /* Shared app table */
 .tws-table{
   display: grid;
-  gap: 10px;
+  gap: 2px;
 }
 
 .tws-row{
   display: grid;
   grid-template-columns: 1fr 0.55fr 0.9fr 0.9fr 1fr;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
   font-size: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.11);
 }
 
 .tws-head{
@@ -530,7 +543,7 @@ button, input, select{ font-family: inherit; }
 .tws-btns{
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
@@ -743,7 +756,7 @@ button, input, select{ font-family: inherit; }
 .tws-footer-actions{
   margin-top: 16px;
   display: flex;
-  gap: 12px;
+  gap: 10px;
   justify-content: flex-end;
   align-items: center;
   flex-wrap: wrap;
@@ -899,11 +912,12 @@ button, input, select{ font-family: inherit; }
 .tws-footer-actions{
   display:flex;
   justify-content:flex-end;
-  gap:12px;
+  gap:10px;
   margin-top:14px;
   max-width:980px;
   margin-left:auto;
   margin-right:auto;
+  flex-wrap: wrap;
 }
 
 .tws-btn-white:disabled{
@@ -924,6 +938,68 @@ button, input, select{ font-family: inherit; }
   min-width: 0;
 }
 
+/* Wider canvas and larger cells for the created workload sheet page */
+.tws-created-sheet{
+  max-width: 1180px;
+  padding: 18px;
+}
+
+.tws-created-sheet .tws-schedule-layout{
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 20px;
+}
+
+.tws-created-sheet .tws-timetable{
+  --tws-row-h: 52px;
+  grid-template-columns: 84px repeat(7, minmax(0, 1fr));
+}
+
+.tws-created-sheet .tws-timetable .tws-cell{
+  font-size: 13px;
+}
+
+.tws-created-sheet .tws-timetable .tws-time{
+  font-size: 12px;
+}
+
+.tws-created-sheet .tws-timetable .tws-block{
+  padding: 4px 5px;
+  font-size: 10px;
+  line-height: 1.05;
+  border-radius: 7px;
+  gap: 0;
+}
+
+.tws-created-sheet .tws-block-code{
+  font-size: 10px;
+}
+
+.tws-created-sheet .tws-block-sub{
+  font-size: 9px;
+  line-height: 1.05;
+}
+
+@media (max-width: 1200px){
+  .tws-created-sheet{
+    max-width: 1060px;
+  }
+
+  .tws-created-sheet .tws-schedule-layout{
+    grid-template-columns: minmax(0, 1fr) 300px;
+  }
+
+  .tws-created-sheet .tws-timetable{
+    --tws-row-h: 46px;
+    grid-template-columns: 76px repeat(7, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 980px){
+  .tws-created-sheet .tws-schedule-layout{
+    grid-template-columns: 1fr;
+  }
+}
+
 /* 2-column layout: timetable + details */
 .tws-schedule-layout{
   display: grid;
@@ -931,6 +1007,7 @@ button, input, select{ font-family: inherit; }
   gap: 18px;
   align-items: start;
   margin-top: 12px;
+  overflow: hidden;
 }
 
 /* If screen is small, stack vertically so nothing overlaps */
@@ -942,12 +1019,15 @@ button, input, select{ font-family: inherit; }
 
 /* Timetable grid */
 .tws-timetable{
+  --tws-row-h: 44px;
   position: relative;
   display: grid;
+  isolation: isolate;
 
   /* 1 time column + 7 day columns */
   grid-template-columns: 72px repeat(7, minmax(0, 1fr));
-  grid-auto-rows: 44px;
+  grid-template-rows: repeat(13, var(--tws-row-h));
+  grid-auto-rows: 0;
 
   border: 1px solid rgba(255,255,255,0.35);
   border-radius: 10px;
@@ -1005,29 +1085,49 @@ button, input, select{ font-family: inherit; }
   font-weight: 800;
   font-size: 11px;
   grid-column: 1 !important;
+  grid-row: var(--row, auto);
 }
 
 .tws-timetable .tws-slot{
+  grid-column: var(--col, auto);
+  grid-row: var(--row, auto);
   background: rgba(0,0,0,0.12);
 }
 
 /* Subject blocks */
 .tws-timetable .tws-block{
+  position: relative;
   z-index: 5;
+  margin: 0;
   border-radius: 6px;
-  padding: 6px;
+  padding: 4px 5px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   text-align: center;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
   border: 1px solid rgba(0,0,0,0.25);
   overflow: hidden;
+  max-width: 100%;
+  min-width: 0;
+  gap: 0;
+  box-shadow: none;
+  background-clip: padding-box;
 }
 
-.tws-block-code{ font-weight: 900; }
-.tws-block-sub{ font-weight: 800; opacity: 0.9; }
+.tws-block-code,
+.tws-block-sub{
+  font-weight: 800;
+  opacity: 0.9;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.05;
+}
+
+.tws-block-code{ font-weight: 900; font-size: 10px; }
+.tws-block-sub{ font-size: 9px; }
 
 /* Timetable block colors */
 .tws-timetable .highlight-yellow{ background: var(--status-for-signing); color: var(--tws-text-dark); }
@@ -1042,8 +1142,8 @@ button, input, select{ font-family: inherit; }
 /* Small screen tweaks */
 @media (max-width: 520px){
   .tws-timetable{
+    --tws-row-h: 40px;
     grid-template-columns: 62px repeat(7, minmax(0, 1fr));
-    grid-auto-rows: 40px;
   }
   .tws-timetable .tws-cell{
     font-size: 11px;
@@ -1053,6 +1153,28 @@ button, input, select{ font-family: inherit; }
   }
   .tws-timetable .tws-block{
     font-size: 10px;
+  }
+
+  .tws-created-sheet .tws-timetable{
+    --tws-row-h: 42px;
+    grid-template-columns: 64px repeat(7, minmax(0, 1fr));
+  }
+
+  .tws-created-sheet .tws-timetable .tws-cell{
+    font-size: 11px;
+  }
+
+  .tws-created-sheet .tws-timetable .tws-time{
+    font-size: 10px;
+  }
+
+  .tws-created-sheet .tws-timetable .tws-block{
+    font-size: 9px;
+    padding: 4px;
+  }
+
+  .tws-created-sheet .tws-block-sub{
+    font-size: 8px;
   }
 }
 
@@ -1104,6 +1226,7 @@ button, input, select{ font-family: inherit; }
   gap: 40px;
   margin-top: 18px;
   padding-top: 14px;
+  overflow: hidden;
 }
 
 @media (max-width: 720px){
@@ -1126,5 +1249,10 @@ button, input, select{ font-family: inherit; }
   width: 70%;
 }
 
-.sig-name{ font-size: 12px; font-weight: 800; }
+.sig-name{
+  font-size: 12px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
 .sig-role{ font-size: 12px; font-weight: 900; margin-top: 4px; }

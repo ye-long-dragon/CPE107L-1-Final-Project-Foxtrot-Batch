@@ -63,7 +63,7 @@
                   </div>
 
                   <div class="twsd-btns">
-                    <a class="twsd-btn twsd-white" href="/tws/summary/<%= tws.id %>">View</a>
+                    <a class="twsd-btn twsd-white" href="/tws/summary/<%= tws.id %>?from=dean">View</a>
                     <a class="twsd-btn twsd-white" href="/tws/approval/<%= tws.id %>">Approve</a>
 
                     <form method="POST" action="/tws/approval/<%= tws.id %>" style="display:inline;">
@@ -100,7 +100,7 @@
                   <div><%= tws.faculty?.term || tws.term || "—" %></div>
 
                   <div class="twsd-btns">
-                    <a class="twsd-btn twsd-white" href="/tws/summary/<%= tws.id %>">View</a>
+                    <a class="twsd-btn twsd-white" href="/tws/summary/<%= tws.id %>?from=dean">View</a>
 
                     <form method="POST" action="/tws/send-to-hr/<%= tws.id %>" style="display:inline;">
                       <button class="twsd-btn twsd-white" type="submit">Send to HR</button>
