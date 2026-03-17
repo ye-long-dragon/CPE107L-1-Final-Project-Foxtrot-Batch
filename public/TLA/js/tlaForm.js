@@ -49,6 +49,7 @@ function printTLAForm() {
     };
 
     const data = new URLSearchParams({
+        _tlaId:                      v('_tlaId'),
         courseCode:                  v('courseCode'),
         section:                     v('section'),
         dateofDigitalDay:            v('dateofDigitalDay'),

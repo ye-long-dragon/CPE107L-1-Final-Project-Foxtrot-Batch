@@ -36,14 +36,15 @@
     };
 
     // Action button config per role
+    // Chain: Professor → Program-Chair → Dean → HR/HRMO → VPAA (final)
     const actionConfig = {
-        'Technical':              { icon: 'checklist',    label: 'Assess',   btnClass: 'btn-orange',  activeStatus: 'Pending' },
-        'Program-Chair':          { icon: 'thumb_up',     label: 'Endorse',  btnClass: 'btn-purple',  activeStatus: 'Tech-Approved' },
-        'Practicum-Coordinator':  { icon: 'how_to_reg',   label: 'Validate', btnClass: 'btn-indigo',  activeStatus: 'Chair-Approved' },
-        'Dean':                   { icon: 'approval',     label: 'Approve',  btnClass: 'btn-teal',    activeStatus: 'Practicum-Approved' },
-        'VPAA':                   { icon: 'note_alt',     label: 'Note',     btnClass: 'btn-cyan',    activeStatus: 'Dean-Approved' },
-        'HR':                     { icon: 'archive',      label: 'Process',  btnClass: 'btn-green',   activeStatus: 'VPAA-Noted' },
-        'HRMO':                   { icon: 'archive',      label: 'Process',  btnClass: 'btn-green',   activeStatus: 'VPAA-Noted' },
+        'Program-Chair':          { icon: 'thumb_up',     label: 'Endorse',  btnClass: 'btn-purple',  activeStatus: 'Pending' },
+        'Dean':                   { icon: 'approval',     label: 'Approve',  btnClass: 'btn-teal',    activeStatus: 'Chair-Approved' },
+        'HR':                     { icon: 'verified',     label: 'Review',   btnClass: 'btn-green',   activeStatus: 'Dean-Approved' },
+        'HRMO':                   { icon: 'verified',     label: 'Review',   btnClass: 'btn-green',   activeStatus: 'Dean-Approved' },
+        'VPAA':                   { icon: 'check_circle', label: 'Approve',  btnClass: 'btn-cyan',    activeStatus: 'HR-Approved' },
+        'Technical':              { icon: 'visibility',   label: 'View',     btnClass: 'btn-outline', activeStatus: null },
+        'Practicum-Coordinator':  { icon: 'visibility',   label: 'View',     btnClass: 'btn-outline', activeStatus: null },
         'Admin':                  { icon: 'rate_review',  label: 'Review',   btnClass: 'btn-blue',    activeStatus: null },
         'Super-Admin':            { icon: 'rate_review',  label: 'Review',   btnClass: 'btn-blue',    activeStatus: null }
     };
@@ -84,26 +85,22 @@
         <!-- ═══════ TAB 1: REVIEW QUEUE ═══════ -->
         <div class="tab-panel active" id="tab-queue">
             <%
-                const counts = { Pending:0, 'Tech-Approved':0, 'Chair-Approved':0, 'Practicum-Approved':0, 'Dean-Approved':0, 'VPAA-Noted':0, Returned:0 };
+                const counts = { Pending:0, 'Chair-Approved':0, 'Dean-Approved':0, 'HR-Approved':0, Returned:0 };
                 submissions.forEach(s => { if (counts[s.macroStatus] !== undefined) counts[s.macroStatus]++; });
             %>
             <div class="stats-row">
                 <div class="stat-card stat-pending"><div class="stat-num"><%= counts['Pending'] %></div><div class="stat-label">Pending</div></div>
-                <div class="stat-card stat-tech"><div class="stat-num"><%= counts['Tech-Approved'] %></div><div class="stat-label">Tech-Approved</div></div>
                 <div class="stat-card stat-chair"><div class="stat-num"><%= counts['Chair-Approved'] %></div><div class="stat-label">Chair-Approved</div></div>
-                <div class="stat-card stat-practicum"><div class="stat-num"><%= counts['Practicum-Approved'] %></div><div class="stat-label">Practicum-Approved</div></div>
                 <div class="stat-card stat-dean"><div class="stat-num"><%= counts['Dean-Approved'] %></div><div class="stat-label">Dean-Approved</div></div>
-                <div class="stat-card stat-vpaa"><div class="stat-num"><%= counts['VPAA-Noted'] %></div><div class="stat-label">VPAA-Noted</div></div>
+                <div class="stat-card stat-vpaa"><div class="stat-num"><%= counts['HR-Approved'] %></div><div class="stat-label">HR-Approved</div></div>
                 <div class="stat-card stat-returned"><div class="stat-num"><%= counts['Returned'] %></div><div class="stat-label">Returned</div></div>
             </div>
 
             <div class="legend">
-                <span class="legend-item"><span class="dot dot-orange"></span> Pending (Technical)</span>
-                <span class="legend-item"><span class="dot dot-blue"></span> Tech-Approved (Chair)</span>
-                <span class="legend-item"><span class="dot dot-purple"></span> Chair-Approved (Practicum)</span>
-                <span class="legend-item"><span class="dot dot-indigo"></span> Practicum-Approved (Dean)</span>
-                <span class="legend-item"><span class="dot dot-teal"></span> Dean-Approved (VPAA)</span>
-                <span class="legend-item"><span class="dot dot-cyan"></span> VPAA-Noted (HR/HRMO)</span>
+                <span class="legend-item"><span class="dot dot-orange"></span> Pending (Program Chair)</span>
+                <span class="legend-item"><span class="dot dot-purple"></span> Chair-Approved (Dean)</span>
+                <span class="legend-item"><span class="dot dot-teal"></span> Dean-Approved (HR/HRMO)</span>
+                <span class="legend-item"><span class="dot dot-cyan"></span> HR-Approved (VPAA)</span>
                 <span class="legend-item"><span class="dot dot-red"></span> Returned</span>
             </div>
 
@@ -118,11 +115,9 @@
                     <select id="statusFilter" class="filter-select">
                         <option value="">All Statuses</option>
                         <option value="Pending">Pending</option>
-                        <option value="Tech-Approved">Tech-Approved</option>
                         <option value="Chair-Approved">Chair-Approved</option>
-                        <option value="Practicum-Approved">Practicum-Approved</option>
                         <option value="Dean-Approved">Dean-Approved</option>
-                        <option value="VPAA-Noted">VPAA-Noted</option>
+                        <option value="HR-Approved">HR-Approved</option>
                         <option value="Returned">Returned</option>
                     </select>
                 </div>
@@ -143,10 +138,12 @@
                         </thead>
                         <tbody>
                         <% const stsClass = {
-                            'Pending':'sts-pending','Tech-Approved':'sts-tech-approved',
-                            'Chair-Approved':'sts-chair-approved','Practicum-Approved':'sts-practicum-approved',
-                            'Dean-Approved':'sts-dean-approved','VPAA-Noted':'sts-vpaa-noted',
-                            'Returned':'sts-returned','Archived':'sts-archived'
+                            'Pending':'sts-pending',
+                            'Chair-Approved':'sts-chair-approved',
+                            'Dean-Approved':'sts-dean-approved',
+                            'HR-Approved':'sts-hr-approved',
+                            'Approved':'sts-approved',
+                            'Returned':'sts-returned'
                         }; %>
                         <% submissions.forEach(function(s, i) {
                             // Determine if this row is actionable by the current role
@@ -204,7 +201,7 @@
                             <div class="card-field"><label>Section</label><span><%= s.section || '—' %></span></div>
                             <div class="card-field"><label>Faculty</label><span><%= s.facultyName %></span></div>
                             <div class="card-field"><label>Dept</label><span><%= s.department %></span></div>
-                            <div class="card-field"><label>VPAA Noted</label><span><%= s.vpaaNotedAt ? new Date(s.vpaaNotedAt).toLocaleDateString('en-PH', {year:'numeric',month:'short',day:'numeric'}) : '—' %></span></div>
+                            <div class="card-field"><label>VPAA Approved</label><span><%= s.vpaaApprovedAt ? new Date(s.vpaaApprovedAt).toLocaleDateString('en-PH', {year:'numeric',month:'short',day:'numeric'}) : '—' %></span></div>
                         </div>
                         <div class="card-actions">
                             <a href="/tla/approval/<%= s._id %>" class="btn btn-blue"><span class="material-symbols-outlined">visibility</span> View</a>
@@ -242,8 +239,8 @@
                             <div class="card-field"><label>Section</label><span><%= s.section || '—' %></span></div>
                             <div class="card-field"><label>Faculty</label><span><%= s.facultyName %></span></div>
                             <div class="card-field"><label>Dept</label><span><%= s.department %></span></div>
-                            <div class="card-field"><label>Archived On</label><span><%= s.hrArchivedAt ? new Date(s.hrArchivedAt).toLocaleDateString('en-PH', {year:'numeric',month:'short',day:'numeric'}) : '—' %></span></div>
-                            <div class="card-field"><span class="sts sts-archived">ARCHIVED</span></div>
+                            <div class="card-field"><label>Approved On</label><span><%= s.vpaaApprovedAt ? new Date(s.vpaaApprovedAt).toLocaleDateString('en-PH', {year:'numeric',month:'short',day:'numeric'}) : '—' %></span></div>
+                            <div class="card-field"><span class="sts sts-approved">APPROVED</span></div>
                         </div>
                         <div class="card-actions">
                             <a href="/tla/approval/<%= s._id %>" class="btn btn-outline"><span class="material-symbols-outlined">visibility</span> View</a>

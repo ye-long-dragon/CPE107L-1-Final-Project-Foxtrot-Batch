@@ -102,10 +102,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const verdict  = statusSelect?.value || 'Approved';
             const comment  = document.getElementById('approval-comments')?.value || '';
             const stepLabel = {
-                technical:    'Technical Assessment',
-                programChair: 'Program Chair Approval',
+                programChair: 'Program Chair Endorsement',
                 dean:         "Dean's Approval",
-                hr:           'HR Archival'
+                hr:           'HR/HRMO Review',
+                vpaa:         'VPAA Final Approval'
             }[APPROVAL_DATA.activeStep] || 'Verdict';
 
             if (!confirm(`Submit "${verdict}" for ${stepLabel}?`)) return;
@@ -127,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const data = await res.json().catch(() => ({}));
                     showToast('Submitted successfully!', 'success');
                     setTimeout(() => {
-                        window.location.href = '/tla/admin-overview';
+                        window.location.href = '/admin/tla';
                     }, 1200);
                 } else {
                     const text = await res.text();
@@ -164,7 +164,4 @@ document.addEventListener('DOMContentLoaded', () => {
         clearTimeout(toast._timer);
         toast._timer = setTimeout(() => { toast.style.opacity = '0'; }, 3000);
     }
-});
-
-
 });
