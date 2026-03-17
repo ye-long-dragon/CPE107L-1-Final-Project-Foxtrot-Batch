@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const panels = document.querySelectorAll('.tab-panel');
     tabs.forEach(btn => {
         btn.addEventListener('click', () => {
+            if (btn.disabled || btn.classList.contains('tab-btn-disabled')) return;
             tabs.forEach(t => t.classList.remove('active'));
             panels.forEach(p => p.classList.remove('active'));
             btn.classList.add('active');

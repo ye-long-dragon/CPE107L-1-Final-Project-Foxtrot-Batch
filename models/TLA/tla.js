@@ -2,6 +2,7 @@ import { Schema, model } from "mongoose";
 
 const tlaSchema = new Schema({
   courseCode: String,
+  syllabusID: { type: Schema.Types.ObjectId, ref: "Syllabus" },
   userID: { type: Schema.Types.ObjectId, ref: "User", required: true },
   section: String,
   dateofDigitalDay: String,
@@ -10,7 +11,18 @@ const tlaSchema = new Schema({
   mediatingOutcomes: String,
   status: {
     type: String,
-    enum: ["Draft", "Pending", "Tech-Approved", "Chair-Approved", "Dean-Approved", "Approved", "Returned", "Archived"],
+    enum: [
+      "Draft",
+      "Pending",
+      "Tech-Approved",
+      "Chair-Approved",
+      "Practicum-Approved",
+      "Dean-Approved",
+      "VPAA-Noted",
+      "Approved",
+      "Returned",
+      "Archived"
+    ],
     default: "Draft"
   },
   weekNumber: Number,

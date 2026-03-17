@@ -19,7 +19,7 @@
     const isTech        = role === 'Technical';
     const isVPAA        = role === 'VPAA';
     const isPracticum   = role === 'Practicum-Coordinator';
-    const canArchive    = isHR || isAdmin;
+    const canArchive    = isAdmin;
 
     // Which sidebar to include
     let sidebarPath = '../MainPages/admin/partials/adminSideMenuBar';
@@ -69,16 +69,14 @@
                 <span class="material-symbols-outlined">rate_review</span>
                 Review Queue <span class="badge badge-orange"><%= submissions.length %></span>
             </button>
-            <% if (canArchive) { %>
-            <button class="tab-btn" data-tab="archive-pending">
+            <button class="tab-btn <%= canArchive ? '' : 'tab-btn-disabled' %>" data-tab="archive-pending" <%= canArchive ? '' : 'disabled title="Admin only"' %>>
                 <span class="material-symbols-outlined">pending_actions</span>
                 Pending Archive <span class="badge badge-orange"><%= toArchive.length %></span>
             </button>
-            <button class="tab-btn" data-tab="archived">
+            <button class="tab-btn <%= canArchive ? '' : 'tab-btn-disabled' %>" data-tab="archived" <%= canArchive ? '' : 'disabled title="Admin only"' %>>
                 <span class="material-symbols-outlined">inventory_2</span>
                 Archived <span class="badge badge-green"><%= archived.length %></span>
             </button>
-            <% } %>
         </div>
 
         <!-- ═══════ TAB 1: REVIEW QUEUE ═══════ -->
@@ -185,12 +183,16 @@
         </div>
 
         <!-- ═══════ TAB 2: PENDING ARCHIVE ═══════ -->
-        <% if (canArchive) { %>
         <div class="tab-panel" id="tab-archive-pending">
             <div class="section-heading">
                 <h2><span class="material-symbols-outlined">pending_actions</span> Pending Archival <span class="count"><%= toArchive.length %></span></h2>
             </div>
-            <% if (toArchive.length === 0) { %>
+            <% if (!canArchive) { %>
+                <div class="empty">
+                    <span class="material-symbols-outlined">lock</span>
+                    <p>Pending Archive is available to Administrator and Super Administrator only.</p>
+                </div>
+            <% } else if (toArchive.length === 0) { %>
                 <div class="empty">
                     <span class="material-symbols-outlined">check_circle</span>
                     <p>No TLAs pending archival.</p>
@@ -225,7 +227,12 @@
             <div class="section-heading">
                 <h2><span class="material-symbols-outlined">inventory_2</span> Archived Records <span class="count"><%= archived.length %></span></h2>
             </div>
-            <% if (archived.length === 0) { %>
+            <% if (!canArchive) { %>
+                <div class="empty">
+                    <span class="material-symbols-outlined">lock</span>
+                    <p>Archive is available to Administrator and Super Administrator only.</p>
+                </div>
+            <% } else if (archived.length === 0) { %>
                 <div class="empty">
                     <span class="material-symbols-outlined">folder_open</span>
                     <p>No archived records yet.</p>
@@ -253,7 +260,6 @@
                 </div>
             <% } %>
         </div>
-        <% } %>
 
     </main>
 </div>

@@ -107,6 +107,13 @@ body {
     border-bottom-color: var(--accent-primary, #a01a1e);
 }
 
+.tab-btn.tab-btn-disabled,
+.tab-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 .tab-btn .material-symbols-outlined {
     font-size: 18px;
 }

@@ -25,14 +25,28 @@
         <!-- ================================================ -->
         <!--  COURSE BANNER                                   -->
         <!-- ================================================ -->
-        <div class="course-banner">
+        <div class="course-banner" style="background-image: url('<%= locals.courseInfo && courseInfo.courseImage ? courseInfo.courseImage : '/TLA/images/background_overview.jpg' %>'); background-size: cover; background-position: center;">
             <button class="back-btn" onclick="window.location.href='/tla/courses'">
                 <span class="material-symbols-outlined">arrow_back_ios</span>
                 Back
             </button>
             <div class="banner-overlay"></div>
-            <h2 class="banner-course-title"><%= locals.courseInfo ? courseInfo.courseTitle.toUpperCase() : 'LIFE AND WORKS OF MAMBO' %></h2>
+            <h2 class="banner-course-title"><%= locals.courseInfo ? courseInfo.courseTitle.toUpperCase() : 'COURSE NAME' %></h2>
         </div>
+
+        <!-- ================================================ -->
+        <!--  COURSE STATUS WARNING (if locked)               -->
+        <!-- ================================================ -->
+        <% if (locals.courseInfo && courseInfo.isLocked) { %>
+            <div class="course-status-alert">
+                <span class="material-symbols-outlined alert-icon">lock</span>
+                <div class="alert-content">
+                    <h4 class="alert-title">Course Locked</h4>
+                    <p class="alert-message">This course's syllabus must be <strong>Approved</strong> or <strong>Archived</strong> before you can view the TLA overview and submit Teaching-Learning Activity forms.</p>
+                    <p class="alert-action">Please complete and get approval for the course syllabus first.</p>
+                </div>
+            </div>
+        <% } %>
 
         <!-- ================================================ -->
         <!--  MAIN GRID (modules left | info panel right)    -->
@@ -97,7 +111,7 @@
                                 <span class="module-start-link">Review &#x2192;</span>
                             <% } else { %>
                                 <p class="module-desc">Teaching-Learning Activity forms</p>
-                                <a class="module-start-link" href="/tla/form">Start &#x2192;</a>
+                                <a class="module-start-link" href="/tla/form<%= courseInfo && courseInfo.syllabusId ? ('?syllabusId=' + courseInfo.syllabusId) : '' %>">Start &#x2192;</a>
                             <% } %>
                         </div>
                         <div class="module-header-status">
@@ -146,7 +160,11 @@
                                 wLabel    = 'Week ' + week.weekNumber + ' — TLA Review';
                                 wDisabled = !week._id;
                             } else {
-                                wLink     = week._id ? '/tla/form/' + week._id : '/tla/form';
+                                const q = [];
+                                if (courseInfo && courseInfo.syllabusId) q.push('syllabusId=' + encodeURIComponent(courseInfo.syllabusId));
+                                if (week && week.weekNumber) q.push('week=' + encodeURIComponent(week.weekNumber));
+                                const query = q.length ? ('?' + q.join('&')) : '';
+                                wLink     = week._id ? '/tla/form/' + week._id + query : '/tla/form' + query;
                                 wLabel    = 'Week ' + week.weekNumber + ' — TLA Form';
                                 wDisabled = false;
                             }

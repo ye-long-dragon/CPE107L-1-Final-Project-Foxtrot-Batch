@@ -4,6 +4,8 @@
     Pre_Main,   Pre_B1,   Pre_B2,
     Post_Main,  Post_B1,  Post_B2
 } from '../models/TLA/tlaModels.js';
+import Syllabus from '../models/Syllabus/syllabus.js';
+import SyllabusApprovalStatus from '../models/Syllabus/syllabusApprovalStatus.js';
 import userSchema from '../models/user.js';
 import { mainDB } from '../database/mongo-dbconnect.js';
 import { readFileSync } from 'fs';
@@ -12,7 +14,7 @@ import { dirname, join } from 'path';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const PDF_TEMPLATE = join(__dirname, '../public/common/img/TLA_TEMPLATE_BLANK.pdf');
+const PDF_TEMPLATE = join(__dirname, '../templates/TLA_TEMPLATE_BLANK.pdf');
 const User = mainDB.model("User", userSchema);
 
 // ===============================================================================
@@ -65,6 +67,26 @@ function stripId(doc) {
 function actorName(user) {
     if (!user) return 'Unknown';
     return `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'Unknown';
+}
+
+async function resolveOwnedSyllabusId(userId, syllabusId, courseCode) {
+    if (syllabusId) {
+        const byId = await Syllabus.findOne({
+            _id: syllabusId,
+            $or: [{ assignedInstructor: userId }, { userID: userId }]
+        });
+        if (byId) return byId._id.toString();
+    }
+
+    if (courseCode) {
+        const byCourse = await Syllabus.findOne({
+            courseCode,
+            $or: [{ assignedInstructor: userId }, { userID: userId }]
+        });
+        if (byCourse) return byCourse._id.toString();
+    }
+
+    return '';
 }
 
 // --- Determine step status labels for the UI tracker ------------------------
@@ -193,24 +215,28 @@ async function buildSubmissionList(role) {
     const userMap = {};
     for (const u of users) userMap[u._id.toString()] = u;
 
-    const statusMap = {};
-    for (const s of statusDocs) statusMap[s.tlaID.toString()] = s;
+    const tlaMap = {};
+    for (const t of tlas) tlaMap[t._id.toString()] = t;
 
-    return tlas.map(t => {
-        const sd      = statusMap[t._id.toString()];
-        const faculty = userMap[t.userID?.toString()];
-        return {
-            _id:         t._id,
-            courseCode:  t.courseCode,
-            section:     t.section,
-            weekNumber:  t.weekNumber,
-            dateofDigitalDay: t.dateofDigitalDay,
-            facultyName: faculty ? `${faculty.firstName} ${faculty.lastName}` : '—',
-            department:  faculty?.department || '—',
-            macroStatus: sd?.status || '—',
-            updatedAt:   sd?.updatedAt || t.updatedAt
-        };
-    });
+    // Keep the same order as statusDocs (already sorted updatedAt desc)
+    return statusDocs
+        .map((sd) => {
+            const t = tlaMap[sd.tlaID.toString()];
+            if (!t) return null;
+            const faculty = userMap[t.userID?.toString()];
+            return {
+                _id:         t._id,
+                courseCode:  t.courseCode,
+                section:     t.section,
+                weekNumber:  t.weekNumber,
+                dateofDigitalDay: t.dateofDigitalDay,
+                facultyName: faculty ? `${faculty.firstName} ${faculty.lastName}` : '—',
+                department:  faculty?.department || '—',
+                macroStatus: sd?.status || '—',
+                updatedAt:   sd?.updatedAt || t.updatedAt
+            };
+        })
+        .filter(Boolean);
 }
 
 async function buildArchiveData() {
@@ -226,13 +252,15 @@ async function buildArchiveData() {
     const userMap = {};
     for (const u of users) userMap[u._id.toString()] = u;
 
-    const statusMap = {};
-    for (const s of statusDocs) statusMap[s.tlaID.toString()] = s;
-
     const toArchive = [];
     const archived  = [];
-    for (const t of tlas) {
-        const sd      = statusMap[t._id.toString()];
+    const tlaMap = {};
+    for (const t of tlas) tlaMap[t._id.toString()] = t;
+
+    // Keep latest-first order from statusDocs
+    for (const sd of statusDocs) {
+        const t = tlaMap[sd.tlaID.toString()];
+        if (!t) continue;
         const faculty = userMap[t.userID?.toString()];
         const entry   = {
             _id:         t._id,
@@ -253,21 +281,7 @@ async function buildArchiveData() {
 }
 
 // ===============================================================================
-//  STATIC COURSE DATA (TODO: replace with Syllabus DB queries)
-// ===============================================================================
-const STATIC_COURSES = [
-    { syllabusId: '1', courseCode: 'SS067',  courseTitle: 'Life and Works of Mambo',         section: 'A301', term: '2nd Trimester', schoolYear: '2025-2026', hasBanner: false },
-    { syllabusId: '2', courseCode: 'CS101',  courseTitle: 'Introduction to Computing',       section: 'B201', term: '2nd Trimester', schoolYear: '2025-2026', hasBanner: false },
-    { syllabusId: '3', courseCode: 'CS201',  courseTitle: 'Data Structures and Algorithms',  section: 'A101', term: '2nd Trimester', schoolYear: '2025-2026', hasBanner: false },
-    { syllabusId: '4', courseCode: 'GE104',  courseTitle: 'Understanding the Self',          section: 'C102', term: '1st Trimester', schoolYear: '2025-2026', hasBanner: false },
-    { syllabusId: '5', courseCode: 'IT301',  courseTitle: 'Web Systems and Technologies',    section: 'A301', term: '1st Trimester', schoolYear: '2025-2026', hasBanner: false },
-    { syllabusId: '6', courseCode: 'GE101',  courseTitle: 'Mathematics in the Modern World', section: 'B102', term: '2nd Trimester', schoolYear: '2025-2026', hasBanner: false },
-    { syllabusId: '7', courseCode: 'CS301',  courseTitle: 'Operating Systems',               section: 'A201', term: '1st Trimester', schoolYear: '2025-2026', hasBanner: false },
-    { syllabusId: '8', courseCode: 'IS201',  courseTitle: 'Information Management',          section: 'B301', term: '2nd Trimester', schoolYear: '2025-2026', hasBanner: false },
-];
-
-// ===============================================================================
-//  COURSES PAGE
+//  COURSES PAGE (pulls from Syllabus database)
 // ===============================================================================
 
 export async function getCourses(req, res) {
@@ -278,10 +292,61 @@ export async function getCourses(req, res) {
             return res.redirect('/admin/tla');
         }
 
+        const userId = user?.id;
+
+        // Only show courses assigned to the logged-in faculty (or created by them)
+        const syllabi = await Syllabus.find({
+            $or: [
+                { assignedInstructor: userId },
+                { userID: userId }
+            ]
+        });
+        const syllabusIds = syllabi.map(s => s._id.toString());
+        
+        // Get approval status for each syllabus
+        const approvals = await SyllabusApprovalStatus.find({ syllabusID: { $in: syllabusIds } });
+        const statusMap = {};
+        approvals.forEach(a => {
+            statusMap[a.syllabusID.toString()] = a.status;
+        });
+
+        // Format courses with lock status and images
+        const courses = syllabi.map(s => {
+            const idStr = s._id.toString();
+            const status = statusMap[idStr] || 'Not Submitted';
+            // Lock if status is NOT Approved or Archived
+            const isLocked = !['Approved', 'Archived'].includes(status);
+            
+            // Determine image: Base64 if exists, otherwise picsum fallback
+            let courseImage;
+            let hasRealImage = false;
+            if (s.courseImage && s.courseImage.startsWith('data:')) {
+                courseImage = s.courseImage;
+                hasRealImage = true;
+            } else {
+                courseImage = `https://picsum.photos/seed/${s._id}/400/200`;
+                hasRealImage = false;
+            }
+            
+            return {
+                syllabusId: idStr,
+                courseCode: s.courseCode || 'N/A',
+                courseTitle: s.courseTitle || 'Untitled Course',
+                section: s.assignedInstructor ? `Section` : 'TBA',
+                term: s.term || 'N/A',
+                schoolYear: s.schoolYear || 'N/A',
+                status,
+                isLocked,
+                courseImage,
+                hasBanner: true,  // Always true since we have image (Base64 or fallback)
+                hasRealImage      // True only if Base64 from Syllabus
+            };
+        });
+
         res.render('TLA/tlaCourses', {
             currentPageCategory: 'tla',
             user,
-            courses: STATIC_COURSES
+            courses
         });
     } catch (error) {
         console.error('getCourses error:', error);
@@ -327,15 +392,44 @@ export async function getDashboard(req, res) {
 //  TLA FORM (GET new / GET existing)
 // ===============================================================================
 
-export function getNewForm(req, res) {
-    res.render('TLA/tlaForm', {
-        currentPageCategory: 'tla',
-        user: req.session.user,
-        tla: null,
-        preDigital: null,
-        postDigital: null,
-        status: null
-    });
+export async function getNewForm(req, res) {
+    try {
+        const userId = req.session.user.id;
+        const syllabusId = req.query.syllabusId || '';
+        const parsedWeek = Number(req.query.week);
+        const prefillWeekNumber = Number.isInteger(parsedWeek) && parsedWeek >= 1 && parsedWeek <= 18
+            ? parsedWeek
+            : '';
+        let prefillCourseCode = '';
+
+        if (syllabusId) {
+            const syllabus = await Syllabus.findById(syllabusId);
+            if (syllabus) {
+                const belongsToUser =
+                    String(syllabus.assignedInstructor || '') === String(userId) ||
+                    String(syllabus.userID || '') === String(userId);
+
+                if (belongsToUser) {
+                    prefillCourseCode = syllabus.courseCode || '';
+                }
+            }
+        }
+
+        res.render('TLA/tlaForm', {
+            currentPageCategory: 'tla',
+            user: req.session.user,
+            tla: null,
+            preDigital: null,
+            postDigital: null,
+            status: null,
+            syllabusId,
+            prefillCourseCode,
+            prefillWeekNumber
+        });
+    } catch (error) {
+        console.error('getNewForm error:', error);
+        res.status(500).send('Server error');
+    }
 }
 
 export async function getFormById(req, res) {
@@ -353,13 +447,29 @@ export async function getFormById(req, res) {
             Status_Main.findOne({ tlaID: tla._id })
         ]);
 
+        let syllabusId = req.query.syllabusId || (tla.syllabusID ? tla.syllabusID.toString() : '');
+        if (!syllabusId) {
+            syllabusId = await resolveOwnedSyllabusId(req.session.user.id, '', tla.courseCode);
+        }
+
+        // Backfill legacy records once we resolve the owning syllabus.
+        if (syllabusId && !tla.syllabusID) {
+            await Promise.all([
+                TLA_Main.findByIdAndUpdate(tla._id, { syllabusID: syllabusId }),
+                TLA_B1.findByIdAndUpdate(tla._id, { syllabusID: syllabusId }),
+                TLA_B2.findByIdAndUpdate(tla._id, { syllabusID: syllabusId })
+            ]);
+        }
+
         res.render('TLA/tlaForm', {
             currentPageCategory: 'tla',
             user: req.session.user,
             tla,
             preDigital:  preDigital  || null,
             postDigital: postDigital || null,
-            status:      status      || null
+            status:      status      || null,
+            syllabusId,
+            prefillCourseCode: ''
         });
     } catch (error) {
         console.error('getFormById error:', error);
@@ -377,16 +487,18 @@ export async function createTLA(req, res) {
             courseCode, section, dateofDigitalDay, facultyFacilitating,
             courseOutcomes, mediatingOutcomes, weekNumber,
             pre_moIloCode, pre_teacherLearningActivity, pre_lmsDigitalTool, pre_assessment,
-            action
+            action, syllabusId
         } = req.body;
 
         const userID    = req.session.user.id;
+        const resolvedSyllabusId = await resolveOwnedSyllabusId(userID, syllabusId, courseCode);
         const tlaStatus = action === 'submit' ? 'Pending' : 'Draft';
 
         const newTLA = await TLA_Main.create({
             courseCode, section, dateofDigitalDay, facultyFacilitating,
             courseOutcomes, mediatingOutcomes,
             weekNumber: weekNumber || null,
+            syllabusID: resolvedSyllabusId || undefined,
             userID, status: tlaStatus
         });
         const tlaBackup = stripId(newTLA);
@@ -408,6 +520,9 @@ export async function createTLA(req, res) {
         });
         await Promise.all([ Status_B1.create(stripId(statusDoc)), Status_B2.create(stripId(statusDoc)) ]);
 
+        if (resolvedSyllabusId) {
+            return res.redirect('/tla/overview/' + resolvedSyllabusId);
+        }
         res.redirect('/tla/overview');
     } catch (error) {
         console.error('createTLA error:', error);
@@ -427,7 +542,7 @@ export async function updateTLA(req, res) {
             courseOutcomes, mediatingOutcomes, weekNumber,
             pre_moIloCode, pre_teacherLearningActivity, pre_lmsDigitalTool, pre_assessment,
             post_moIloCode, post_participantTurnout, post_assessmentResults, post_remarks,
-            action
+            action, syllabusId
         } = req.body;
 
         const tla = await TLA_Main.findById(id);
@@ -441,10 +556,21 @@ export async function updateTLA(req, res) {
             return res.status(403).send('Cannot edit an Archived TLA');
         }
 
+        const resolvedSyllabusId = await resolveOwnedSyllabusId(
+            req.session.user.id,
+            syllabusId || (tla.syllabusID ? tla.syllabusID.toString() : ''),
+            courseCode || tla.courseCode
+        );
+
         const isPostSubmit = action === 'submit-post';
         const isSubmit     = action === 'submit';
         const isDraft      = action === 'draft';
         const isApproved   = ['Approved', 'Dean-Approved', 'Chair-Approved', 'Tech-Approved', 'Practicum-Approved', 'VPAA-Noted', 'Returned'].includes(tla.status);
+        const canSubmitPost = ['Dean-Approved', 'Approved'].includes(tla.status);
+
+        if (isPostSubmit && !canSubmitPost) {
+            return res.status(403).send('Post-digital submission is only allowed after Dean approval.');
+        }
 
         let tlaStatus = tla.status;
         if (isDraft && !isApproved)  tlaStatus = 'Draft';
@@ -455,6 +581,7 @@ export async function updateTLA(req, res) {
                 courseCode, section, dateofDigitalDay, facultyFacilitating,
                 courseOutcomes, mediatingOutcomes,
                 weekNumber: weekNumber || null,
+                syllabusID: resolvedSyllabusId || tla.syllabusID || undefined,
                 status: tlaStatus
             };
             await Promise.all([
@@ -476,6 +603,7 @@ export async function updateTLA(req, res) {
                 Pre_B2.findOneAndUpdate({ tlaID: id }, preUpdate, { upsert: true })
             ]);
         }
+
 
         if (isSubmit || isPostSubmit || isApproved) {
             const postUpdate = {
@@ -519,6 +647,17 @@ export async function updateTLA(req, res) {
             ]);
         }
 
+        if (resolvedSyllabusId && !tla.syllabusID) {
+            await Promise.all([
+                TLA_Main.findByIdAndUpdate(id, { syllabusID: resolvedSyllabusId }),
+                TLA_B1.findByIdAndUpdate(id,   { syllabusID: resolvedSyllabusId }),
+                TLA_B2.findByIdAndUpdate(id,   { syllabusID: resolvedSyllabusId })
+            ]);
+        }
+
+        if (resolvedSyllabusId) {
+            return res.redirect('/tla/overview/' + resolvedSyllabusId);
+        }
         res.redirect('/tla/overview');
     } catch (error) {
         console.error('updateTLA error:', error);
@@ -539,19 +678,60 @@ export async function getOverview(req, res) {
             return res.redirect('/admin/tla');
         }
 
-        const sid   = req.params.syllabusId;
-        const found = sid ? STATIC_COURSES.find(c => c.syllabusId === sid) : null;
-
-        const courseInfo = {
-            syllabusId: found?.syllabusId  || null,
-            courseCode: found?.courseCode  || 'SS067',
-            courseTitle:found?.courseTitle || 'Life and Works of Mambo',
-            section:    found?.section     || 'A301',
-            schoolYear: found?.schoolYear  || '2025-2026',
-            term:       found?.term        || '2nd Trimester'
+        const sid = req.params.syllabusId;
+        let courseInfo = {
+            syllabusId: null,
+            courseCode: 'N/A',
+            courseTitle: 'Untitled Course',
+            section: 'TBA',
+            schoolYear: 'N/A',
+            term: 'N/A',
+            courseImage: null,
+            status: 'Not Submitted',
+            isLocked: true
         };
 
-        const tlas = await TLA_Main.find({ userID }).sort({ weekNumber: 1 });
+        // If syllabusId provided, fetch from database
+        if (sid) {
+            const syllabus = await Syllabus.findById(sid);
+            if (syllabus) {
+                const belongsToUser =
+                    String(syllabus.assignedInstructor || '') === String(userID) ||
+                    String(syllabus.userID || '') === String(userID);
+
+                if (!belongsToUser) {
+                    return res.status(403).send('Forbidden - you are not assigned to this course.');
+                }
+
+                const approval = await SyllabusApprovalStatus.findOne({ syllabusID: sid });
+                const status = approval?.status || 'Not Submitted';
+                const isLocked = !['Approved', 'Archived'].includes(status);
+
+                courseInfo = {
+                    syllabusId: sid,
+                    courseCode: syllabus.courseCode || 'N/A',
+                    courseTitle: syllabus.courseTitle || 'Untitled Course',
+                    section: 'Section',
+                    schoolYear: syllabus.schoolYear || 'N/A',
+                    term: syllabus.term || 'N/A',
+                    courseImage: (syllabus.courseImage && syllabus.courseImage.startsWith('data:'))
+                        ? syllabus.courseImage
+                        : `https://picsum.photos/seed/${sid}/400/200`,
+                    status,
+                    isLocked
+                };
+            }
+        }
+
+        const tlaQuery = { userID };
+        if (courseInfo.syllabusId) {
+            tlaQuery.$or = [
+                { syllabusID: courseInfo.syllabusId },
+                { courseCode: courseInfo.courseCode }
+            ];
+        }
+
+        const tlas = await TLA_Main.find(tlaQuery).sort({ weekNumber: 1 });
         const tlaIDs = tlas.map(t => t._id);
         const statuses = await Status_Main.find({ tlaID: { $in: tlaIDs } });
 
@@ -844,66 +1024,92 @@ export async function postHRArchive(req, res) {
 //  POST /tla/form/generate-docx
 // ===============================================================================
 
+function buildTlaPayload(body, user) {
+    const b = body || {};
+    return {
+        courseCode: b.courseCode || '',
+        section: b.section || '',
+        dateofDigitalDay: b.dateofDigitalDay || '',
+        facultyFacilitating:
+            b.facultyFacilitating ||
+            (user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : ''),
+        courseOutcomes: b.courseOutcomes || '',
+        mediatingOutcomes: b.mediatingOutcomes || '',
+        pre_moIloCode: b.pre_moIloCode || '',
+        pre_teacherLearningActivity: b.pre_teacherLearningActivity || '',
+        pre_lmsDigitalTool: b.pre_lmsDigitalTool || '',
+        pre_assessment: b.pre_assessment || '',
+        post_moIloCode: b.post_moIloCode || '',
+        post_participantTurnout: b.post_participantTurnout || '',
+        post_assessmentResults: b.post_assessmentResults || '',
+        post_remarks: b.post_remarks || ''
+    };
+}
+
+async function renderTlaPdf(payload) {
+    const templateBytes = readFileSync(PDF_TEMPLATE);
+    const pdfDoc = await PDFDocument.load(templateBytes);
+    const page = pdfDoc.getPages()[0];
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const black = rgb(0, 0, 0);
+
+    const draw = (txt, x, y, { size = 9, f = font, color = black, maxWidth } = {}) => {
+        if (!txt) return;
+        let text = String(txt);
+        if (maxWidth) {
+            while (f.widthOfTextAtSize(text, size) > maxWidth && text.length > 1) {
+                text = text.slice(0, -1);
+            }
+        }
+        page.drawText(text, { x, y, size, font: f, color });
+    };
+
+    const drawWrapped = (txt, x, y, cellW, { size = 8, lineH = 10, f = font } = {}) => {
+        if (!txt) return;
+        const words = String(txt).split(/\s+/);
+        let line = '';
+        let curY = y;
+        for (const word of words) {
+            const test = line ? line + ' ' + word : word;
+            if (f.widthOfTextAtSize(test, size) > cellW - 6) {
+                if (line) {
+                    page.drawText(line, { x, y: curY, size, font: f, color: black });
+                    curY -= lineH;
+                }
+                line = word;
+            } else {
+                line = test;
+            }
+        }
+        if (line) page.drawText(line, { x, y: curY, size, font: f, color: black });
+    };
+
+    draw(payload.courseCode, 113, 737, { size: 9, maxWidth: 105 });
+    draw(payload.section, 290, 737, { size: 9, maxWidth: 110 });
+    draw(payload.dateofDigitalDay, 410, 732, { size: 9, maxWidth: 145 });
+    draw(payload.facultyFacilitating, 250, 718, { size: 9, maxWidth: 305 });
+    drawWrapped(payload.courseOutcomes, 148, 705, 407, { size: 8, lineH: 9 });
+    drawWrapped(payload.mediatingOutcomes, 56, 671, 498, { size: 8, lineH: 9 });
+
+    const preY = 585;
+    drawWrapped(payload.pre_moIloCode, 55, preY, 65, { size: 8 });
+    drawWrapped(payload.pre_teacherLearningActivity, 128, preY, 195, { size: 8 });
+    drawWrapped(payload.pre_lmsDigitalTool, 331, preY, 103, { size: 8 });
+    drawWrapped(payload.pre_assessment, 441, preY, 113, { size: 8 });
+
+    const postY = 305;
+    drawWrapped(payload.post_moIloCode, 55, postY, 65, { size: 8 });
+    drawWrapped(payload.post_participantTurnout, 128, postY, 195, { size: 8 });
+    drawWrapped(payload.post_assessmentResults, 331, postY, 103, { size: 8 });
+    drawWrapped(payload.post_remarks, 441, postY, 113, { size: 8 });
+
+    return pdfDoc.save();
+}
+
 export async function generateDocx(req, res) {
     try {
-        const b    = req.body;
-        const user = req.session.user;
-        const faculty = b.facultyFacilitating ||
-                        (user ? `${user.firstName} ${user.lastName}` : '');
-
-        const templateBytes = readFileSync(PDF_TEMPLATE);
-        const pdfDoc = await PDFDocument.load(templateBytes);
-        const page   = pdfDoc.getPages()[0];
-        const font   = await pdfDoc.embedFont(StandardFonts.Helvetica);
-        const black  = rgb(0, 0, 0);
-
-        const draw = (txt, x, y, { size = 9, f = font, color = black, maxWidth } = {}) => {
-            if (!txt) return;
-            if (maxWidth) {
-                while (f.widthOfTextAtSize(txt, size) > maxWidth && txt.length > 1) {
-                    txt = txt.slice(0, -1);
-                }
-            }
-            page.drawText(txt, { x, y, size, font: f, color });
-        };
-
-        const drawWrapped = (txt, x, y, cellW, { size = 8, lineH = 10, f = font } = {}) => {
-            if (!txt) return;
-            const words = txt.split(/\s+/);
-            let line = '';
-            let curY = y;
-            for (const word of words) {
-                const test = line ? line + ' ' + word : word;
-                if (f.widthOfTextAtSize(test, size) > cellW - 6) {
-                    if (line) { page.drawText(line, { x, y: curY, size, font: f, color: black }); curY -= lineH; }
-                    line = word;
-                } else {
-                    line = test;
-                }
-            }
-            if (line) page.drawText(line, { x, y: curY, size, font: f, color: black });
-        };
-
-        draw(b.courseCode || '',       113, 737, { size: 9, maxWidth: 105 });
-        draw(b.section || '',          290, 737, { size: 9, maxWidth: 110 });
-        draw(b.dateofDigitalDay || '', 410, 732, { size: 9, maxWidth: 145 });
-        draw(faculty,                  250, 718, { size: 9, maxWidth: 305 });
-        drawWrapped(b.courseOutcomes || '',    148, 705, 407, { size: 8, lineH: 9 });
-        drawWrapped(b.mediatingOutcomes || '',  56, 671, 498, { size: 8, lineH: 9 });
-
-        const preY = 585;
-        drawWrapped(b.pre_moIloCode || '',               55, preY, 65,  { size: 8 });
-        drawWrapped(b.pre_teacherLearningActivity || '', 128, preY, 195, { size: 8 });
-        drawWrapped(b.pre_lmsDigitalTool || '',          331, preY, 103, { size: 8 });
-        drawWrapped(b.pre_assessment || '',              441, preY, 113, { size: 8 });
-
-        const postY = 305;
-        drawWrapped(b.post_moIloCode || '',          55,  postY, 65,  { size: 8 });
-        drawWrapped(b.post_participantTurnout || '', 128, postY, 195, { size: 8 });
-        drawWrapped(b.post_assessmentResults || '',  331, postY, 103, { size: 8 });
-        drawWrapped(b.post_remarks || '',            441, postY, 113, { size: 8 });
-
-        const pdfBytes = await pdfDoc.save();
+        const payload = buildTlaPayload(req.body, req.session.user);
+        const pdfBytes = await renderTlaPdf(payload);
         res.set({
             'Content-Type': 'application/pdf',
             'Content-Disposition': 'attachment; filename="TLA_Report.pdf"'
@@ -916,6 +1122,121 @@ export async function generateDocx(req, res) {
 }
 
 // ===============================================================================
+//  PDF PREVIEW FROM CURRENT FORM INPUTS (ATA-like preview endpoint)
+//  POST /tla/form/preview-pdf
+// ===============================================================================
+
+export async function previewTlaPdf(req, res) {
+    try {
+        const payload = buildTlaPayload(req.body, req.session.user);
+        const pdfBytes = await renderTlaPdf(payload);
+
+        res.set({
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': 'inline; filename="TLA_Preview.pdf"'
+        });
+        res.send(Buffer.from(pdfBytes));
+    } catch (err) {
+        console.error('previewTlaPdf error:', err);
+        res.status(500).send('Failed to preview PDF');
+    }
+}
+
+// ===============================================================================
+//  VIEW SAVED TLA AS PDF (ATA-like view-by-id endpoint)
+//  GET /tla/form/pdf/:id
+// ===============================================================================
+
+export async function viewTlaPdf(req, res) {
+    try {
+        const tla = await TLA_Main.findById(req.params.id);
+        if (!tla) return res.status(404).send('TLA not found');
+
+        if (tla.userID.toString() !== req.session.user.id) {
+            return res.status(403).send('Forbidden');
+        }
+
+        const [preDigital, postDigital] = await Promise.all([
+            Pre_Main.findOne({ tlaID: tla._id }),
+            Post_Main.findOne({ tlaID: tla._id })
+        ]);
+
+        const payload = buildTlaPayload({
+            courseCode: tla.courseCode,
+            section: tla.section,
+            dateofDigitalDay: tla.dateofDigitalDay,
+            facultyFacilitating: tla.facultyFacilitating,
+            courseOutcomes: tla.courseOutcomes,
+            mediatingOutcomes: tla.mediatingOutcomes,
+            pre_moIloCode: preDigital?.moIloCode,
+            pre_teacherLearningActivity: preDigital?.teacherLearningActivity,
+            pre_lmsDigitalTool: preDigital?.lmsDigitalTool,
+            pre_assessment: preDigital?.assessment,
+            post_moIloCode: postDigital?.moIloCode,
+            post_participantTurnout: postDigital?.participantTurnout,
+            post_assessmentResults: postDigital?.assessmentResults,
+            post_remarks: postDigital?.remarks
+        }, req.session.user);
+
+        const pdfBytes = await renderTlaPdf(payload);
+
+        res.set({
+            'Content-Type': 'application/pdf',
+            'Content-Disposition': 'inline; filename="TLA_Report.pdf"'
+        });
+        res.send(Buffer.from(pdfBytes));
+    } catch (err) {
+        console.error('viewTlaPdf error:', err);
+        res.status(500).send('Failed to view PDF');
+    }
+}
+
+// ===============================================================================
+//  TLA PDF X-RAY (visualize field names from fillable template)
+//  GET /tla/form/pdf-xray
+// ===============================================================================
+
+export async function discoverTlaPdfFields(req, res) {
+    try {
+        const existingPdfBytes = readFileSync(PDF_TEMPLATE);
+        const pdfDoc = await PDFDocument.load(existingPdfBytes);
+        const pdfForm = pdfDoc.getForm();
+        const fields = pdfForm.getFields();
+
+        fields.forEach((field) => {
+            const type = field.constructor.name;
+            const name = field.getName();
+
+            try {
+                if (type === 'PDFTextField') {
+                    const textField = pdfForm.getTextField(name);
+                    textField.setText(name);
+                    textField.setFontSize(7);
+                } else if (type === 'PDFDropdown') {
+                    const dropField = pdfForm.getDropdown(name);
+                    dropField.addOptions([name]);
+                    dropField.select(name);
+                } else if (type === 'PDFCheckBox') {
+                    pdfForm.getCheckBox(name).check();
+                }
+            } catch (err) {
+                // Skip unsupported or malformed fields without failing the whole preview.
+            }
+        });
+
+        pdfForm.flatten();
+        const pdfBytes = await pdfDoc.save();
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'inline; filename=TLA_Visual_PDF_Map.pdf');
+        res.send(Buffer.from(pdfBytes));
+    } catch (error) {
+        console.error('discoverTlaPdfFields error:', error);
+        res.status(500).send('Failed to generate TLA visual PDF map.');
+    }
+}
+
+// ===============================================================================
 //  ADMIN CONSOLIDATED TLA PAGE
 //  GET /admin/tla — review queue + HR archive in one page, with admin sidebar
 // ===============================================================================
@@ -923,10 +1244,11 @@ export async function generateDocx(req, res) {
 export async function getAdminTLA(req, res) {
     try {
         const role = req.session.user.role;
+        const isAdmin = role === 'Admin' || role === 'Super-Admin';
 
         const [submissions, archiveData] = await Promise.all([
             buildSubmissionList(role),
-            buildArchiveData()
+            isAdmin ? buildArchiveData() : Promise.resolve({ toArchive: [], archived: [] })
         ]);
 
         res.render('TLA/tlaAdminConsolidated', {

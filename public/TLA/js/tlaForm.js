@@ -43,27 +43,7 @@ document.addEventListener('DOMContentLoaded', function () {
  * pixel-perfect copy of the real TLA document.
  */
 function printTLAForm() {
-    const v = (name) => {
-        const el = document.querySelector(`[name="${name}"]`);
-        return el ? (el.value || '').trim() : '';
-    };
-
-    const data = new URLSearchParams({
-        courseCode:                  v('courseCode'),
-        section:                     v('section'),
-        dateofDigitalDay:            v('dateofDigitalDay'),
-        facultyFacilitating:         v('facultyFacilitating') || v('_name'),
-        courseOutcomes:              v('courseOutcomes'),
-        mediatingOutcomes:           v('mediatingOutcomes'),
-        pre_moIloCode:               v('pre_moIloCode'),
-        pre_teacherLearningActivity: v('pre_teacherLearningActivity'),
-        pre_lmsDigitalTool:          v('pre_lmsDigitalTool'),
-        pre_assessment:              v('pre_assessment'),
-        post_moIloCode:              v('post_moIloCode'),
-        post_participantTurnout:     v('post_participantTurnout'),
-        post_assessmentResults:      v('post_assessmentResults'),
-        post_remarks:                v('post_remarks'),
-    });
+    const data = buildPdfPayload();
 
     fetch('/tla/form/generate-docx', { method: 'POST', body: data })
         .then(res => {
@@ -81,5 +61,55 @@ function printTLAForm() {
         .catch(err => {
             console.error('Download failed:', err);
             alert('Could not download document: ' + err.message);
+        });
+}
+
+function buildPdfPayload() {
+    const v = (name) => {
+        const el = document.querySelector(`[name="${name}"]`);
+        return el ? (el.value || '').trim() : '';
+    };
+
+    return new URLSearchParams({
+        courseCode:                  v('courseCode'),
+        section:                     v('section'),
+        dateofDigitalDay:            v('dateofDigitalDay'),
+        facultyFacilitating:         v('facultyFacilitating') || v('_name'),
+        courseOutcomes:              v('courseOutcomes'),
+        mediatingOutcomes:           v('mediatingOutcomes'),
+        pre_moIloCode:               v('pre_moIloCode'),
+        pre_teacherLearningActivity: v('pre_teacherLearningActivity'),
+        pre_lmsDigitalTool:          v('pre_lmsDigitalTool'),
+        pre_assessment:              v('pre_assessment'),
+        post_moIloCode:              v('post_moIloCode'),
+        post_participantTurnout:     v('post_participantTurnout'),
+        post_assessmentResults:      v('post_assessmentResults'),
+        post_remarks:                v('post_remarks')
+    });
+}
+
+/**
+ * viewTLAForm()
+ * Builds an inline PDF preview in a new browser tab, similar to ATA preview flow.
+ */
+function viewTLAForm() {
+    const data = buildPdfPayload();
+
+    fetch('/tla/form/preview-pdf', { method: 'POST', body: data })
+        .then(res => {
+            if (!res.ok) throw new Error('Server returned ' + res.status);
+            return res.blob();
+        })
+        .then(blob => {
+            const url = URL.createObjectURL(blob);
+            const win = window.open(url, '_blank');
+            if (!win) {
+                alert('Popup blocked. Please allow popups for this site to view the PDF.');
+            }
+            setTimeout(() => URL.revokeObjectURL(url), 60_000);
+        })
+        .catch(err => {
+            console.error('Preview failed:', err);
+            alert('Could not preview document: ' + err.message);
         });
 }
