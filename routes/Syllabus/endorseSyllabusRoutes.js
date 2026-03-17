@@ -2,6 +2,12 @@ import express from 'express';
 import { mainDB } from '../../database/mongo-dbconnect.js';
 import Syllabus from '../../models/Syllabus/syllabus.js';
 import SyllabusApprovalStatus from '../../models/Syllabus/syllabusApprovalStatus.js';
+import ProgramEducationObjectives from '../../models/Syllabus/programEducationObjectives.js';
+import StudentEducationObjectives from '../../models/Syllabus/studentEducationalObjectives.js';
+import CourseOutcomes from '../../models/Syllabus/courseOutcomes.js';
+import CourseMapping from '../../models/Syllabus/courseMapping.js';
+import WeeklySchedule from '../../models/Syllabus/weeklySchedule.js';
+import CourseEvaluationPerCO from '../../models/Syllabus/courseEvaluationPerCO.js';
 
 const endorseSyllabusRouter = express.Router();
 
@@ -282,7 +288,21 @@ endorseSyllabusRouter.get('/approve/:syllabusId', async (req, res) => {
         const approval = await SyllabusApprovalStatus.findOne({ syllabusID: syllabusId });
 
         if (syl) {
+            const peos = await ProgramEducationObjectives.find({ syllabusID: syllabusId });
+            const seos = await StudentEducationObjectives.find({ syllabusID: syllabusId });
+            const cos = await CourseOutcomes.find({ syllabusID: syllabusId });
+            const mappings = await CourseMapping.find({ syllabusID: syllabusId });
+            const schedules = await WeeklySchedule.find({ syllabusID: syllabusId }).sort({ week: 1 });
+            const evaluations = await CourseEvaluationPerCO.find({ syllabusID: syllabusId });
+
             return res.render('Syllabus/syllabusProgChairEndorsement', {
+                syl,
+                peos,
+                seos,
+                cos,
+                mappings,
+                schedules,
+                evaluations,
                 courseName: syl.courseTitle || 'Course Name',
                 courseCode: syl.courseCode || 'Course Code',
                 courseSection: syl.section || 'Section',
@@ -484,7 +504,21 @@ endorseSyllabusRouter.get('/endorse/:syllabusId', async (req, res) => {
         const approval = await SyllabusApprovalStatus.findOne({ syllabusID: syllabusId });
 
         if (syl) {
+            const peos = await ProgramEducationObjectives.find({ syllabusID: syllabusId });
+            const seos = await StudentEducationObjectives.find({ syllabusID: syllabusId });
+            const cos = await CourseOutcomes.find({ syllabusID: syllabusId });
+            const mappings = await CourseMapping.find({ syllabusID: syllabusId });
+            const schedules = await WeeklySchedule.find({ syllabusID: syllabusId }).sort({ week: 1 });
+            const evaluations = await CourseEvaluationPerCO.find({ syllabusID: syllabusId });
+
             return res.render('Syllabus/syllabusProgChairEndorsement', {
+                syl,
+                peos,
+                seos,
+                cos,
+                mappings,
+                schedules,
+                evaluations,
                 courseName: syl.courseTitle || 'Course Name',
                 courseCode: syl.courseCode || 'Course Code',
                 courseSection: syl.section || 'Section',

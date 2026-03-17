@@ -635,3 +635,95 @@ document.addEventListener('DOMContentLoaded', () => {
   initColorPalette();
   updateActiveColorBar();
 });
+
+/* ── Form Submission Helper ── */
+window.saveInfoToSession = function() {
+    const payload = JSON.parse(sessionStorage.getItem('syllabusFormDraft')) || {};
+
+    try {
+        // 1. Basic Info - Select all editable text areas in the main DOM order
+        const editableBoxes = document.querySelectorAll('.course-editable-text');
+        
+        payload.basicInfo = {
+            courseCode: editableBoxes[0]?.innerText.trim() || '',
+            courseTitle: editableBoxes[1]?.innerText.trim() || '',
+            preRequisite: editableBoxes[2]?.innerText.trim() || '',
+            coRequisite: editableBoxes[3]?.innerText.trim() || '',
+            units: editableBoxes[4]?.innerText.trim() || '',
+            classSchedule: editableBoxes[5]?.innerText.trim() || '',
+            courseDesign: editableBoxes[6]?.innerText.trim() || '',
+            courseDescription: editableBoxes[7]?.innerText.trim() || '',
+            term: editableBoxes[8]?.innerText.trim() || '',
+            schoolYear: editableBoxes[9]?.innerText.trim() || '',
+            programPreparedFor: editableBoxes[10]?.innerText.trim() || '',
+            textbook: editableBoxes[11]?.innerText.trim() || '',
+            references: editableBoxes[12]?.innerText.trim() || ''
+        };
+
+        // 2. Program Educational Objectives (PEOs)
+        // (Handled by newSyllabus.js previously, preserved since we parse existing draft)
+
+        // 3. Course Outcomes (COs) Main List
+        const coRows = document.querySelectorAll('.outcomes-row');
+        payload.courseOutcomesList = Array.from(coRows).map((row, index) => {
+            const text = row.querySelector('.outcomes-statement .outcomes-editable-text')?.innerText.trim() || '';
+            const skills = row.querySelector('.outcomes-skills-side .outcomes-editable-text')?.innerText.trim() || '';
+            return {
+                coNumber: `CO${index + 1}`,
+                text,
+                skills
+            };
+        });
+
+        // 4. Course Mapping Table
+        const mappingRows = document.querySelectorAll('#mapping-body tr');
+        payload.courseMapping = Array.from(mappingRows).map(row => {
+            const tds = row.querySelectorAll('td');
+            // Course mapping layout has CO # on tds[0] and then custom dropdowns
+            const coLabel = tds[0]?.innerText.trim() || '';
+            const dropdowns = row.querySelectorAll('.custom-dropdown-trigger');
+            const alignments = Array.from(dropdowns).map(d => d.dataset.value || '');
+            return {
+                coNumber: coLabel,
+                alignments
+            };
+        });
+
+        // 5. Course Outcomes Editor Table
+        const editorRows = document.querySelectorAll('#outcomes-editor-body tr');
+        payload.courseOutcomesEditor = Array.from(editorRows)
+            .filter(r => r.style.display !== 'none') // ignore hidden rows from merged cells
+            .map(row => {
+                const cells = row.querySelectorAll('.editable-cell');
+                return {
+                    coNumber: cells[0]?.innerText.trim() || '',
+                    description: cells[1]?.innerText.trim() || '',
+                    thinkingSkills: cells[2]?.innerText.trim() || '' 
+                };
+            });
+
+        // 6. Concept Map
+        const conceptMapImg = document.getElementById('concept-map-preview');
+        if (conceptMapImg && conceptMapImg.src && conceptMapImg.src.startsWith('data:')) {
+            payload.conceptMap = conceptMapImg.src;
+        }
+
+        // Include Syllabus ID
+        console.log("Saving Syllabus ID to Session:", window.CURRENT_SYLLABUS_ID);
+        if (window.CURRENT_SYLLABUS_ID) {
+            payload.syllabusId = window.CURRENT_SYLLABUS_ID;
+        } else {
+            console.error("No CURRENT_SYLLABUS_ID found on the page!");
+            alert("Warning: Course ID is missing. The draft may not save correctly.");
+        }
+
+        // Save to session
+        sessionStorage.setItem('syllabusFormDraft', JSON.stringify(payload));
+        
+        // Proceed to schedule
+        window.location.href = '/syllabus/schedule';
+    } catch (e) {
+        console.error("Error saving syllabus step 1 data:", e);
+        alert("There was an error saving your data. Please check the console.");
+    }
+};

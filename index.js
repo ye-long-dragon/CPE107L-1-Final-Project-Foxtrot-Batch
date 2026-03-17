@@ -20,6 +20,10 @@ dotenv.config();
 console.log("MONGO_URI:", process.env.MONGO_URI);
 
 const app = express();
+app.get('/ping', (req, res) => {
+    console.log("DEBUG: RECEIVED PING");
+    res.send('PONG');
+});
 const PORT = process.env.PORT || 3000;
 
 // JSON
@@ -141,6 +145,12 @@ app.get("/syllabus", (req, res) => {
     }
     res.redirect("/login");
 });
+
+app.use((req, res, next) => {
+    console.log(`DEBUG: Incoming Request - ${req.method} ${req.url} - (Original URL: ${req.originalUrl})`);
+    next();
+});
+
 app.use("/syllabus/api", syllabusCourseOverviewActions);
 app.use("/syllabus/approval", syllabusApprovalStatusActions);
 app.use("/syllabus/create", newSyllabusRoutes);

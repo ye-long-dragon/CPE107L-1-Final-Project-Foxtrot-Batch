@@ -134,7 +134,7 @@
             </div>
 
             <div class="button-footer-outer">
-                <button class="next-btn-rect" onclick="window.location.href='/syllabus/info'" type="button">
+                <button class="next-btn-rect" onclick="saveNewToSession()" type="button">
                     <span>NEXT</span>
                     <span class="material-symbols-outlined">arrow_forward</span>
                 </button>
@@ -142,6 +142,9 @@
         </main>
     </div>
 
+    <script>
+        window.CURRENT_SYLLABUS_ID = "<%= locals.syllabusId || '' %>";
+    </script>
     <script src="/Syllabus/js/newSyllabus.js?v=<%= new Date().getTime() %>"></script>
 </body>
 

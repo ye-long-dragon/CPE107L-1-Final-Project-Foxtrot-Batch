@@ -20,7 +20,8 @@ deanApprovalRouter.get('/:syllabusId', async (req, res) => {
                 academicYear: syl.academicYear || 'Academic Year',
                 fileType: 'Syllabus Draft',
                 syllabusId,
-                currentPageCategory: 'syllabus'
+                currentPageCategory: 'syllabus',
+                approvalStatus: syl.approvalStatus || 'pending'
             });
         }
     } catch (err) {
@@ -35,7 +36,8 @@ deanApprovalRouter.get('/:syllabusId', async (req, res) => {
         academicYear: '[ACADEMIC YEAR]',
         fileType: 'Syllabus Draft',
         syllabusId,
-        currentPageCategory: 'syllabus'
+        currentPageCategory: 'syllabus',
+        approvalStatus: 'pending'
     });
 });
 
@@ -47,12 +49,27 @@ deanApprovalRouter.post('/:syllabusId', async (req, res) => {
     const { comment, status, action } = req.body;
 
     try {
-        // TODO: Update SyllabusApprovalStatus in DB
-        console.log(`Dean Approval [${action}] syllabusId=${syllabusId} status=${status} comment=${comment}`);
-        res.json({ success: true, message: `Approval ${action} saved.` });
+        const syl = await Syllabus.findById(syllabusId);
+
+        if (!syl) {
+            return res.status(404).json({ success: false, message: 'Syllabus not found.' });
+        }
+
+        // Update status and dean comment
+        syl.approvalStatus = status || 'pending'; // e.g. "approved", "rejected", "pending"
+        syl.deanComment = comment || '';
+        await syl.save();
+
+        console.log(`Dean Approval [${action}] syllabusId=${syllabusId} status=${syl.approvalStatus} comment=${syl.deanComment}`);
+
+        return res.status(200).json({
+            success: true,
+            message: `Approval ${action} saved.`,
+            newStatus: syl.approvalStatus
+        });
     } catch (err) {
         console.error('Dean approval action error:', err);
-        res.status(500).json({ success: false, message: 'Internal server error.' });
+        return res.status(500).json({ success: false, message: 'Internal server error.' });
     }
 });
 

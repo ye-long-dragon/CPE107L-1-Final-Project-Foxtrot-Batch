@@ -126,7 +126,7 @@ window.openDraftModal = function (syllabusId, hasDraft) {
         btn.innerText = "+ Add Syllabus Draft";
         btn.onclick = () => {
             window.closeDraftModal();
-            window.location.href = '/syllabus/create';
+            window.location.href = `/syllabus/create/${syllabusId}`;
         };
     }
 

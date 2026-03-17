@@ -103,7 +103,51 @@ const peoSoObserver = new MutationObserver(() => {
         }
     });
 });
-['peo-container', 'so-container'].forEach(id => {
+const observeContainers = ['peo-container', 'so-container'];
+observeContainers.forEach(id => {
     const container = document.getElementById(id);
-    if (container) peoSoObserver.observe(container, { childList: true, subtree: true });
+    if (container) peoSoObserver.observe(container, { childList: true });
 });
+
+/* ── Save Draft and Route to Info ── */
+window.saveNewToSession = function() {
+    const payload = JSON.parse(sessionStorage.getItem('syllabusFormDraft')) || {};
+    try {
+        // Collect PEOs
+        const peoRows = document.querySelectorAll('#peo-container .peo-row');
+        payload.programObjectives = Array.from(peoRows).map((row) => {
+            return row.querySelector('.peo-text-side .peo-editable-text')?.innerText.trim() || '';
+        });
+        payload.programObjectivesRating = Array.from(peoRows).map((row) => {
+            const checkboxes = row.querySelectorAll('.peo-checkbox-side input[type="checkbox"]');
+            return Array.from(checkboxes).map(cb => cb.checked ? '1' : '0').join(''); 
+        });
+
+        // Collect SOs
+        const soRows = document.querySelectorAll('#so-container .peo-row');
+        payload.studentObjectives = Array.from(soRows).map((row) => {
+            return row.querySelector('.peo-text-side .peo-editable-text')?.innerText.trim() || '';
+        });
+        payload.studentObjectivesRating = Array.from(soRows).map((row) => {
+            const checkboxes = row.querySelectorAll('.peo-checkbox-side input[type="checkbox"]');
+            return Array.from(checkboxes).map(cb => cb.checked ? '1' : '0').join(''); 
+        });
+        
+        // Pass the Syllabus ID payload context along natively
+        payload.syllabusId = window.CURRENT_SYLLABUS_ID;
+
+        // Save to session
+        sessionStorage.setItem('syllabusFormDraft', JSON.stringify(payload));
+        
+        // Proceed to info
+        if (window.CURRENT_SYLLABUS_ID) {
+            window.location.href = `/syllabus/info/${window.CURRENT_SYLLABUS_ID}`;
+        } else {
+            console.error("Missing syllabus ID");
+            alert("Error: Course ID is missing.");
+        }
+    } catch (e) {
+        console.error("Error saving new step data:", e);
+        alert("There was an error saving your data.");
+    }
+};

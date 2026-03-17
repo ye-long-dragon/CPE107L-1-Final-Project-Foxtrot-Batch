@@ -14,12 +14,18 @@ const upload = multer({
 /**
  * GET: Render the "Add New Syllabus" page
  */
-newSyllabusRoutes.get('/', (req, res) => {
+newSyllabusRoutes.get('/:syllabusId', (req, res) => {
+    console.log(`DEBUG: Reached newSyllabusRoutes GET /:syllabusId with ID: ${req.params.syllabusId}`);
     // Passes the category so the sidebar highlights "Syllabus"
     res.render('Syllabus/newSyllabus', {
         currentPageCategory: "syllabus",
-        userId: req.query.userId || "507f1f77bcf86cd799439011" // Temporary ID for testing
+        syllabusId: req.params.syllabusId // Inject the ID dynamically
     });
+});
+
+newSyllabusRoutes.get('/', (req, res) => {
+    console.log("DEBUG: Reached newSyllabusRoutes root GET /");
+    res.send("Reached New Syllabus Router Root");
 });
 
 /**
