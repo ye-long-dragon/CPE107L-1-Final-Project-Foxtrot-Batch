@@ -10,7 +10,7 @@ const stepSchema = new Schema({
 
 // ─── Main approval status document ───────────────────────────────────────────
 // Tracks the full organizational approval chain for one TLA:
-//   Faculty → Technical Assistant → Program Chair → Dean → HR (Archival)
+//   Faculty → Technical → Program Chair → Practicum Coordinator → Dean → VPAA → HR/HRMO (Archival)
 const tlaApprovalStatusSchema = new Schema({
     tlaID: { type: Schema.Types.ObjectId, ref: "TLA", required: true },
 
@@ -20,22 +20,26 @@ const tlaApprovalStatusSchema = new Schema({
     status: {
         type: String,
         enum: [
-            "Not Submitted",    // Faculty has not yet submitted
-            "Pending",          // Submitted by faculty, awaiting Technical review
-            "Tech-Approved",    // Technical forwarded to Program Chair
-            "Chair-Approved",   // Program Chair forwarded to Dean
-            "Dean-Approved",    // Dean approved, ready for HR to archive
-            "Archived",         // HR has archived — fully completed
-            "Returned"          // Returned to faculty at any step
+            "Not Submitted",        // Faculty has not yet submitted
+            "Pending",              // Submitted by faculty, awaiting Technical review
+            "Tech-Approved",        // Technical forwarded to Program Chair
+            "Chair-Approved",       // Program Chair forwarded to Practicum Coordinator
+            "Practicum-Approved",   // Practicum Coordinator forwarded to Dean
+            "Dean-Approved",        // Dean forwarded to VPAA
+            "VPAA-Noted",           // VPAA noted, forwarded to HR/HRMO for archival
+            "Archived",             // HR/HRMO has archived — fully completed
+            "Returned"              // Returned to faculty at any step
         ],
         default: "Not Submitted"
     },
 
     // ── Per-step tracking ─────────────────────────────────────────────────────
-    technical:   { type: stepSchema, default: () => ({}) },
-    programChair:{ type: stepSchema, default: () => ({}) },
-    dean:        { type: stepSchema, default: () => ({}) },
-    hr:          { type: stepSchema, default: () => ({}) },
+    technical:            { type: stepSchema, default: () => ({}) },
+    programChair:         { type: stepSchema, default: () => ({}) },
+    practicumCoordinator: { type: stepSchema, default: () => ({}) },
+    dean:                 { type: stepSchema, default: () => ({}) },
+    vpaa:                 { type: stepSchema, default: () => ({}) },
+    hr:                   { type: stepSchema, default: () => ({}) },
 
     // ── Legacy flat fields (kept for backward-compatibility) ─────────────────
     approvalDate: Date,

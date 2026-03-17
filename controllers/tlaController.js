@@ -4,7 +4,8 @@
     Pre_Main,   Pre_B1,   Pre_B2,
     Post_Main,  Post_B1,  Post_B2
 } from '../models/TLA/tlaModels.js';
-import User from '../models/user.js';
+import userSchema from '../models/user.js';
+import { mainDB } from '../database/mongo-dbconnect.js';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
@@ -12,13 +13,17 @@ import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PDF_TEMPLATE = join(__dirname, '../public/common/img/TLA_TEMPLATE_BLANK.pdf');
+const User = mainDB.model("User", userSchema);
 
 // ===============================================================================
 //  ROLE DEFINITIONS
 // ===============================================================================
 
 // All non-faculty roles that participate in the review chain (also used as reviewer check)
-const APPROVAL_ROLES = ['Technical', 'Program-Chair', 'Dean', 'HR', 'Admin', 'Super-Admin'];
+const APPROVAL_ROLES = [
+    'Technical', 'Program-Chair', 'Practicum-Coordinator',
+    'Dean', 'VPAA', 'HR', 'HRMO', 'Admin', 'Super-Admin'
+];
 
 // ===============================================================================
 //  MIDDLEWARE GUARDS
@@ -38,10 +43,10 @@ export function requireApprovalRole(req, res, next) {
     next();
 }
 
-// Guard: only HR (and Admin/Super-Admin) may archive
+// Guard: only HR/HRMO (and Admin/Super-Admin) may archive
 export function requireHRRole(req, res, next) {
     const role = req.session?.user?.role;
-    if (!['HR', 'Admin', 'Super-Admin'].includes(role)) {
+    if (!['HR', 'HRMO', 'Admin', 'Super-Admin'].includes(role)) {
         return res.status(403).send('Forbidden - HR role required.');
     }
     next();
@@ -64,11 +69,11 @@ function actorName(user) {
 
 // --- Determine step status labels for the UI tracker ------------------------
 // Each step: "approved" | "ongoing" | "pending" | "rejected"
+// Chain: Faculty → Technical → Program Chair → Practicum Coordinator → Dean → VPAA → HR/HRMO
 function buildApprovalSteps(tlaDoc, statusDoc) {
     const macroStatus = statusDoc?.status || 'Not Submitted';
     const stepDocs    = statusDoc || {};
 
-    // -- Helper: map DB step status into UI dot state ----------------------
     const dot = (stepStatus) => {
         if (!stepStatus) return 'pending';
         if (stepStatus === 'Approved' || stepStatus === 'Archived') return 'approved';
@@ -77,65 +82,174 @@ function buildApprovalSteps(tlaDoc, statusDoc) {
         return 'pending';
     };
 
-    // -- Faculty step: submitted = tla left Draft state -------------------
+    // Faculty step
     const facultyDone = tlaDoc?.status && tlaDoc.status !== 'Draft';
     const facultyStep = facultyDone
         ? (macroStatus === 'Returned' ? 'rejected' : 'approved')
         : 'pending';
 
-    // -- Technical step ---------------------------------------------------
+    // Technical step
     let techStep = 'pending';
     if (facultyDone) {
         if (macroStatus === 'Not Submitted') techStep = 'pending';
-        else if (['Pending'].includes(macroStatus)) techStep = 'ongoing';
+        else if (macroStatus === 'Pending') techStep = 'ongoing';
         else techStep = dot(stepDocs.technical?.status);
     }
 
-    // -- Program Chair step -----------------------------------------------
+    // Program Chair step
     let chairStep = 'pending';
-    if (['Tech-Approved', 'Chair-Approved', 'Dean-Approved', 'Archived'].includes(macroStatus)) {
+    if (['Tech-Approved', 'Chair-Approved', 'Practicum-Approved', 'Dean-Approved', 'VPAA-Noted', 'Archived'].includes(macroStatus)) {
         chairStep = dot(stepDocs.programChair?.status);
         if (macroStatus === 'Tech-Approved' && !stepDocs.programChair?.status) chairStep = 'ongoing';
     }
 
-    // -- Dean step --------------------------------------------------------
-    let deanStep = 'pending';
-    if (['Chair-Approved', 'Dean-Approved', 'Archived'].includes(macroStatus)) {
-        deanStep = dot(stepDocs.dean?.status);
-        if (macroStatus === 'Chair-Approved' && !stepDocs.dean?.status) deanStep = 'ongoing';
+    // Practicum Coordinator step
+    let practicumStep = 'pending';
+    if (['Chair-Approved', 'Practicum-Approved', 'Dean-Approved', 'VPAA-Noted', 'Archived'].includes(macroStatus)) {
+        practicumStep = dot(stepDocs.practicumCoordinator?.status);
+        if (macroStatus === 'Chair-Approved' && !stepDocs.practicumCoordinator?.status) practicumStep = 'ongoing';
     }
 
-    // -- HR step ----------------------------------------------------------
+    // Dean step
+    let deanStep = 'pending';
+    if (['Practicum-Approved', 'Dean-Approved', 'VPAA-Noted', 'Archived'].includes(macroStatus)) {
+        deanStep = dot(stepDocs.dean?.status);
+        if (macroStatus === 'Practicum-Approved' && !stepDocs.dean?.status) deanStep = 'ongoing';
+    }
+
+    // VPAA step
+    let vpaaStep = 'pending';
+    if (['Dean-Approved', 'VPAA-Noted', 'Archived'].includes(macroStatus)) {
+        vpaaStep = dot(stepDocs.vpaa?.status);
+        if (macroStatus === 'Dean-Approved' && !stepDocs.vpaa?.status) vpaaStep = 'ongoing';
+    }
+
+    // HR/HRMO step
     let hrStep = 'pending';
-    if (['Dean-Approved', 'Archived'].includes(macroStatus)) {
+    if (['VPAA-Noted', 'Archived'].includes(macroStatus)) {
         hrStep = dot(stepDocs.hr?.status);
-        if (macroStatus === 'Dean-Approved' && !stepDocs.hr?.status) hrStep = 'ongoing';
+        if (macroStatus === 'VPAA-Noted' && !stepDocs.hr?.status) hrStep = 'ongoing';
     }
 
     return {
-        faculty:      facultyStep,
-        technical:    techStep,
-        programChair: chairStep,
-        dean:         deanStep,
-        hr:           hrStep
+        faculty:              facultyStep,
+        technical:            techStep,
+        programChair:         chairStep,
+        practicumCoordinator: practicumStep,
+        dean:                 deanStep,
+        vpaa:                 vpaaStep,
+        hr:                   hrStep
     };
 }
 
 // --- Determine what action the current user can take ------------------------
-// Returns: null (no action) | "technical" | "programChair" | "dean" | "hr"
+// Returns: null (no action) | step key string
+// Chain: Technical → Program-Chair → Practicum-Coordinator → Dean → VPAA → HR/HRMO
 function activeStep(role, macroStatus) {
-    if (role === 'Technical'     && macroStatus === 'Pending')       return 'technical';
-    if (role === 'Program-Chair' && macroStatus === 'Tech-Approved') return 'programChair';
-    if (role === 'Dean'          && macroStatus === 'Chair-Approved') return 'dean';
-    if (role === 'HR'            && macroStatus === 'Dean-Approved') return 'hr';
+    if (role === 'Technical'              && macroStatus === 'Pending')            return 'technical';
+    if (role === 'Program-Chair'          && macroStatus === 'Tech-Approved')      return 'programChair';
+    if (role === 'Practicum-Coordinator'  && macroStatus === 'Chair-Approved')     return 'practicumCoordinator';
+    if (role === 'Dean'                   && macroStatus === 'Practicum-Approved') return 'dean';
+    if (role === 'VPAA'                   && macroStatus === 'Dean-Approved')      return 'vpaa';
+    if (role === 'HR'                     && macroStatus === 'VPAA-Noted')         return 'hr';
+    if (role === 'HRMO'                   && macroStatus === 'VPAA-Noted')         return 'hr';
     // Admin/Super-Admin can act at whatever the current active step is
     if (['Admin', 'Super-Admin'].includes(role)) {
-        if (macroStatus === 'Pending')        return 'technical';
-        if (macroStatus === 'Tech-Approved')  return 'programChair';
-        if (macroStatus === 'Chair-Approved') return 'dean';
-        if (macroStatus === 'Dean-Approved')  return 'hr';
+        if (macroStatus === 'Pending')            return 'technical';
+        if (macroStatus === 'Tech-Approved')      return 'programChair';
+        if (macroStatus === 'Chair-Approved')     return 'practicumCoordinator';
+        if (macroStatus === 'Practicum-Approved') return 'dean';
+        if (macroStatus === 'Dean-Approved')      return 'vpaa';
+        if (macroStatus === 'VPAA-Noted')         return 'hr';
     }
     return null;
+}
+
+// --- Shared data-fetching helpers for admin pages ---------------------------
+
+const ROLE_STATUS_FILTER = {
+    'Technical':              ['Pending'],
+    'Program-Chair':          ['Tech-Approved'],
+    'Practicum-Coordinator':  ['Chair-Approved'],
+    'Dean':                   ['Practicum-Approved'],
+    'VPAA':                   ['Dean-Approved'],
+    'HR':                     ['VPAA-Noted'],
+    'HRMO':                   ['VPAA-Noted'],
+    'Admin':                  ['Pending', 'Tech-Approved', 'Chair-Approved', 'Practicum-Approved', 'Dean-Approved', 'VPAA-Noted', 'Returned'],
+    'Super-Admin':            ['Pending', 'Tech-Approved', 'Chair-Approved', 'Practicum-Approved', 'Dean-Approved', 'VPAA-Noted', 'Returned']
+};
+
+async function buildSubmissionList(role) {
+    const allowedStatuses = ROLE_STATUS_FILTER[role] || [];
+    const statusDocs = await Status_Main.find({
+        status: { $in: allowedStatuses }
+    }).sort({ updatedAt: -1 });
+
+    const tlaIDs = statusDocs.map(s => s.tlaID);
+    const tlas   = await TLA_Main.find({ _id: { $in: tlaIDs } });
+
+    const userIDs = [...new Set(tlas.map(t => t.userID?.toString()))];
+    const users   = await User.find({ _id: { $in: userIDs } }, 'firstName lastName email department');
+    const userMap = {};
+    for (const u of users) userMap[u._id.toString()] = u;
+
+    const statusMap = {};
+    for (const s of statusDocs) statusMap[s.tlaID.toString()] = s;
+
+    return tlas.map(t => {
+        const sd      = statusMap[t._id.toString()];
+        const faculty = userMap[t.userID?.toString()];
+        return {
+            _id:         t._id,
+            courseCode:  t.courseCode,
+            section:     t.section,
+            weekNumber:  t.weekNumber,
+            dateofDigitalDay: t.dateofDigitalDay,
+            facultyName: faculty ? `${faculty.firstName} ${faculty.lastName}` : '—',
+            department:  faculty?.department || '—',
+            macroStatus: sd?.status || '—',
+            updatedAt:   sd?.updatedAt || t.updatedAt
+        };
+    });
+}
+
+async function buildArchiveData() {
+    const statusDocs = await Status_Main.find({
+        status: { $in: ['VPAA-Noted', 'Archived'] }
+    }).sort({ updatedAt: -1 });
+
+    const tlaIDs = statusDocs.map(s => s.tlaID);
+    const tlas   = await TLA_Main.find({ _id: { $in: tlaIDs } });
+
+    const userIDs = [...new Set(tlas.map(t => t.userID?.toString()))];
+    const users   = await User.find({ _id: { $in: userIDs } }, 'firstName lastName email department');
+    const userMap = {};
+    for (const u of users) userMap[u._id.toString()] = u;
+
+    const statusMap = {};
+    for (const s of statusDocs) statusMap[s.tlaID.toString()] = s;
+
+    const toArchive = [];
+    const archived  = [];
+    for (const t of tlas) {
+        const sd      = statusMap[t._id.toString()];
+        const faculty = userMap[t.userID?.toString()];
+        const entry   = {
+            _id:         t._id,
+            courseCode:  t.courseCode,
+            section:     t.section,
+            weekNumber:  t.weekNumber,
+            facultyName: faculty ? `${faculty.firstName} ${faculty.lastName}` : '—',
+            department:  faculty?.department || '—',
+            deanApprovedAt:  sd?.dean?.approvalDate || null,
+            vpaaNotedAt:     sd?.vpaa?.approvalDate || null,
+            hrArchivedAt:    sd?.hr?.approvalDate   || null,
+            macroStatus: sd?.status || '—'
+        };
+        if (sd?.status === 'Archived') archived.push(entry);
+        else                           toArchive.push(entry);
+    }
+    return { toArchive, archived };
 }
 
 // ===============================================================================
@@ -160,12 +274,8 @@ export async function getCourses(req, res) {
     try {
         const user = req.session.user;
 
-        if (user?.role === 'HR') {
-            return res.redirect('/tla/hr');
-        }
-
         if (APPROVAL_ROLES.includes(user?.role)) {
-            return res.redirect('/tla/admin-overview');
+            return res.redirect('/admin/tla');
         }
 
         res.render('TLA/tlaCourses', {
@@ -334,7 +444,7 @@ export async function updateTLA(req, res) {
         const isPostSubmit = action === 'submit-post';
         const isSubmit     = action === 'submit';
         const isDraft      = action === 'draft';
-        const isApproved   = ['Approved', 'Dean-Approved', 'Chair-Approved', 'Tech-Approved', 'Returned'].includes(tla.status);
+        const isApproved   = ['Approved', 'Dean-Approved', 'Chair-Approved', 'Tech-Approved', 'Practicum-Approved', 'VPAA-Noted', 'Returned'].includes(tla.status);
 
         let tlaStatus = tla.status;
         if (isDraft && !isApproved)  tlaStatus = 'Draft';
@@ -388,10 +498,12 @@ export async function updateTLA(req, res) {
             const statusReset = {
                 status:     'Pending',
                 // Clear old step data so reviewers start fresh
-                technical:    { status: 'Pending', approvedBy: '', approvalDate: null, remarks: '' },
-                programChair: { status: 'Pending', approvedBy: '', approvalDate: null, remarks: '' },
-                dean:         { status: 'Pending', approvedBy: '', approvalDate: null, remarks: '' },
-                hr:           { status: 'Pending', approvedBy: '', approvalDate: null, remarks: '' }
+                technical:            { status: 'Pending', approvedBy: '', approvalDate: null, remarks: '' },
+                programChair:         { status: 'Pending', approvedBy: '', approvalDate: null, remarks: '' },
+                practicumCoordinator: { status: 'Pending', approvedBy: '', approvalDate: null, remarks: '' },
+                dean:                 { status: 'Pending', approvedBy: '', approvalDate: null, remarks: '' },
+                vpaa:                 { status: 'Pending', approvedBy: '', approvalDate: null, remarks: '' },
+                hr:                   { status: 'Pending', approvedBy: '', approvalDate: null, remarks: '' }
             };
             await Promise.all([
                 Status_Main.findOneAndUpdate({ tlaID: id }, statusReset, { upsert: true }),
@@ -423,12 +535,8 @@ export async function getOverview(req, res) {
         const userID   = req.session.user.id;
         const userRole = req.session.user.role;
 
-        if (userRole === 'HR') {
-            return res.redirect('/tla/hr');
-        }
-
         if (APPROVAL_ROLES.includes(userRole)) {
-            return res.redirect('/tla/admin-overview');
+            return res.redirect('/admin/tla');
         }
 
         const sid   = req.params.syllabusId;
@@ -470,13 +578,14 @@ export async function getOverview(req, res) {
         }
 
         const isApprover = APPROVAL_ROLES.includes(userRole);
-        const viewName   = isApprover ? 'TLA/tlaOverviewApproval' : 'TLA/tlaOverview';
 
-        res.render(viewName, {
+        res.render('TLA/tlaOverview', {
             currentPageCategory: 'tla',
             user: req.session.user,
             weeks,
-            courseInfo
+            courseInfo,
+            isApprover,
+            role: userRole
         });
     } catch (error) {
         console.error('getOverview error:', error);
@@ -485,126 +594,8 @@ export async function getOverview(req, res) {
 }
 
 // ===============================================================================
-//  ADMIN / APPROVER SUBMISSION OVERVIEW
-//  GET /tla/admin-overview  — lists ALL submitted TLAs for reviewer roles
+//  (getAdminOverview and getHRDashboard removed — consolidated into getAdminTLA)
 // ===============================================================================
-
-export async function getAdminOverview(req, res) {
-    try {
-        const role   = req.session.user.role;
-        const userID = req.session.user.id;
-
-        // Determine which macro statuses this role can act on
-        const roleStatusFilter = {
-            'Technical':     ['Pending'],
-            'Program-Chair': ['Tech-Approved'],
-            'Dean':          ['Chair-Approved'],
-            'HR':            ['Dean-Approved'],
-            'Admin':         ['Pending', 'Tech-Approved', 'Chair-Approved', 'Dean-Approved', 'Returned'],
-            'Super-Admin':   ['Pending', 'Tech-Approved', 'Chair-Approved', 'Dean-Approved', 'Returned']
-        };
-        const allowedStatuses = roleStatusFilter[role] || [];
-
-        // Fetch approval status records matching this role's scope
-        const statusDocs = await Status_Main.find({
-            status: { $in: allowedStatuses }
-        }).sort({ updatedAt: -1 });
-
-        const tlaIDs = statusDocs.map(s => s.tlaID);
-        const tlas   = await TLA_Main.find({ _id: { $in: tlaIDs } });
-
-        // Fetch faculty user info for display
-        const userIDs = [...new Set(tlas.map(t => t.userID?.toString()))];
-        const users   = await User.find({ _id: { $in: userIDs } }, 'firstName lastName email');
-        const userMap = {};
-        for (const u of users) userMap[u._id.toString()] = u;
-
-        // Build submission cards
-        const statusMap = {};
-        for (const s of statusDocs) statusMap[s.tlaID.toString()] = s;
-
-        const submissions = tlas.map(t => {
-            const sd      = statusMap[t._id.toString()];
-            const faculty = userMap[t.userID?.toString()];
-            return {
-                _id:         t._id,
-                courseCode:  t.courseCode,
-                section:     t.section,
-                weekNumber:  t.weekNumber,
-                dateofDigitalDay: t.dateofDigitalDay,
-                facultyName: faculty ? `${faculty.firstName} ${faculty.lastName}` : '—',
-                macroStatus: sd?.status || '—',
-                updatedAt:   sd?.updatedAt || t.updatedAt
-            };
-        });
-
-        res.render('TLA/tlaAdminOverview', {
-            currentPageCategory: 'tla',
-            user: req.session.user,
-            submissions,
-            role
-        });
-    } catch (error) {
-        console.error('getAdminOverview error:', error);
-        res.status(500).send('Server error');
-    }
-}
-
-// ===============================================================================
-//  HR DASHBOARD  — all TLAs ready for archiving (Dean-Approved) + already archived
-//  GET /tla/hr
-// ===============================================================================
-
-export async function getHRDashboard(req, res) {
-    try {
-        // Fetch all status docs of interest to HR
-        const statusDocs = await Status_Main.find({
-            status: { $in: ['Dean-Approved', 'Archived'] }
-        }).sort({ updatedAt: -1 });
-
-        const tlaIDs = statusDocs.map(s => s.tlaID);
-        const tlas   = await TLA_Main.find({ _id: { $in: tlaIDs } });
-
-        const userIDs = [...new Set(tlas.map(t => t.userID?.toString()))];
-        const users   = await User.find({ _id: { $in: userIDs } }, 'firstName lastName email department');
-        const userMap = {};
-        for (const u of users) userMap[u._id.toString()] = u;
-
-        const statusMap = {};
-        for (const s of statusDocs) statusMap[s.tlaID.toString()] = s;
-
-        const toArchive = [];
-        const archived  = [];
-
-        for (const t of tlas) {
-            const sd      = statusMap[t._id.toString()];
-            const faculty = userMap[t.userID?.toString()];
-            const entry   = {
-                _id:         t._id,
-                courseCode:  t.courseCode,
-                section:     t.section,
-                weekNumber:  t.weekNumber,
-                facultyName: faculty ? `${faculty.firstName} ${faculty.lastName}` : '—',
-                department:  faculty?.department || '—',
-                deanApprovedAt:  sd?.dean?.approvalDate || null,
-                hrArchivedAt:    sd?.hr?.approvalDate   || null,
-                macroStatus: sd?.status || '—'
-            };
-            if (sd?.status === 'Archived') archived.push(entry);
-            else                           toArchive.push(entry);
-        }
-
-        res.render('TLA/tlaHRDashboard', {
-            currentPageCategory: 'tla',
-            user: req.session.user,
-            toArchive,
-            archived
-        });
-    } catch (error) {
-        console.error('getHRDashboard error:', error);
-        res.status(500).send('Server error');
-    }
-}
 
 // ===============================================================================
 //  APPROVAL PAGE  (GET)
@@ -746,15 +737,19 @@ export async function postApprovalAction(req, res) {
             } else {
                 // Approved — advance the chain
                 const advanceMap = {
-                    technical:    'Tech-Approved',
-                    programChair: 'Chair-Approved',
-                    dean:         'Dean-Approved',
-                    hr:           'Archived'
+                    technical:            'Tech-Approved',
+                    programChair:         'Chair-Approved',
+                    practicumCoordinator: 'Practicum-Approved',
+                    dean:                 'Dean-Approved',
+                    vpaa:                 'VPAA-Noted',
+                    hr:                   'Archived'
                 };
                 nextMacro = advanceMap[step] || macroNow;
 
                 if (step === 'hr') {
                     nextTlaStatus = 'Archived';
+                } else if (step === 'vpaa') {
+                    nextTlaStatus = 'VPAA-Noted';
                 } else if (step === 'dean') {
                     nextTlaStatus = 'Dean-Approved';
                 } else {
@@ -837,7 +832,7 @@ export async function postHRArchive(req, res) {
             TLA_B2.findByIdAndUpdate(tlaID,   { status: 'Archived' })
         ]);
 
-        res.redirect('/tla/hr');
+        res.redirect('/admin/tla');
     } catch (error) {
         console.error('postHRArchive error:', error);
         res.status(500).send('Server error');
@@ -917,5 +912,33 @@ export async function generateDocx(req, res) {
     } catch (err) {
         console.error('generateDocx error:', err);
         res.status(500).send('Failed to generate PDF');
+    }
+}
+
+// ===============================================================================
+//  ADMIN CONSOLIDATED TLA PAGE
+//  GET /admin/tla — review queue + HR archive in one page, with admin sidebar
+// ===============================================================================
+
+export async function getAdminTLA(req, res) {
+    try {
+        const role = req.session.user.role;
+
+        const [submissions, archiveData] = await Promise.all([
+            buildSubmissionList(role),
+            buildArchiveData()
+        ]);
+
+        res.render('TLA/tlaAdminConsolidated', {
+            currentPageCategory: 'tla',
+            user: req.session.user,
+            submissions,
+            toArchive: archiveData.toArchive,
+            archived:  archiveData.archived,
+            role
+        });
+    } catch (error) {
+        console.error('getAdminTLA error:', error);
+        res.status(500).send('Server error');
     }
 }

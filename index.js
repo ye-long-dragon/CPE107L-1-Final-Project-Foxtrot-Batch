@@ -70,8 +70,6 @@ import coursesRoutes from "./routes/TLA/tlaCoursesRoutes.js";
 import overviewRoutes from "./routes/TLA/tlaOverviewRoutes.js";
 import formRoutes from "./routes/TLA/tlaFormRoutes.js";
 import approvalRoutes from "./routes/TLA/tlaApprovalRoutes.js";
-import hrRoutes from "./routes/TLA/tlaHRRoutes.js";
-import adminOverviewRoutes from "./routes/TLA/tlaAdminOverviewRoutes.js";
 
 // TLA APIs
 import tlaApiRoutes          from "./routes/APIs/TLA/tlaRoutes.js";
@@ -136,9 +134,11 @@ app.use("/tla/courses", coursesRoutes);
 app.use("/tla/overview", overviewRoutes);
 app.use("/tla/form", formRoutes);
 app.use("/tla/approval", approvalRoutes);
-app.use("/tla/hr", hrRoutes);
-app.use("/tla/admin-overview", adminOverviewRoutes);
 app.get("/tla", (req, res) => res.redirect("/tla/courses"));
+
+// Redirects for removed TLA routes
+app.get("/tla/admin-overview", (req, res) => res.redirect("/admin/tla"));
+app.get("/tla/hr", (req, res) => res.redirect("/admin/tla"));
 
 // TLA APIs
 app.use("/api/tla/approval",      tlaApprovalApiRoutes);

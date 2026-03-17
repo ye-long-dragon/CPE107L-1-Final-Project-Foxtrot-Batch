@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TLA | Approval Review</title>
+    <link rel="icon" type="image/x-icon" href="/common/img/chalkboardLogo.ico">
 
     <!-- School palette variables -->
     <link rel="stylesheet" href="/common/css/variables.css">
@@ -46,7 +47,7 @@
             <section class="document-panel">
 
                 <!-- Back button -->
-                <a href="<%= locals.user && user.role === 'HR' ? '/tla/hr' : (locals.user && ['Technical','Program-Chair','Dean','Admin','Super-Admin'].includes(user.role) ? '/tla/admin-overview' : '/tla/overview') %>" class="back-btn">
+                <a href="<%= locals.user && ['HR','HRMO','Technical','Program-Chair','Practicum-Coordinator','Dean','VPAA','Admin','Super-Admin'].includes(user.role) ? '/admin/tla' : '/tla/overview' %>" class="back-btn">
                     <span class="material-symbols-outlined">arrow_back</span> BACK
                 </a>
 
@@ -171,7 +172,9 @@
                             locals.macroStatus === 'Pending' ? 'chip-pending' :
                             locals.macroStatus === 'Tech-Approved' ? 'chip-tech-approved' :
                             locals.macroStatus === 'Chair-Approved' ? 'chip-chair-approved' :
+                            locals.macroStatus === 'Practicum-Approved' ? 'chip-practicum-approved' :
                             locals.macroStatus === 'Dean-Approved' ? 'chip-dean-approved' :
+                            locals.macroStatus === 'VPAA-Noted' ? 'chip-vpaa-noted' :
                             locals.macroStatus === 'Archived' ? 'chip-archived' :
                             locals.macroStatus === 'Returned' ? 'chip-returned' : ''
                         %>"><%= locals.macroStatus %></span>
@@ -181,10 +184,8 @@
                 <div class="approval-tracker">
                     <%
                         // Build tracker steps with per-step data from the controller
-                        // approvalSteps: { faculty, technical, programChair, dean, hr }
-                        // stepData is the current user's step doc (pre-filled remarks)
+                        // approvalSteps: { faculty, technical, programChair, practicumCoordinator, dean, vpaa, hr }
 
-                        // Helper to format date
                         function fmtDate(d) {
                             if (!d) return '';
                             try { return new Date(d).toLocaleDateString('en-PH', { month:'short', day:'numeric', year:'numeric' }); }
@@ -202,12 +203,18 @@
                                 role:   'Technical',
                                 label:  'Assessed',
                                 status: locals.approvalSteps ? approvalSteps.technical : 'pending',
-                                detail: locals.approvalStatusId && tla ? '' : ''
+                                detail: ''
                             },
                             {
                                 role:   'Program Chair',
-                                label:  'Reviewed',
+                                label:  'Endorsed',
                                 status: locals.approvalSteps ? approvalSteps.programChair : 'pending',
+                                detail: ''
+                            },
+                            {
+                                role:   'Practicum Coord.',
+                                label:  'Validated',
+                                status: locals.approvalSteps ? approvalSteps.practicumCoordinator : 'pending',
                                 detail: ''
                             },
                             {
@@ -217,7 +224,13 @@
                                 detail: ''
                             },
                             {
-                                role:   'HR',
+                                role:   'VPAA',
+                                label:  'Noted',
+                                status: locals.approvalSteps ? approvalSteps.vpaa : 'pending',
+                                detail: ''
+                            },
+                            {
+                                role:   'HR / HRMO',
                                 label:  'Archived',
                                 status: locals.approvalSteps ? approvalSteps.hr : 'pending',
                                 detail: ''
@@ -262,10 +275,12 @@
                 <% if (locals.activeStep) { %>
                     <%
                         const stepLabels = {
-                            technical:    'Technical Assessment',
-                            programChair: 'Program Chair Approval',
-                            dean:         "Dean's Approval",
-                            hr:           'HR Archival'
+                            technical:            'Technical Assessment',
+                            programChair:         'Program Chair Endorsement',
+                            practicumCoordinator: 'Practicum Coordinator Validation',
+                            dean:                 "Dean's Approval",
+                            vpaa:                 'VPAA Notation',
+                            hr:                   'HR/HRMO Archival'
                         };
                     %>
                     <div class="sidebar-section role-action-panel">
@@ -332,7 +347,7 @@
                             </button>
                             <% } else { %>
                             <!-- HR: Archive button posts to dedicated route -->
-                            <form method="POST" action="/tla/hr/archive/<%= locals.tla ? tla._id : '' %>"
+                            <form method="POST" action="/admin/tla/archive/<%= locals.tla ? tla._id : '' %>"
                                   onsubmit="return confirm('Archive this TLA permanently? This action cannot be undone.');
                                   " class="hr-archive-form">
                                 <input type="hidden" name="comment" id="hr-comment-hidden" value="">
