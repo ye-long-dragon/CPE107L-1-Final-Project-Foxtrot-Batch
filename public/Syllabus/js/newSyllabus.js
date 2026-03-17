@@ -1,3 +1,17 @@
+function autoSaveNewSyllabus() {
+    const draftData = {
+        peos: Array.from(document.querySelectorAll('#peo-container .peo-row')).map(row => ({
+            text: row.querySelector('.peo-editable-text')?.innerText || "",
+            checks: Array.from(row.querySelectorAll('input[type="checkbox"]')).map(cb => cb.checked)
+        })),
+        sos: Array.from(document.querySelectorAll('#so-container .peo-row')).map(row => ({
+            text: row.querySelector('.peo-editable-text')?.innerText || "",
+            checks: Array.from(row.querySelectorAll('input[type="checkbox"]')).map(cb => cb.checked)
+        }))
+    };
+    sessionStorage.setItem('syllabus_draft_new', JSON.stringify(draftData));
+}
+
 function format(command) {
     document.execCommand(command, false, null);
 }
@@ -91,6 +105,111 @@ function initPersistentPlaceholder(el) {
     el.addEventListener('input', update);
     update();
 }
+
+function handleBackAction() {
+    // 1. Check if the user wants to save
+    const confirmSave = confirm("Would you like to save your progress as a draft before leaving?");
+
+    if (confirmSave) {
+        saveToSession();
+        alert("Progress saved to session!");
+    }
+    
+    // 2. Proceed with going back
+    window.history.back();
+}
+
+function saveToSession() {
+    const draftData = {
+        // Collect PEO data from the container [cite: 113]
+        peos: Array.from(document.querySelectorAll('#peo-container .peo-row')).map(row => ({
+            text: row.querySelector('.peo-editable-text').innerText,
+            checks: Array.from(row.querySelectorAll('input[type="checkbox"]')).map(cb => cb.checked)
+        })),
+        // Collect SO data from the container [cite: 126]
+        sos: Array.from(document.querySelectorAll('#so-container .peo-row')).map(row => ({
+            text: row.querySelector('.peo-editable-text').innerText,
+            checks: Array.from(row.querySelectorAll('input[type="checkbox"]')).map(cb => cb.checked)
+        }))
+    };
+
+    // Save as a JSON string in session storage
+    sessionStorage.setItem('syllabus_draft_new', JSON.stringify(draftData));
+}
+
+function loadFromSession() {
+    const savedData = sessionStorage.getItem('syllabus_draft_new');
+    if (!savedData) return;
+
+    const data = JSON.parse(savedData);
+
+    // FIX: Instead of .innerHTML = '', only remove existing .peo-row elements
+    document.querySelectorAll('#peo-container .peo-row').forEach(row => row.remove());
+    document.querySelectorAll('#so-container .peo-row').forEach(row => row.remove());
+
+    // Reconstruct PEOs
+    data.peos.forEach(item => {
+        addPeoRow(); 
+        const lastRow = document.querySelector('#peo-container .peo-row:last-child');
+        if (lastRow) {
+            lastRow.querySelector('.peo-editable-text').innerText = item.text;
+            const checkboxes = lastRow.querySelectorAll('input[type="checkbox"]');
+            item.checks.forEach((checked, i) => { if(checkboxes[i]) checkboxes[i].checked = checked; });
+        }
+    });
+
+    // Reconstruct SOs
+    data.sos.forEach(item => {
+        addSoRow();
+        const lastRow = document.querySelector('#so-container .peo-row:last-child');
+        if (lastRow) {
+            lastRow.querySelector('.peo-editable-text').innerText = item.text;
+            const checkboxes = lastRow.querySelectorAll('input[type="checkbox"]');
+            item.checks.forEach((checked, i) => { if(checkboxes[i]) checkboxes[i].checked = checked; });
+        }
+    });
+}
+
+// 1. ADD THIS: Auto-trigger save whenever something changes
+document.addEventListener('input', (e) => {
+    if (e.target.getAttribute('contenteditable') === 'true' || e.target.type === 'checkbox') {
+        autoSaveNewSyllabus();
+    }
+});
+
+// 2. FIX: Consolidate your load logic so it only runs once and clears defaults first
+window.addEventListener('load', () => {
+    const savedData = sessionStorage.getItem('syllabus_draft_new');
+    if (!savedData) return;
+
+    const data = JSON.parse(savedData);
+
+    // Clear the default rows that are in the EJS [cite: 118, 131]
+    document.querySelectorAll('#peo-container .peo-row').forEach(row => row.remove());
+    document.querySelectorAll('#so-container .peo-row').forEach(row => row.remove());
+
+    // Restore PEOs [cite: 113]
+    data.peos.forEach(item => {
+        addPeoRow(); 
+        const lastRow = document.querySelector('#peo-container .peo-row:last-child');
+        if (lastRow) {
+            lastRow.querySelector('.peo-editable-text').innerText = item.text;
+            const checks = lastRow.querySelectorAll('input[type="checkbox"]');
+            item.checks.forEach((c, i) => { if(checks[i]) checks[i].checked = c; });
+        }
+    });
+
+    // Restore SOs [cite: 126]
+    data.sos.forEach(item => {
+        addSoRow();
+        const lastRow = document.querySelector('#so-container .peo-row:last-child');
+        if (lastRow) {
+            lastRow.querySelector('.peo-editable-text').innerText = item.text;
+            const checks = lastRow.querySelectorAll('input[type="checkbox"]');
+            item.checks.forEach((c, i) => { if(checks[i]) checks[i].checked = c; });
+        }
+    });
+});
 
 document.querySelectorAll('[contenteditable][data-placeholder]').forEach(initPersistentPlaceholder);
 

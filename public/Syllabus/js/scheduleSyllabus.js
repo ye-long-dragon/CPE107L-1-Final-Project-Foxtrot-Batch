@@ -444,6 +444,51 @@ function applyActiveColor() {
     renderSelection();
 }
 
+function autoSaveSchedule() {
+    const data = {
+        schedule: Array.from(document.querySelectorAll('#schedule-editor-body tr')).map(row => 
+            Array.from(row.querySelectorAll('.editable-cell')).map(cell => cell.innerHTML)),
+        evaluation: Array.from(document.querySelectorAll('#evaluation-editor-body tr')).map(row => 
+            Array.from(row.querySelectorAll('.editable-cell')).map(cell => cell.innerHTML)),
+        assessment: Array.from(document.querySelectorAll('#assessment-editor-body tr')).map(row => 
+            Array.from(row.querySelectorAll('.editable-cell')).map(cell => cell.innerHTML))
+    };
+    sessionStorage.setItem('syllabus_draft_schedule', JSON.stringify(data));
+}
+
+function loadSchedule() {
+    const saved = sessionStorage.getItem('syllabus_draft_schedule');
+    if (!saved) return;
+    const data = JSON.parse(saved);
+
+    const tables = [
+        { id: 'schedule-editor-body', rows: data.schedule, func: addScheduleRow },
+        { id: 'evaluation-editor-body', rows: data.evaluation, func: addEvaluationRow },
+        { id: 'assessment-editor-body', rows: data.assessment, func: addAssessmentRow }
+    ];
+
+    tables.forEach(t => {
+        const body = document.getElementById(t.id);
+        if (body && t.rows) {
+            body.innerHTML = ''; // Wipe defaults
+            t.rows.forEach(rowContent => {
+                t.func();
+                const lastRow = body.lastElementChild;
+                const cells = lastRow.querySelectorAll('.editable-cell');
+                rowContent.forEach((html, i) => { if(cells[i]) cells[i].innerHTML = html; });
+            });
+        }
+    });
+}
+
+// Wire it up
+window.addEventListener('load', () => {
+    loadSchedule();
+    document.addEventListener('input', (e) => {
+        if (e.target.closest('[contenteditable="true"]')) autoSaveSchedule();
+    });
+});
+
 // Initial rows
 window.addEventListener('load', () => {
     initColorPalette();

@@ -1,3 +1,151 @@
+function autoSaveInfo() {
+    // Helper to get text by row and item index for the grid
+    const getGridText = (rowIdx, itemIdx) => {
+        return document.querySelectorAll('.info-row')[rowIdx]
+            ?.querySelectorAll('.course-editable-text')[itemIdx]?.innerText.trim() || "";
+    };
+
+    const infoData = {
+        // Basic Info Grid
+        courseCode: document.querySelector('.info-item.small .course-editable-text')?.innerText.trim() || "",
+        courseTitle: document.querySelector('.info-item.large .course-editable-text')?.innerText.trim() || "",
+        preRequisite: getGridText(1, 0),
+        coRequisite: getGridText(1, 1),
+        creditUnits: getGridText(1, 2),
+        classSchedule: getGridText(2, 0),
+        courseDesign: getGridText(2, 1),
+
+        // Text Areas
+        courseDescription: document.querySelector('.multiline[data-placeholder*="course description"]')?.innerText.trim() || "",
+        textbook: document.querySelector('.multiline[data-placeholder*="textbook"]')?.innerText.trim() || "",
+        references: document.querySelector('.multiline[data-placeholder*="references"]')?.innerText.trim() || "",
+
+        // Course Outcomes Statement Grid (The CO1, CO2 list)
+        outcomesGrid: Array.from(document.querySelectorAll('#outcomes-container .outcomes-row')).map(row => ({
+            statement: row.querySelector('.outcomes-statement .outcomes-editable-text')?.innerText.trim() || "",
+            skills: row.querySelector('.outcomes-skills-side .outcomes-editable-text')?.innerText.trim() || ""
+        })),
+
+        // Mapping Table (I, E, D dropdowns)
+        mappingValues: Array.from(document.querySelectorAll('#mapping-body tr')).map(row => {
+            return Array.from(row.querySelectorAll('.custom-dropdown-trigger')).map(trigger => {
+                return trigger.dataset.value || ""; // Captures the internal 'I', 'E', or 'D' value
+            });
+        }),
+
+        // Editor Table (The one with the toolbar)
+        editorRows: Array.from(document.querySelectorAll('#outcomes-editor-body tr')).map(row => {
+            return Array.from(row.querySelectorAll('.editable-cell')).map(cell => cell.innerHTML);
+        })
+    };
+
+    sessionStorage.setItem('syllabus_draft_info', JSON.stringify(infoData));
+}
+
+
+
+function handleInfoBack() {
+    // Force a save right now
+    autoSaveInfo();
+    
+    // Briefly delay to ensure storage is written, then go back
+    setTimeout(() => {
+        window.history.back();
+    }, 100);
+}
+
+function loadInfoFromSession() {
+    const savedData = sessionStorage.getItem('syllabus_draft_info');
+    if (!savedData) return;
+    const data = JSON.parse(savedData);
+
+    const setGridText = (rowIdx, itemIdx, val) => {
+        const el = document.querySelectorAll('.info-row')[rowIdx]?.querySelectorAll('.course-editable-text')[itemIdx];
+        if (el && val) el.innerText = val;
+    };
+
+    // 1. Restore Grid & Multilines
+    document.querySelector('.info-item.small .course-editable-text').innerText = data.courseCode || "";
+    document.querySelector('.info-item.large .course-editable-text').innerText = data.courseTitle || "";
+    setGridText(1, 0, data.preRequisite);
+    setGridText(1, 1, data.coRequisite);
+    setGridText(1, 2, data.creditUnits);
+    setGridText(2, 0, data.classSchedule);
+    setGridText(2, 1, data.courseDesign);
+    
+    const desc = document.querySelector('.multiline[data-placeholder*="course description"]');
+    if (desc) desc.innerText = data.courseDescription || "";
+    const txt = document.querySelector('.multiline[data-placeholder*="textbook"]');
+    if (txt) txt.innerText = data.textbook || "";
+    const ref = document.querySelector('.multiline[data-placeholder*="references"]');
+    if (ref) ref.innerText = data.references || "";
+
+    // 2. Restore Outcomes Editor & Mapping Table (Order is critical!)
+    const editorBody = document.getElementById('outcomes-editor-body');
+    if (editorBody && data.editorRows) {
+        editorBody.innerHTML = ''; // Clear default rows [cite: 94]
+        data.editorRows.forEach(rowCells => {
+            addEditorRow(); // This also triggers syncMappingRows()
+            const lastRow = editorBody.lastElementChild;
+            const targetCells = lastRow.querySelectorAll('.editable-cell');
+            rowCells.forEach((html, i) => { if(targetCells[i]) targetCells[i].innerHTML = html; });
+        });
+    }
+
+    // 3. Restore Mapping Dropdowns
+    const mappingRows = document.querySelectorAll('#mapping-body tr');
+    if (data.mappingValues) {
+        data.mappingValues.forEach((rowValues, rowIndex) => {
+            if (mappingRows[rowIndex]) {
+                const triggers = mappingRows[rowIndex].querySelectorAll('.custom-dropdown-trigger');
+                rowValues.forEach((val, colIndex) => {
+                    if (triggers[colIndex] && val && val !== 'none') {
+                        triggers[colIndex].dataset.value = val;
+                        triggers[colIndex].textContent = val;
+                    }
+                });
+            }
+        });
+    }
+
+    // 4. Restore Outcomes Grid
+    const outcomesContainer = document.getElementById('outcomes-container');
+    if (outcomesContainer && data.outcomesGrid) {
+        document.querySelectorAll('#outcomes-container .outcomes-row').forEach(r => r.remove());
+        data.outcomesGrid.forEach(item => {
+            addCoRow();
+            const lastRow = outcomesContainer.lastElementChild;
+            if (lastRow) {
+                lastRow.querySelector('.outcomes-statement .outcomes-editable-text').innerText = item.statement;
+                lastRow.querySelector('.outcomes-skills-side .outcomes-editable-text').innerText = item.skills;
+            }
+        });
+    }
+
+    // 5. Cleanup Placeholders
+    refreshPlaceholders();
+}
+
+// Force placeholders to update based on current text content
+    document.querySelectorAll('[contenteditable][data-placeholder]').forEach(el => {
+        if (el.innerText.trim() !== '') {
+            el.classList.remove('show-placeholder');
+        } else {
+            el.classList.add('show-placeholder');
+        }
+    });
+
+function refreshPlaceholders() {
+    document.querySelectorAll('[contenteditable][data-placeholder]').forEach(el => {
+        if (el.innerText.trim() !== '') {
+            el.classList.remove('show-placeholder');
+        } else {
+            el.classList.add('show-placeholder');
+        }
+    });
+}
+
+
 /* ── Renumber all CO rows after add/delete ── */
 function renumberCoRows() {
   const container = document.getElementById('outcomes-container');
@@ -132,10 +280,13 @@ function createCustomDropdown() {
       closeDropdown(wrapper);
     }
   });
-
+  
+  
   wrapper.appendChild(trigger);
   wrapper.appendChild(panel);
   return wrapper;
+  
+  
 }
 
 function openDropdown(wrapper) {
@@ -630,8 +781,32 @@ function toggleWrap() {
   });
 }
 
-// Initialize on load
-document.addEventListener('DOMContentLoaded', () => {
-  initColorPalette();
-  updateActiveColorBar();
+
+
+window.onload = () => {
+    // 1. Initialize core table structures
+    // (Don't call addEditorRow() here manually if loadInfoFromSession does it)
+    
+    // 2. Load the saved data
+    loadInfoFromSession();
+
+    // 3. Re-init the placeholder observers for any new rows
+    document.querySelectorAll('[contenteditable][data-placeholder]').forEach(el => {
+        if (!el.dataset.placeholderInit) {
+            el.dataset.placeholderInit = '1';
+            initPersistentPlaceholder(el); //
+        }
+    });
+};
+
+window.addEventListener('load', () => {
+    // Load first
+    loadInfoFromSession();
+
+    // Then start watching for changes anywhere on the document
+    document.addEventListener('input', (e) => {
+        if (e.target.closest('[contenteditable="true"]')) {
+            autoSaveInfo();
+        }
+    });
 });

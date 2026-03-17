@@ -322,12 +322,12 @@
                 </div>
             </div>
             <div class="button-footer-outer">
-                <button class="next-btn-rect" onclick="window.history.back()" type="button">
+                <button type="button" class="next-btn-rect" onclick="handleInfoBack()">
                     <span class="material-symbols-outlined">arrow_back</span>
                     <span>BACK</span>
                 </button>
 
-                <button class="next-btn-rect" onclick="window.location.href='/syllabus/schedule'" type="button">
+                <button class="next-btn-rect" onclick="autoSaveInfo(); window.location.href='/syllabus/schedule'" type="button">
                     <span>NEXT</span>
                     <span class="material-symbols-outlined">arrow_forward</span>
                 </button>
