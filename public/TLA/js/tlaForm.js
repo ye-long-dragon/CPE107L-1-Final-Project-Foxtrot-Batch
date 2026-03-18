@@ -18,45 +18,105 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    document.querySelectorAll('.attach-btn:not([disabled])').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*';
-            input.onchange = function (e) {
-                const file = e.target.files[0];
-                if (file) {
-                    btn.textContent = '\uD83D\uDCCE ' + file.name;
-                    // Convert to base64 and save to user profile
-                    const reader = new FileReader();
-                    reader.onload = function (event) {
-                        const signatureBase64 = event.target.result;
-                        // POST signature to user profile
-                        fetch('/user/update-signature', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ signatureImage: signatureBase64 })
-                        })
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.success) {
-                                console.log('Signature saved to profile:', file.name);
-                            } else {
-                                console.error('Failed to save signature:', data.message);
-                                alert('Error saving signature: ' + data.message);
-                            }
-                        })
-                        .catch(err => {
-                            console.error('Upload error:', err);
-                            alert('Error uploading signature: ' + err.message);
-                        });
-                    };
-                    reader.readAsDataURL(file);
-                }
-            };
-            input.click();
+    // ─── Signature upload handling (PNG only) ────────────────
+    function setupSignatureBlock(prefix) {
+        const input   = document.getElementById(prefix + '-sig-input');
+        const area    = document.getElementById(prefix + '-sig-area');
+        const errEl   = document.getElementById(prefix + '-sig-error');
+        const removeBtn = document.getElementById(prefix + '-sig-remove');
+
+        if (!input || !area) return;
+
+        // Clicking the area also opens the file picker
+        area.addEventListener('click', function () {
+            if (!input.disabled) input.click();
         });
-    });
+
+        input.addEventListener('change', function () {
+            const file = input.files[0];
+            if (!file) return;
+
+            // Validate PNG only
+            if (file.type !== 'image/png') {
+                if (errEl) {
+                    errEl.textContent = 'Only PNG files are accepted. Please select a .png image.';
+                    errEl.style.display = 'block';
+                }
+                input.value = '';
+                return;
+            }
+
+            // Validate size (2 MB max)
+            if (file.size > 2 * 1024 * 1024) {
+                if (errEl) {
+                    errEl.textContent = 'File too large. Maximum 2 MB.';
+                    errEl.style.display = 'block';
+                }
+                input.value = '';
+                return;
+            }
+
+            if (errEl) errEl.style.display = 'none';
+
+            const reader = new FileReader();
+            reader.onload = function (ev) {
+                const dataUrl = ev.target.result;
+
+                // Show preview
+                area.innerHTML = '';
+                const img = document.createElement('img');
+                img.src = dataUrl;
+                img.alt = 'Signature';
+                img.className = 'sig-preview-img';
+                img.id = prefix + '-sig-preview';
+                area.appendChild(img);
+                area.appendChild(input); // re-attach hidden input
+
+                if (removeBtn) removeBtn.style.display = 'inline-flex';
+
+                // Upload to server
+                const tlaId = document.querySelector('[name="_tlaId"]');
+                if (tlaId && tlaId.value) {
+                    fetch('/tla/form/' + tlaId.value + '/signature', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ signatureImage: dataUrl })
+                    })
+                    .then(function (res) { return res.json(); })
+                    .then(function (data) {
+                        if (!data.success && errEl) {
+                            errEl.textContent = data.error || 'Upload failed';
+                            errEl.style.display = 'block';
+                        }
+                    })
+                    .catch(function (err) {
+                        console.error('Signature upload error:', err);
+                    });
+                }
+
+                // Also save to user profile
+                fetch('/user/update-signature', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ signatureImage: dataUrl })
+                }).catch(function () {});
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Remove button
+        if (removeBtn) {
+            removeBtn.addEventListener('click', function () {
+                area.innerHTML = '<span class="sig-placeholder" id="' + prefix + '-sig-placeholder">Click to upload PNG signature</span>';
+                area.appendChild(input);
+                input.value = '';
+                removeBtn.style.display = 'none';
+            });
+        }
+    }
+
+    setupSignatureBlock('pre');
+    setupSignatureBlock('post');
 
 });
 

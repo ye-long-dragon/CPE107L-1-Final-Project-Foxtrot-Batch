@@ -117,8 +117,11 @@
                 </div>
                 
                 <%
-                    // Post-digital is editable when the form itself is editable (Draft/Returned/new)
-                    const postDisabled = isLocked;
+                    // Post-digital unlocks ONLY after Program-Chair approves
+                    // (status reaches Chair-Approved or beyond in the chain)
+                    const postApprovedStatuses = ['Chair-Approved', 'Dean-Approved', 'HR-Approved', 'Approved'];
+                    const postUnlocked = status && postApprovedStatuses.includes(status.status);
+                    const postDisabled = !postUnlocked;
                 %>
 
                 <div class="form-sections-row">
@@ -148,15 +151,41 @@
                                    value="<%= preDigital && preDigital.assessment ? preDigital.assessment : '' %>"
                                    <%= isLocked ? 'disabled' : '' %>>
                         </div>
-                        <button type="button" class="attach-btn">ATTACH SIGNATURE</button>
+                        <div class="signature-block" id="pre-signature-block">
+                            <label>SIGNATURE <span class="sig-format-hint">(PNG only)</span></label>
+                            <div class="signature-upload-area" id="pre-sig-area">
+                                <% const existingSig = (tla && tla.professorSignature) ? tla.professorSignature : (user && user.signatureImage ? user.signatureImage : ''); %>
+                                <% if (existingSig) { %>
+                                    <img src="<%= existingSig %>" alt="Signature" class="sig-preview-img" id="pre-sig-preview">
+                                <% } else { %>
+                                    <span class="sig-placeholder" id="pre-sig-placeholder">Click to upload PNG signature</span>
+                                <% } %>
+                                <input type="file" accept="image/png" class="sig-file-input" id="pre-sig-input" <%= isLocked ? 'disabled' : '' %>>
+                            </div>
+                            <% if (!isLocked) { %>
+                            <div class="sig-actions">
+                                <button type="button" class="sig-upload-btn" id="pre-sig-btn" onclick="document.getElementById('pre-sig-input').click()">
+                                    <span class="material-symbols-outlined">upload</span> Upload PNG
+                                </button>
+                                <button type="button" class="sig-remove-btn" id="pre-sig-remove" style="display: <%= existingSig ? 'inline-flex' : 'none' %>">
+                                    <span class="material-symbols-outlined">delete</span> Remove
+                                </button>
+                            </div>
+                            <% } %>
+                            <div class="sig-error" id="pre-sig-error" style="display:none"></div>
+                        </div>
                     </div>
                     
                     <div class="form-section half-section post-digital-section <%= postDisabled ? 'post-locked' : '' %>">
                         <h3>POST-DIGITAL SESSION</h3>
 
-                        <% if (postDisabled && !isLocked) { %>
+                        <% if (postDisabled) { %>
                         <div class="post-lock-notice">
-                            &#128274; Available after pre-digital session is approved.
+                            <% if (status && status.status === 'Pending') { %>
+                                &#9203; Waiting for Program-Chair approval before Post-Digital Session can be filled.
+                            <% } else { %>
+                                &#128274; Post-Digital Session becomes available after Program-Chair approves the Pre-Digital Session.
+                            <% } %>
                         </div>
                         <% } %>
 
@@ -184,7 +213,24 @@
                                    value="<%= postDigital && postDigital.remarks ? postDigital.remarks : '' %>"
                                    <%= postDisabled ? 'disabled' : '' %>>
                         </div>
-                        <button type="button" class="attach-btn" <%= postDisabled ? 'disabled' : '' %>>ATTACH SIGNATURE</button>
+                        <div class="signature-block" id="post-signature-block">
+                            <label>SIGNATURE <span class="sig-format-hint">(PNG only)</span></label>
+                            <div class="signature-upload-area" id="post-sig-area">
+                                <span class="sig-placeholder" id="post-sig-placeholder">Click to upload PNG signature</span>
+                                <input type="file" accept="image/png" class="sig-file-input" id="post-sig-input" <%= postDisabled ? 'disabled' : '' %>>
+                            </div>
+                            <% if (!postDisabled) { %>
+                            <div class="sig-actions">
+                                <button type="button" class="sig-upload-btn" id="post-sig-btn" onclick="document.getElementById('post-sig-input').click()">
+                                    <span class="material-symbols-outlined">upload</span> Upload PNG
+                                </button>
+                                <button type="button" class="sig-remove-btn" id="post-sig-remove" style="display:none">
+                                    <span class="material-symbols-outlined">delete</span> Remove
+                                </button>
+                            </div>
+                            <% } %>
+                            <div class="sig-error" id="post-sig-error" style="display:none"></div>
+                        </div>
                     </div>
                 </div>
                 
@@ -196,6 +242,12 @@
                         <button type="button" class="btn-save" onclick="window.location.href='<%= backToOverviewLink %>'">BACK TO DASHBOARD</button>
                         <button type="button" class="btn-pdf" onclick="viewTLAForm()">VIEW PDF</button>
                         <button type="button" class="btn-pdf" onclick="printTLAForm()">DOWNLOAD AS PDF</button>
+
+                    <% } else if (postUnlocked && tla && tla.userID && tla.userID.toString() === user.id) { %>
+                        <!-- Post-digital unlocked (Chair-Approved+): professor can fill post-digital -->
+                        <button type="button" class="btn-save" onclick="window.location.href='<%= backToOverviewLink %>'">BACK TO DASHBOARD</button>
+                        <button type="button" class="btn-pdf" onclick="printTLAForm()">DOWNLOAD AS PDF</button>
+                        <button type="submit" name="action" value="submit-post" class="btn-submit">SUBMIT POST-DIGITAL</button>
 
                     <% } else if (['Pending','Chair-Approved','Dean-Approved','HR-Approved'].includes(currentStatus)) { %>
                         <!-- In approval chain: waiting for review, no edits -->

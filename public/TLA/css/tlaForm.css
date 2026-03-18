@@ -225,6 +225,122 @@ body {
     pointer-events: none;
 }
 
+/* ─── Signature Upload Block ─────────────────────────────── */
+.signature-block {
+    margin-top: 16px;
+}
+
+.signature-block > label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-on-light, #333);
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
+}
+
+.sig-format-hint {
+    font-weight: 400;
+    color: #888;
+    text-transform: none;
+    font-size: 10px;
+}
+
+.signature-upload-area {
+    min-height: 80px;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background: #fafafa;
+    transition: border-color 0.2s, background 0.2s;
+    overflow: hidden;
+    position: relative;
+}
+
+.signature-upload-area:hover {
+    border-color: var(--accent-secondary, #002455);
+    background: rgba(0, 36, 85, 0.03);
+}
+
+.sig-placeholder {
+    font-size: 12px;
+    color: #999;
+    font-weight: 500;
+}
+
+.sig-preview-img {
+    max-width: 100%;
+    max-height: 80px;
+    object-fit: contain;
+    padding: 4px;
+}
+
+.sig-file-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+.sig-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+.sig-upload-btn,
+.sig-remove-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    background: #fff;
+    color: #333;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.sig-upload-btn:hover {
+    border-color: var(--accent-secondary, #002455);
+    color: var(--accent-secondary, #002455);
+}
+
+.sig-remove-btn {
+    color: var(--accent-primary, #a01a1e);
+    border-color: var(--accent-primary, #a01a1e);
+}
+
+.sig-remove-btn:hover {
+    background: var(--accent-primary, #a01a1e);
+    color: #fff;
+}
+
+.sig-upload-btn .material-symbols-outlined,
+.sig-remove-btn .material-symbols-outlined {
+    font-size: 16px;
+}
+
+.sig-error {
+    color: #b91c1c;
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: 6px;
+    padding: 4px 8px;
+    background: #fef2f2;
+    border-radius: 4px;
+    border: 1px solid #fecaca;
+}
+
 @media (max-width: 768px) {
     .main-content {
         margin-left: 0;

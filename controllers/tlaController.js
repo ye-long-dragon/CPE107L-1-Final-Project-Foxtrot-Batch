@@ -1011,6 +1011,47 @@ export async function postHRArchive(req, res) {
 }
 
 // ===============================================================================
+//  PROFESSOR SIGNATURE UPLOAD  (POST)
+//  POST /tla/form/:id/signature
+//  Body (JSON): { signatureImage: "data:image/png;base64,..." }
+// ===============================================================================
+
+export async function uploadSignature(req, res) {
+    try {
+        const { id } = req.params;
+        const { signatureImage } = req.body;
+
+        const tla = await TLA_Main.findById(id);
+        if (!tla) return res.status(404).json({ error: 'TLA not found' });
+
+        if (tla.userID.toString() !== req.session.user.id) {
+            return res.status(403).json({ error: 'Forbidden' });
+        }
+
+        // Validate PNG data URL
+        if (!signatureImage || typeof signatureImage !== 'string' || !signatureImage.startsWith('data:image/png')) {
+            return res.status(400).json({ error: 'Only PNG images are accepted. Please upload a .png file.' });
+        }
+
+        // Size guard: ~2 MB base64 limit
+        if (signatureImage.length > 2_800_000) {
+            return res.status(400).json({ error: 'Signature image is too large. Maximum 2 MB.' });
+        }
+
+        await Promise.all([
+            TLA_Main.findByIdAndUpdate(id, { professorSignature: signatureImage }),
+            TLA_B1.findByIdAndUpdate(id,   { professorSignature: signatureImage }),
+            TLA_B2.findByIdAndUpdate(id,   { professorSignature: signatureImage })
+        ]);
+
+        return res.json({ success: true, message: 'Signature uploaded successfully.' });
+    } catch (error) {
+        console.error('uploadSignature error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+}
+
+// ===============================================================================
 //  PDF GENERATION
 //  POST /tla/form/generate-docx
 // ===============================================================================

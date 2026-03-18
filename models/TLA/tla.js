@@ -24,6 +24,7 @@ const tlaSchema = new Schema({
     default: "Draft"
   },
   weekNumber: Number,
+  professorSignature: { type: String, default: "" },
   pdf: Buffer
 },{ timestamps:true });
 

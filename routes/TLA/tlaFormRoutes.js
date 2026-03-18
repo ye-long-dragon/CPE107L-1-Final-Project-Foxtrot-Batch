@@ -8,7 +8,8 @@ import {
     generateDocx,
     discoverTlaPdfFields,
     previewTlaPdf,
-    viewTlaPdf
+    viewTlaPdf,
+    uploadSignature
 } from "../../controllers/tlaController.js";
 
 const formRoutes = express.Router();
@@ -33,6 +34,9 @@ formRoutes.get('/pdf/:id', requireLogin, viewTlaPdf);
 
 // GET /tla/form/pdf-xray – visualize all form field names in the TLA PDF template
 formRoutes.get('/pdf-xray', requireLogin, discoverTlaPdfFields);
+
+// POST /tla/form/:id/signature – upload professor PNG signature
+formRoutes.post('/:id/signature', requireLogin, uploadSignature);
 
 // POST /tla/form/:id  – update existing TLA
 formRoutes.post("/:id", requireLogin, updateTLA);
