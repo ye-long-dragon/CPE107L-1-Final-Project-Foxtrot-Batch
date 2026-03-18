@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 document.addEventListener('DOMContentLoaded', () => {
     const modal    = document.getElementById('projectModal');
     const openBtn  = document.querySelector('.btn-proj-overview');
@@ -27,8 +26,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'Escape' && modal.classList.contains('open')) closeModal();
     });
 });
-=======
->>>>>>> 398c390 (Better Text Editor)
 
 (function () {
 'use strict';
@@ -103,14 +100,12 @@ function reflectStates() {
         setActive('btnUnderline', document.queryCommandState('underline'));
         setActive('btnStrike',    document.queryCommandState('strikeThrough'));
 
-<<<<<<< HEAD
     
 
     /* ============================================================
        DROPDOWN TOGGLE LOGIC
     ============================================================ */
     const allDropdowns = document.querySelectorAll('.rte-dropdown');
-=======
         // super/sub: only mark active when BOTH queryCommandState returns true
         // AND the cursor is actually inside a <sup>/<sub> element
         // (queryCommandState alone is unreliable after toggling)
@@ -118,7 +113,6 @@ function reflectStates() {
         const inSub = !!getAncestor(getAnchorNode(), 'SUB');
         setActive('btnSuper', inSup);
         setActive('btnSub',   inSub);
->>>>>>> 398c390 (Better Text Editor)
 
         setActive('btnCode', !!getAncestor(getAnchorNode(), 'CODE'));
     } catch (e) {}
