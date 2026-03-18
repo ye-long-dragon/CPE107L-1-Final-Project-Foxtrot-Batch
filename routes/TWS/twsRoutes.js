@@ -186,9 +186,36 @@ async function getAccessibleTwsOr404(req, res) {
 
 async function getEditableTwsOr404(req, res) {
   const role = getSessionUserRole(req.twsUser);
+  const viewerId = String(getSessionUserId(req.twsUser) || "");
+
   if (role === "Dean") {
     return getAnyTwsOr404(req, res);
   }
+
+  if (role === "Program-Chair") {
+    const tws = await TWS.findById(req.params.id);
+
+    if (!tws) {
+      res.status(404).send("TWS not found");
+      return null;
+    }
+
+    const ownerId = String(tws.userID || "");
+    const chairDept = req.twsUser?.department || "";
+    const twsDept = tws.faculty?.dept || "";
+
+    const canEdit =
+      ownerId === viewerId ||
+      (chairDept && twsDept && chairDept === twsDept);
+
+    if (!canEdit) {
+      res.status(403).send("Forbidden: this TWS is outside your editable scope.");
+      return null;
+    }
+
+    return tws;
+  }
+
   return getOwnedTwsOr404(req, res);
 }
 
@@ -907,11 +934,18 @@ router.get(
     const viewerRole = getSessionUserRole(req.twsUser);
     const viewerId = String(getSessionUserId(req.twsUser) || "");
     const ownerId = String(tws.userID || "");
+    const viewerDept = req.twsUser?.department || "";
+    const twsDept = tws.faculty?.dept || "";
+
     const canManageAsChair =
-      ["Program-Chair", "Dean"].includes(viewerRole) &&
-      viewerId &&
-      ownerId &&
-      viewerId === ownerId;
+      viewerRole === "Dean" ||
+      (
+        viewerRole === "Program-Chair" &&
+        (
+          (viewerId && ownerId && viewerId === ownerId) ||
+          (viewerDept && twsDept && viewerDept === twsDept)
+        )
+      );
 
     let viewBackUrl = "/tws/dashboard";
     if (from === "dean") {
@@ -1345,12 +1379,14 @@ router.post(
 ====================================================== */
 router.post(
   "/send-to-hr/:id",
-  requireDean,
+  requireHROrAdmin,
   asyncHandler(async (req, res) => {
     const tws = await getAnyTwsOr404(req, res);
     if (!tws) return;
 
-    try { transitionOrThrow(tws.status, "Archived"); } catch (e) {
+    try {
+      transitionOrThrow(tws.status, "Archived");
+    } catch (e) {
       return res.status(400).send(e.message);
     }
 
@@ -1359,18 +1395,23 @@ router.post(
     }
 
     tws.status = "Archived";
+    tws.archived = true;
     tws.archivedAt = new Date();
+
     await tws.save();
 
     await TWSApprovalStatus.findOneAndUpdate(
       { twsID: tws._id },
       {
-        remarks: "Sent to HR archive",
+        status: "Archived",
+        remarks: "Archived by HR/Admin",
+        approvedBy: approverLabel(req.twsUser),
+        approvalDate: new Date(),
       },
-      { returnDocument: "after" }
+      { upsert: true, returnDocument: "after" }
     );
 
-    return res.redirect("/tws/dean");
+    return res.redirect("/tws/hr-archive");
   })
 );
 
