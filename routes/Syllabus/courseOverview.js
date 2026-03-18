@@ -4,6 +4,12 @@ import { mainDB } from '../../database/mongo-dbconnect.js';
 import multer from 'multer';
 import Syllabus from '../../models/Syllabus/syllabus.js';
 import SyllabusApprovalStatus from '../../models/Syllabus/syllabusApprovalStatus.js';
+import ProgramEducationObjectives from '../../models/Syllabus/programEducationObjectives.js';
+import StudentEducationObjectives from '../../models/Syllabus/studentEducationalObjectives.js';
+import CourseOutcomes from '../../models/Syllabus/courseOutcomes.js';
+import CourseMapping from '../../models/Syllabus/courseMapping.js';
+import WeeklySchedule from '../../models/Syllabus/weeklySchedule.js';
+import CourseEvaluationPerCO from '../../models/Syllabus/courseEvaluationPerCO.js';
 
 // Multer config — store in memory for conversion to base64 for MongoDB
 const storage = multer.memoryStorage();
@@ -86,7 +92,8 @@ coursesOverviewRouter.get('/search', async (req, res) => {
                     ? c.courseImage
                     : `https://picsum.photos/seed/${c._id}/400/200`,
                 hasDraft: !!draftRecord,
-                status: draftRecord ? draftRecord.status : "No Syllabus Draft"
+                status: draftRecord ? draftRecord.status : "No Syllabus Draft",
+                remarks: draftRecord ? draftRecord.remarks : ""
             };
         });
 
@@ -135,7 +142,8 @@ coursesOverviewRouter.get('/:userId', async (req, res) => {
                     ? c.courseImage
                     : `https://picsum.photos/seed/${c._id}/400/200`,
                 hasDraft: !!draftRecord,
-                status: draftRecord ? draftRecord.status : "No Syllabus Draft"
+                status: draftRecord ? draftRecord.status : "No Syllabus Draft",
+                remarks: draftRecord ? draftRecord.remarks : ""
             };
         });
 
@@ -181,17 +189,54 @@ coursesOverviewRouter.post('/:userId/add', upload.single('courseImage'), async (
 /**
  * 3. BULK DELETE
  */
-coursesOverviewRouter.post('/:userId/delete-bulk', express.json(), async (req, res) => {
+coursesOverviewRouter.post('/:userId/delete-bulk', async (req, res) => {
     try {
         const { userId } = req.params;
         const { courseIds } = req.body;
-        if (!courseIds || courseIds.length === 0) return res.status(400).json({ error: 'No courses selected.' });
-        await Syllabus.deleteMany({ _id: { $in: courseIds }, userID: userId });
-        await SyllabusApprovalStatus.deleteMany({ syllabusID: { $in: courseIds } });
+        const user = req.session.user;
+        const role = (user && user.role) ? user.role.toLowerCase() : '';
+
+        console.log(`BULK DELETE: userId=${userId} role=${role} count=${courseIds ? courseIds.length : 0}`);
+
+        if (!courseIds || !Array.isArray(courseIds) || courseIds.length === 0) {
+            return res.status(400).json({ error: 'No courses selected.' });
+        }
+
+        // Filter valid ObjectIds to avoid CastError with dummy data IDs
+        const validCourseIds = courseIds.filter(id => mongoose.Types.ObjectId.isValid(id));
+        
+        if (validCourseIds.length === 0) {
+            // If all selected were dummy data, just return success
+            return res.json({ success: true, redirect: `/syllabus/${userId}` });
+        }
+
+        const filter = { _id: { $in: validCourseIds } };
+        
+        // Authorization check: Only restrict if user is NOT dean, admin, hr, or program chair
+        const isAuthorized = ['dean', 'admin', 'hr', 'program-chair', 'program chair'].includes(role);
+        
+        if (!isAuthorized) {
+            if (mongoose.Types.ObjectId.isValid(userId)) {
+                filter.userID = userId;
+            } else {
+                return res.status(400).json({ error: 'Invalid user ID for deletion filter.' });
+            }
+        }
+
+        const result = await Syllabus.deleteMany(filter);
+        await SyllabusApprovalStatus.deleteMany({ syllabusID: { $in: validCourseIds } });
+        await ProgramEducationObjectives.deleteMany({ syllabusID: { $in: validCourseIds } });
+        await StudentEducationObjectives.deleteMany({ syllabusID: { $in: validCourseIds } });
+        await CourseOutcomes.deleteMany({ syllabusID: { $in: validCourseIds } });
+        await CourseMapping.deleteMany({ syllabusID: { $in: validCourseIds } });
+        await WeeklySchedule.deleteMany({ syllabusID: { $in: validCourseIds } });
+        await CourseEvaluationPerCO.deleteMany({ syllabusID: { $in: validCourseIds } });
+        
+        console.log(`DELETED ${result.deletedCount} courses and all related modules`);
         res.json({ success: true, redirect: `/syllabus/${userId}` });
     } catch (error) {
         console.error('Bulk delete error:', error);
-        res.status(500).json({ error: 'Error deleting courses.' });
+        res.status(500).json({ error: 'Error deleting courses: ' + error.message });
     }
 });
 

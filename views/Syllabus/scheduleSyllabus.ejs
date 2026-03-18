@@ -328,6 +328,15 @@
         </main>
     </div>
 
+    <script>
+        window.CURRENT_SYLLABUS_ID = "<%= locals.syllabusId || '' %>";
+        window.USER_ROLE = "<%= locals.userRole || '' %>";
+        window.USER_ID = "<%= locals.userId || '' %>";
+        window.SERVER_SYLLABUS_DATA = {
+            schedules: <%- JSON.stringify(locals.schedules || []) %>,
+            evaluation: <%- JSON.stringify(locals.evaluation || []) %>
+        };
+    </script>
     <script src="/Syllabus/js/scheduleSyllabus.js?v=<%= new Date().getTime() %>"></script>
 </body>
 

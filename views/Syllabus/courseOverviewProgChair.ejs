@@ -89,7 +89,8 @@
                             <% if (typeof courses !=='undefined' && courses.length> 0) { %>
                                 <% courses.forEach(course=> { %>
                                     <div class="course-card" data-id="<%= course.id %>"
-                                        data-hasdraft="<%= course.hasDraft %>">
+                                        data-hasdraft="<%= course.hasDraft %>"
+                                        data-status="<%= course.status || 'No Syllabus Draft' %>">
                                         <div class="card-image">
                                             <img src="<%= course.img || 'https://picsum.photos/400/200?random=' + course.id %>"
                                                 alt="Course Image">
@@ -101,9 +102,27 @@
                                             <h3 class="course-title">
                                                 <%= course.title %>
                                             </h3>
-                                            <p class="course-status">
-                                                <%= course.status || 'No Syllabus Draft' %>
-                                            </p>
+                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                                                <p class="course-status">
+                                                    <%= course.status || 'No Syllabus Draft' %>
+                                                    <% if (course.remarks) { %>
+                                                        <span style="display: block; font-size: 11px; color: #777; font-style: italic; margin-top: 4px; border-top: 1px dashed #eee; padding-top: 4px;">
+                                                           <i class="fas fa-comment-dots"></i> <%= course.remarks %>
+                                                        </span>
+                                                    <% } %>
+                                                </p>
+
+                                                <% 
+                                                   const RestrictedStatuses = ['Approved', 'Pending', 'Archived', 'Endorsed'];
+                                                   const isRestricted = RestrictedStatuses.includes(course.status);
+                                                   if (!isRestricted && (course.status === 'Rejected' || course.status === 'Returned' || course.status === 'Returned to PC' || !course.hasDraft || course.status === 'No Syllabus Draft')) { 
+                                                %>
+                                                    <button class="edit-btn" onclick="window.location.href='/syllabus/info/<%= course.id %>'" 
+                                                        style="background: #00875a; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px;">
+                                                        <i class="fas fa-edit"></i> Edit
+                                                    </button>
+                                                <% } %>
+                                            </div>
                                         </div>
                                         <div class="card-footer">
                                             <span class="instructor">

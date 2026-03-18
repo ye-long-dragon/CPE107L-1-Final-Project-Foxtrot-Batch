@@ -1,3 +1,212 @@
+function autoSaveInfo() {
+    // Helper to get text by row and item index for the grid
+    const getGridText = (rowIdx, itemIdx) => {
+        return document.querySelectorAll('.info-row')[rowIdx]
+            ?.querySelectorAll('.course-editable-text')[itemIdx]?.innerText.trim() || "";
+    };
+
+    const infoData = {
+        // Basic Info Grid
+        courseCode: document.querySelector('.info-item.small .course-editable-text')?.innerText.trim() || "",
+        courseTitle: document.querySelector('.info-item.large .course-editable-text')?.innerText.trim() || "",
+        preRequisite: getGridText(1, 0),
+        coRequisite: getGridText(1, 1),
+        creditUnits: getGridText(1, 2),
+        classSchedule: getGridText(2, 0),
+        courseDesign: getGridText(2, 1),
+
+        // Text Areas
+        courseDescription: document.querySelector('.multiline[data-placeholder*="course description"]')?.innerText.trim() || "",
+        textbook: document.querySelector('.multiline[data-placeholder*="textbook"]')?.innerText.trim() || "",
+        references: document.querySelector('.multiline[data-placeholder*="references"]')?.innerText.trim() || "",
+
+        // Course Outcomes Statement Grid (The CO1, CO2 list)
+        outcomesGrid: Array.from(document.querySelectorAll('#outcomes-container .outcomes-row')).map(row => ({
+            statement: row.querySelector('.outcomes-statement .outcomes-editable-text')?.innerText.trim() || "",
+            skills: row.querySelector('.outcomes-skills-side .outcomes-editable-text')?.innerText.trim() || ""
+        })),
+
+        // Mapping Table (I, E, D dropdowns)
+        mappingValues: Array.from(document.querySelectorAll('#mapping-body tr')).map(row => {
+            return Array.from(row.querySelectorAll('.custom-dropdown-trigger')).map(trigger => {
+                return trigger.dataset.value || ""; // Captures the internal 'I', 'E', or 'D' value
+            });
+        }),
+
+        // Editor Table (The one with the toolbar)
+        editorRows: Array.from(document.querySelectorAll('#outcomes-editor-body tr')).map(row => {
+            return Array.from(row.querySelectorAll('.editable-cell')).map(cell => cell.innerHTML);
+        })
+    };
+
+    const key = `syllabus_draft_info_${window.CURRENT_SYLLABUS_ID || 'default'}`;
+    sessionStorage.setItem(key, JSON.stringify(infoData));
+}
+
+
+
+function handleInfoBack() {
+    // Force a save right now
+    autoSaveInfo();
+    
+    // Briefly delay to ensure storage is written, then go back
+    setTimeout(() => {
+        window.history.back();
+    }, 100);
+}
+
+function loadInfoFromSession() {
+    const key = `syllabus_draft_info_${window.CURRENT_SYLLABUS_ID || 'default'}`;
+    const savedData = sessionStorage.getItem(key);
+    if (!savedData) return;
+    const data = JSON.parse(savedData);
+
+    const setGridText = (rowIdx, itemIdx, val) => {
+        const el = document.querySelectorAll('.info-row')[rowIdx]?.querySelectorAll('.course-editable-text')[itemIdx];
+        if (el && val) el.innerText = val;
+    };
+
+    // 1. Restore Grid & Multilines
+    document.querySelector('.info-item.small .course-editable-text').innerText = data.courseCode || "";
+    document.querySelector('.info-item.large .course-editable-text').innerText = data.courseTitle || "";
+    setGridText(1, 0, data.preRequisite);
+    setGridText(1, 1, data.coRequisite);
+    setGridText(1, 2, data.creditUnits);
+    setGridText(2, 0, data.classSchedule);
+    setGridText(2, 1, data.courseDesign);
+    
+    const desc = document.querySelector('.multiline[data-placeholder*="course description"]');
+    if (desc) desc.innerText = data.courseDescription || "";
+    const txt = document.querySelector('.multiline[data-placeholder*="textbook"]');
+    if (txt) txt.innerText = data.textbook || "";
+    const ref = document.querySelector('.multiline[data-placeholder*="references"]');
+    if (ref) ref.innerText = data.references || "";
+
+    // 2. Restore Outcomes Editor & Mapping Table (Order is critical!)
+    const editorBody = document.getElementById('outcomes-editor-body');
+    if (editorBody && data.editorRows) {
+        editorBody.innerHTML = ''; // Clear default rows [cite: 94]
+        data.editorRows.forEach(rowCells => {
+            addEditorRow(); // This also triggers syncMappingRows()
+            const lastRow = editorBody.lastElementChild;
+            const targetCells = lastRow.querySelectorAll('.editable-cell');
+            rowCells.forEach((html, i) => { if(targetCells[i]) targetCells[i].innerHTML = html; });
+        });
+    }
+
+    // 3. Restore Mapping Dropdowns
+    const mappingRows = document.querySelectorAll('#mapping-body tr');
+    if (data.mappingValues) {
+        data.mappingValues.forEach((rowValues, rowIndex) => {
+            if (mappingRows[rowIndex]) {
+                const triggers = mappingRows[rowIndex].querySelectorAll('.custom-dropdown-trigger');
+                rowValues.forEach((val, colIndex) => {
+                    if (triggers[colIndex] && val && val !== 'none') {
+                        triggers[colIndex].dataset.value = val;
+                        triggers[colIndex].textContent = val;
+                    }
+                });
+            }
+        });
+    }
+
+    // 4. Restore Outcomes Grid
+    const outcomesContainer = document.getElementById('outcomes-container');
+    if (outcomesContainer && data.outcomesGrid) {
+        document.querySelectorAll('#outcomes-container .outcomes-row').forEach(r => r.remove());
+        data.outcomesGrid.forEach(item => {
+            addCoRow();
+            const lastRow = outcomesContainer.lastElementChild;
+            if (lastRow) {
+                lastRow.querySelector('.outcomes-statement .outcomes-editable-text').innerText = item.statement;
+                lastRow.querySelector('.outcomes-skills-side .outcomes-editable-text').innerText = item.skills;
+            }
+        });
+    }
+
+    // 5. Cleanup Placeholders
+    refreshPlaceholders();
+}
+
+// Force placeholders to update based on current text content
+    document.querySelectorAll('[contenteditable][data-placeholder]').forEach(el => {
+        if (el.innerText.trim() !== '') {
+            el.classList.remove('show-placeholder');
+        } else {
+            el.classList.add('show-placeholder');
+        }
+    });
+
+function loadInfoFromServer() {
+    if (!window.SERVER_SYLLABUS_DATA) return;
+    const { outcomes, mapping, syl } = window.SERVER_SYLLABUS_DATA;
+
+    // 1. Basic Info & Multilines (Mostly handled by EJS, but ensure placeholders)
+    refreshPlaceholders();
+
+    // 2. Course Outcomes Grid (Simple list)
+    const outcomesContainer = document.getElementById('outcomes-container');
+    if (outcomesContainer && outcomes && outcomes.length > 0) {
+        document.querySelectorAll('#outcomes-container .outcomes-row').forEach(r => r.remove());
+        outcomes.forEach((item, i) => {
+            addCoRow();
+            const lastRow = outcomesContainer.lastElementChild;
+            if (lastRow) {
+                lastRow.querySelector('.outcomes-statement .outcomes-editable-text').innerText = (item.description && item.description[0]) || "";
+                lastRow.querySelector('.outcomes-skills-side .outcomes-editable-text').innerText = (item.thinkingSkills && item.thinkingSkills[0]) || "";
+            }
+        });
+    }
+
+    // 3. Outcomes Editor Table
+    const editorBody = document.getElementById('outcomes-editor-body');
+    if (editorBody && outcomes && outcomes.length > 0) {
+        editorBody.innerHTML = '';
+        outcomes.forEach(item => {
+            addEditorRow();
+            const lastRow = editorBody.lastElementChild;
+            const cells = lastRow.querySelectorAll('.editable-cell');
+            if (cells.length >= 3) {
+                cells[0].innerText = item.coNumber || "";
+                cells[1].innerText = (item.description && item.description[0]) || "";
+                cells[2].innerText = (item.thinkingSkills && item.thinkingSkills[0]) || "";
+            }
+        });
+    }
+
+    // 4. Mapping Table
+    const mappingBody = document.getElementById('mapping-body');
+    if (mappingBody && mapping && mapping.length > 0) {
+        // mapping is an array of documents, each for one CO
+        const mappingRows = mappingBody.querySelectorAll('tr');
+        mapping.forEach((item, rowIndex) => {
+            if (mappingRows[rowIndex]) {
+                const triggers = mappingRows[rowIndex].querySelectorAll('.custom-dropdown-trigger');
+                const values = item.fromAtoL || [];
+                values.forEach((val, colIndex) => {
+                    if (triggers[colIndex] && val && val !== 'none') {
+                        triggers[colIndex].dataset.value = val;
+                        triggers[colIndex].textContent = val;
+                    }
+                });
+            }
+        });
+    }
+
+    refreshPlaceholders();
+}
+
+function refreshPlaceholders() {
+    document.querySelectorAll('[contenteditable][data-placeholder]').forEach(el => {
+        if (el.innerText.trim() !== '') {
+            el.classList.remove('show-placeholder');
+        } else {
+            el.classList.add('show-placeholder');
+        }
+    });
+}
+
+
 /* ── Renumber all CO rows after add/delete ── */
 function renumberCoRows() {
   const container = document.getElementById('outcomes-container');
@@ -132,10 +341,13 @@ function createCustomDropdown() {
       closeDropdown(wrapper);
     }
   });
-
+  
+  
   wrapper.appendChild(trigger);
   wrapper.appendChild(panel);
   return wrapper;
+  
+  
 }
 
 function openDropdown(wrapper) {
@@ -630,15 +842,57 @@ function toggleWrap() {
   });
 }
 
-// Initialize on load
-document.addEventListener('DOMContentLoaded', () => {
-  initColorPalette();
-  updateActiveColorBar();
+
+
+window.onload = () => {
+    // 1. Load data
+    const key = `syllabus_draft_info_${window.CURRENT_SYLLABUS_ID || 'default'}`;
+    const savedSessionData = sessionStorage.getItem(key);
+    const hasServerData = window.SERVER_SYLLABUS_DATA && 
+                          window.SERVER_SYLLABUS_DATA.syl && 
+                          Object.keys(window.SERVER_SYLLABUS_DATA.syl).length > 5;
+
+    if (hasServerData && !savedSessionData) {
+        // If we have data from database and nothing in session, load from server
+        loadInfoFromServer();
+    } else if (savedSessionData) {
+        // If session draft exists, prioritize it (user's most recent unsaved work)
+        loadInfoFromSession();
+    } else {
+        // Default: Initialize with some empty rows if both are absent
+        const body = document.getElementById('outcomes-editor-body');
+        if (body && body.querySelectorAll('tr').length === 0) {
+            addEditorRow();
+            addEditorRow();
+            addEditorRow();
+        }
+    }
+
+    // 2. Re-init the placeholder observers for any new rows
+    document.querySelectorAll('[contenteditable][data-placeholder]').forEach(el => {
+        if (!el.dataset.placeholderInit) {
+            el.dataset.placeholderInit = '1';
+            initPersistentPlaceholder(el);
+        }
+    });
+};
+
+window.addEventListener('load', () => {
+    // Load first
+    loadInfoFromSession();
+
+    // Then start watching for changes anywhere on the document
+    document.addEventListener('input', (e) => {
+        if (e.target.closest('[contenteditable="true"]')) {
+            autoSaveInfo();
+        }
+    });
 });
 
 /* ── Form Submission Helper ── */
 window.saveInfoToSession = function() {
-    const payload = JSON.parse(sessionStorage.getItem('syllabusFormDraft')) || {};
+    const key = `syllabusFormDraft_${window.CURRENT_SYLLABUS_ID || 'default'}`;
+    const payload = JSON.parse(sessionStorage.getItem(key)) || {};
 
     try {
         // 1. Basic Info - Select all editable text areas in the main DOM order
@@ -718,10 +972,11 @@ window.saveInfoToSession = function() {
         }
 
         // Save to session
-        sessionStorage.setItem('syllabusFormDraft', JSON.stringify(payload));
+        const saveKey = `syllabusFormDraft_${window.CURRENT_SYLLABUS_ID || 'default'}`;
+        sessionStorage.setItem(saveKey, JSON.stringify(payload));
         
         // Proceed to schedule
-        window.location.href = '/syllabus/schedule';
+        window.location.href = `/syllabus/schedule/${window.CURRENT_SYLLABUS_ID}`;
     } catch (e) {
         console.error("Error saving syllabus step 1 data:", e);
         alert("There was an error saving your data. Please check the console.");

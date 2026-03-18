@@ -31,18 +31,17 @@ document.addEventListener('DOMContentLoaded', () => {
             statusDot.classList.add('indicator-pending');
         }
 
-        // Conditional Logic for Program Chair Endorsement
-        if (workflowStep === 'endorsement' && btnSubmit) {
+        // Conditional Logic for Program Chair Endorsement or Dean Approval
+        if (btnSubmit && (workflowStep === 'endorsement' || workflowStep === 'approval')) {
             const approveVal = typeof SYLLABUS_APPROVAL_DATA !== 'undefined' ? (SYLLABUS_APPROVAL_DATA.optionApproveValue || 'PC_Approved') : 'PC_Approved';
             
             // Reset button styles initially
             btnSubmit.style.backgroundColor = '';
             btnSubmit.style.color = '';
-            btnSubmit.textContent = 'Endorse Syllabus';
+            btnSubmit.textContent = workflowStep === 'endorsement' ? 'Endorse Syllabus' : 'Submit Approval';
 
             if (val === approveVal) {
                 // APPROVE SYLLABUS CASE
-                btnSubmit.textContent = 'Endorse Syllabus';
                 btnSubmit.style.backgroundColor = '#00875a'; // Green
                 btnSubmit.style.color = '#ffffff';
                 
@@ -52,9 +51,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 btnSubmit.style.opacity = hasFile ? '1' : '0.5';
                 btnSubmit.style.cursor = hasFile ? 'pointer' : 'not-allowed';
 
-            } else if (val === 'Reject' || val === 'Rejected' || val === 'Returned') {
+            } else if (val === 'Reject' || val === 'Rejected' || val === 'Returned' || val === 'Returned to PC') {
                 // REJECT SYLLABUS CASE
-                btnSubmit.textContent = 'Return to Faculty';
+                btnSubmit.textContent = val === 'Returned to PC' ? 'Return to PC' : 'Return to Faculty';
                 btnSubmit.style.backgroundColor = '#d93025'; // Red
                 btnSubmit.style.color = '#ffffff';
 
@@ -65,7 +64,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             } else {
                 // SELECT STATUS CASE (Default/Empty)
-                btnSubmit.textContent = 'Endorse Syllabus';
                 if (sigSection) sigSection.style.display = 'none';
                 btnSubmit.disabled = true;
                 btnSubmit.style.opacity = '0.5';
@@ -95,6 +93,8 @@ document.addEventListener('DOMContentLoaded', () => {
                          btnSubmit.style.cursor = 'not-allowed';
                      }
                  }
+                 const previewSection = document.getElementById('document-signature-section');
+                 if (previewSection) previewSection.style.display = 'none';
                  return;
             }
 
@@ -104,7 +104,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 sigBox.appendChild(sigInput); // keep the hidden input in the DOM
                 if (sigRemove) sigRemove.style.display = 'flex';
                 
-                if (workflowStep === 'endorsement' && btnSubmit) {
+                // Update PDF Preview
+                const previewSection = document.getElementById('document-signature-section');
+                const previewImgContainer = document.getElementById('preview-signature-img-container');
+                if (previewSection && previewImgContainer) {
+                    previewImgContainer.innerHTML = `<img src="${ev.target.result}" alt="Signature" style="max-height: 100%; max-width: 100%; object-fit: contain;">`;
+                    previewSection.style.display = 'block';
+                }
+
+                if ((workflowStep === 'endorsement' || workflowStep === 'approval') && btnSubmit) {
                     const approveVal = typeof SYLLABUS_APPROVAL_DATA !== 'undefined' ? (SYLLABUS_APPROVAL_DATA.optionApproveValue || 'PC_Approved') : 'PC_Approved';
                     if (statusSelect.value === approveVal) {
                         btnSubmit.disabled = false;
@@ -125,7 +133,13 @@ document.addEventListener('DOMContentLoaded', () => {
             sigInput.value = ''; // clear file selection
             sigRemove.style.display = 'none';
             
-            if (workflowStep === 'endorsement' && btnSubmit) {
+            // Clear PDF Preview
+            const previewSection = document.getElementById('document-signature-section');
+            const previewImgContainer = document.getElementById('preview-signature-img-container');
+            if (previewImgContainer) previewImgContainer.innerHTML = '';
+            if (previewSection) previewSection.style.display = 'none';
+            
+            if ((workflowStep === 'endorsement' || workflowStep === 'approval') && btnSubmit) {
                 const approveVal = typeof SYLLABUS_APPROVAL_DATA !== 'undefined' ? (SYLLABUS_APPROVAL_DATA.optionApproveValue || 'PC_Approved') : 'PC_Approved';
                 if (statusSelect.value === approveVal) {
                     btnSubmit.disabled = true;
@@ -133,6 +147,23 @@ document.addEventListener('DOMContentLoaded', () => {
                     btnSubmit.style.cursor = 'not-allowed';
                 }
             }
+        });
+    }
+
+    // ─── Signatory Name Mirroring ──────────────────────────────────
+    const signatoryInput = document.getElementById('signatory-name-input');
+    const signatoryPreview = document.getElementById('preview-signatory-name');
+    const userRole = typeof SYLLABUS_APPROVAL_DATA !== 'undefined' ? (SYLLABUS_APPROVAL_DATA.userRole || '') : '';
+
+    if (signatoryPreview) {
+        if (userRole === 'dean') signatoryPreview.textContent = 'DEAN';
+        else signatoryPreview.textContent = 'PROGRAM CHAIR';
+    }
+
+    if (signatoryInput && signatoryPreview) {
+        signatoryInput.addEventListener('input', (e) => {
+            const defaultText = userRole === 'dean' ? 'DEAN' : 'PROGRAM CHAIR';
+            signatoryPreview.textContent = e.target.value.trim().toUpperCase() || defaultText;
         });
     }
 
@@ -193,6 +224,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const status = statusSelect?.value || 'Pending';
             const comment = document.getElementById('approval-comments')?.value || '';
             const actionLabel = SYLLABUS_APPROVAL_DATA.actionLabel || 'submission';
+            const signatoryName = document.getElementById('signatory-name-input')?.value || '';
+            const signatureImg = document.querySelector('.ad-signature-img');
 
             // ─── Submission Confirmation ────────────────────────
             if (!confirm(`Are you sure you want to submit this ${actionLabel} as "${status}"?`)) return;
@@ -201,6 +234,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 syllabusId,
                 comment,
                 status,
+                signatoryName,
+                signature: signatureImg ? signatureImg.src : null,
                 action: 'submit'
             };
 

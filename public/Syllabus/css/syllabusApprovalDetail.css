@@ -517,3 +517,51 @@
         margin-left: 0;
     }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   PRINT / PDF EXPORT STYLES
+   ═══════════════════════════════════════════════════════════ */
+@media print {
+    body, .approval-detail-main {
+        background: none !important;
+        background-color: white !important;
+        height: auto !important;
+    }
+    
+    .approval-detail-header, 
+    .ad-back-btn, 
+    .ad-sidebar, 
+    .ad-tracker, 
+    .ad-file-type-badge, 
+    .ad-section-title {
+        display: none !important;
+    }
+    
+    .approval-detail-body {
+        padding: 0 !important;
+        margin: 0 !important;
+        display: block !important;
+    }
+    
+    .ad-document-panel {
+        width: 100% !important;
+        max-width: none !important;
+    }
+    
+    .ad-document-preview {
+        max-height: none !important;
+        overflow-y: visible !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    /* Make sure page breaks inside tables are avoided */
+    table, tr, td, th {
+        page-break-inside: avoid;
+    }
+    h3 {
+        page-break-after: avoid;
+    }
+}

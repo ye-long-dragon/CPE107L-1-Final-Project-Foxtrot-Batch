@@ -1,4 +1,6 @@
 import express from 'express';
+import mongoose from 'mongoose';
+import multer from 'multer';
 import { mainDB } from '../../database/mongo-dbconnect.js';
 import Syllabus from '../../models/Syllabus/syllabus.js';
 import SyllabusApprovalStatus from '../../models/Syllabus/syllabusApprovalStatus.js';
@@ -10,6 +12,23 @@ import WeeklySchedule from '../../models/Syllabus/weeklySchedule.js';
 import CourseEvaluationPerCO from '../../models/Syllabus/courseEvaluationPerCO.js';
 
 const endorseSyllabusRouter = express.Router();
+
+
+// Multer config — store in memory for conversion to base64 for MongoDB
+const storage = multer.memoryStorage();
+const upload = multer({
+    storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max
+    fileFilter: (req, file, cb) => {
+        const allowed = /jpeg|jpg|png|gif|webp/;
+        const mimeOk = allowed.test(file.mimetype);
+        if (mimeOk) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only image files (jpg, png, gif, webp) are allowed'));
+        }
+    }
+});
 
 /* -----------------------------------------------------------------------
    DUMMY DATA — used as fallback when DB has no records
@@ -118,23 +137,65 @@ endorseSyllabusRouter.get('/', async (req, res) => {
             };
         });
 
-        let courses = formattedCourses.length > 0 ? formattedCourses : DUMMY_COURSES;
-
-        // Always show at least dummy data so the page isn't blank
-        if (courses.length === 0) courses = DUMMY_COURSES;
+        let courses = formattedCourses;
 
         res.render('Syllabus/courseOverviewProgChair', {
             courses,
             currentPageCategory: 'syllabus',
-            userId: 'prog-chair-demo'
+            userId: req.session.user ? req.session.user.id : 'prog-chair-demo'
         });
     } catch (error) {
         console.error('PC Course Overview error:', error);
         res.render('Syllabus/courseOverviewProgChair', {
-            courses: DUMMY_COURSES,
+            courses: [],
             currentPageCategory: 'syllabus',
-            userId: 'prog-chair-demo'
+            userId: req.session.user ? req.session.user.id : 'prog-chair-demo'
         });
+    }
+});
+
+/* -----------------------------------------------------------------------
+   POST /syllabus/prog-chair/:userId/add  →  Create New Course
+   ----------------------------------------------------------------------- */
+endorseSyllabusRouter.post('/:userId/add', upload.single('courseImage'), async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const { courseCode, courseTitle, assignedInstructor } = req.body;
+
+        // Duplicate Check (Case-insensitive)
+        const existing = await Syllabus.findOne({ 
+            courseCode: { $regex: new RegExp(`^${courseCode}$`, 'i') } 
+        });
+        
+        if (existing) {
+            return res.status(409).json({ 
+                error: 'duplicate', 
+                field: 'courseCode', 
+                message: `Course code "${courseCode}" already exists in the system.` 
+            });
+        }
+
+        const syllabusData = { 
+            userID: userId, 
+            courseCode, 
+            courseTitle 
+        };
+
+        if (assignedInstructor) syllabusData.assignedInstructor = assignedInstructor;
+        
+        if (req.file) {
+            const base64 = req.file.buffer.toString('base64');
+            syllabusData.courseImage = `data:${req.file.mimetype};base64,${base64}`;
+        }
+
+        const newSyllabus = new Syllabus(syllabusData);
+        await newSyllabus.save();
+
+        console.log(`PC ADD COURSE: ${courseCode} by ${userId}`);
+        res.json({ success: true, redirect: '/syllabus/prog-chair' });
+    } catch (error) {
+        console.error('PC Add course error:', error);
+        res.status(500).json({ error: 'server', message: 'Internal server error while adding course.' });
     }
 });
 
@@ -148,6 +209,7 @@ endorseSyllabusRouter.get('/approve', async (req, res) => {
                 { status: 'Pending' },
                 { status: 'Approved', approvedBy: 'PC_Approved' },
                 { status: 'Approved', approvedBy: 'Program Chair' },
+                { status: 'Returned to PC' },
                 { approvedBy: 'Rejected' }
             ]
         });
@@ -199,28 +261,7 @@ endorseSyllabusRouter.get('/approve', async (req, res) => {
             }).filter(Boolean);
         }
 
-        let dummyDrafts = DUMMY_DRAFTS.filter(d => 
-            d.status === 'PendingApproval' || 
-            d.status === 'PC_Approved' || 
-            d.status === 'Endorsed' || 
-            d.status === 'PendingEndorsement' ||
-            d.status === 'Rejected'
-        );
-        // Normalize status for dummy data in this view
-        dummyDrafts = dummyDrafts.map(d => {
-            let normStatus = 'Pending';
-            let normLabel = 'Submitted';
-            if (d.status === 'Rejected') {
-                normStatus = 'Rejected';
-                normLabel = 'Rejected';
-            } else if (d.status === 'PC_Approved' || d.status === 'Endorsed') {
-                normStatus = 'PC_Approved';
-                normLabel = 'Approved';
-            }
-            return { ...d, status: normStatus, statusDateLabel: normLabel };
-        });
 
-        drafts = [...drafts, ...dummyDrafts];
 
         const pendingCount = drafts.filter(d => d.status === 'Pending').length;
         const approvedHistoryCount = drafts.filter(d => d.status === 'PC_Approved').length;
@@ -365,14 +406,14 @@ endorseSyllabusRouter.post('/approve/:syllabusId', async (req, res) => {
         }
 
         if (status === 'Reject' || status === 'Returned') {
+            approval.status = 'Rejected';
             approval.approvedBy = 'Rejected';
-            // Keeping status Pending as requested, just marking the approvedBy to Rejected
         } else if (status === 'PC_Approved' || status === 'Approve Syllabus') {
-            approval.status = 'Approved'; 
+            approval.status = 'Endorsed'; 
             approval.approvedBy = 'Program Chair';
             approval.approvalDate = new Date();
         } else if (status === 'Reject' || status === 'Reject Syllabus' || status === 'Rejected') {
-            approval.status = 'Pending';
+            approval.status = 'Rejected';
             approval.approvedBy = 'Rejected';
         }
 
@@ -438,11 +479,7 @@ endorseSyllabusRouter.get('/endorse', async (req, res) => {
             }).filter(Boolean);
         }
 
-        let dummyDrafts = DUMMY_DRAFTS.filter(d => d.status === 'PendingEndorsement' || d.status === 'Endorsed' || d.status === 'PC_Approved');
-        // Normalize status for dummy data in this view
-        dummyDrafts = dummyDrafts.map(d => ({ ...d, status: (d.status === 'PendingEndorsement' || d.status === 'PC_Approved') ? 'Pending' : 'Endorsed' }));
 
-        drafts = [...drafts, ...dummyDrafts];
 
         const pendingCount = drafts.filter(d => d.status === 'Pending').length;
         const endorsedHistoryCount = drafts.filter(d => d.status === 'Endorsed').length;
@@ -577,14 +614,23 @@ endorseSyllabusRouter.post('/endorse/:syllabusId', async (req, res) => {
             return res.json({ success: true, message: 'Endorsement draft saved.' });
         }
 
-        if (status === 'Approved') {
-            approval.status = 'Approved';
+        if (status === 'Approved' || status === 'PC_Approved') {
+            approval.status = 'Endorsed';
             approval.approvedBy = 'Program Chair';
+            approval.approvalDate = new Date();
+            
+            // Save signature if provided
+            if (req.body.signature) approval.PC_Signature = req.body.signature;
+            if (req.body.signatoryName) approval.PC_SignatoryName = req.body.signatoryName;
+
+        } else if (status === 'Reject' || status === 'Rejected' || status === 'Returned') {
+            approval.status = 'Rejected';
+            approval.approvedBy = 'Program Chair (Returned)';
             approval.approvalDate = new Date();
         }
 
         await approval.save();
-        res.json({ success: true, message: `Endorsement submitted.` });
+        res.json({ success: true, message: status === 'Rejected' ? 'Syllabus returned to faculty.' : 'Endorsement submitted.' });
     } catch (err) {
         console.error('PC endorsement action error:', err);
         res.status(500).json({ success: false, message: 'Internal server error.' });
@@ -621,7 +667,8 @@ endorseSyllabusRouter.get('/search', async (req, res) => {
                     ? c.courseImage
                     : `https://picsum.photos/seed/${c._id}/400/200`,
                 hasDraft: !!draftRecord,
-                status: draftRecord ? draftRecord.status : 'No Syllabus Draft'
+                status: draftRecord ? draftRecord.status : 'No Syllabus Draft',
+                remarks: draftRecord ? draftRecord.remarks : ""
             };
         });
 
@@ -629,6 +676,46 @@ endorseSyllabusRouter.get('/search', async (req, res) => {
     } catch (error) {
         console.error('PC Search error:', error);
         res.json([]);
+    }
+});
+
+/* -----------------------------------------------------------------------
+   POST /:userId/delete-bulk  →  Bulk Delete Courses (Program Chair)
+   ----------------------------------------------------------------------- */
+endorseSyllabusRouter.post('/:userId/delete-bulk', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { courseIds } = req.body;
+        
+        console.log(`PC BULK DELETE: userId=${userId} count=${courseIds ? courseIds.length : 0}`);
+        
+        if (!courseIds || !Array.isArray(courseIds) || courseIds.length === 0) {
+            return res.status(400).json({ error: 'No courses selected.' });
+        }
+
+        // Filter valid ObjectIds to avoid CastError with dummy data IDs
+        const validCourseIds = courseIds.filter(id => mongoose.Types.ObjectId.isValid(id));
+        
+        if (validCourseIds.length > 0) {
+            // Comprehensive cleanup of all related syllabus data
+            await Syllabus.deleteMany({ _id: { $in: validCourseIds } });
+            await SyllabusApprovalStatus.deleteMany({ syllabusID: { $in: validCourseIds } });
+            await ProgramEducationObjectives.deleteMany({ syllabusID: { $in: validCourseIds } });
+            await StudentEducationObjectives.deleteMany({ syllabusID: { $in: validCourseIds } });
+            await CourseOutcomes.deleteMany({ syllabusID: { $in: validCourseIds } });
+            await CourseMapping.deleteMany({ syllabusID: { $in: validCourseIds } });
+            await WeeklySchedule.deleteMany({ syllabusID: { $in: validCourseIds } });
+            await CourseEvaluationPerCO.deleteMany({ syllabusID: { $in: validCourseIds } });
+            
+            console.log(`PC DELETED ${validCourseIds.length} database courses and all related modules.`);
+        } else {
+            console.log(`PC BULK DELETE: No database courses selected (only dummy data).`);
+        }
+        
+        res.json({ success: true, redirect: `/syllabus/prog-chair` });
+    } catch (error) {
+        console.error('Program Chair bulk delete error:', error);
+        res.status(500).json({ error: 'Error deleting courses: ' + error.message });
     }
 });
 

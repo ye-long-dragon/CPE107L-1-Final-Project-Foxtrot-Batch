@@ -51,18 +51,16 @@
                             <div class="info-row">
                                 <div class="info-item">
                                     <label>PRE-REQUISITE</label>
-                                    <div class="course-editable-text" contenteditable="true" data-placeholder="None">
-                                    </div>
+                                    <div class="course-editable-text" contenteditable="true" data-placeholder="None"><%= locals.syl && syl.preRequisite ? syl.preRequisite : '' %></div>
                                 </div>
                                 <div class="info-item">
                                     <label>CO-REQUISITE</label>
-                                    <div class="course-editable-text" contenteditable="true" data-placeholder="None">
-                                    </div>
+                                    <div class="course-editable-text" contenteditable="true" data-placeholder="None"><%= locals.syl && syl.coRequisite ? syl.coRequisite : '' %></div>
                                 </div>
                                 <div class="info-item">
                                     <label>CREDIT UNIT(S)</label>
                                     <div class="course-editable-text" contenteditable="true"
-                                        data-placeholder="e.g. 2 units"></div>
+                                        data-placeholder="e.g. 2 units"><%= locals.syl && syl.units ? syl.units : '' %></div>
                                 </div>
                             </div>
 
@@ -70,12 +68,12 @@
                                 <div class="info-item">
                                     <label>CLASS SCHEDULE</label>
                                     <div class="course-editable-text" contenteditable="true"
-                                        data-placeholder="Enter schedule..."></div>
+                                        data-placeholder="Enter schedule..."><%= locals.syl && syl.classSchedule ? syl.classSchedule : '' %></div>
                                 </div>
                                 <div class="info-item">
                                     <label>COURSE DESIGN</label>
                                     <div class="course-editable-text" contenteditable="true"
-                                        data-placeholder="Enter design..."></div>
+                                        data-placeholder="Enter design..."><%= locals.syl && syl.courseDesign ? syl.courseDesign : '' %></div>
                                 </div>
                             </div>
                         </div>
@@ -86,7 +84,7 @@
                         <div class="info-item">
                             <label>COURSE DESCRIPTION</label>
                             <div class="course-editable-text multiline" contenteditable="true"
-                                data-placeholder="Enter the full course description here..."></div>
+                                data-placeholder="Enter the full course description here..."><%= locals.syl && syl.courseDescription ? syl.courseDescription : '' %></div>
                         </div>
                     </section>
 
@@ -310,19 +308,19 @@
                         <div class="info-item">
                             <label>TEXTBOOK</label>
                             <div class="course-editable-text multiline" contenteditable="true"
-                                data-placeholder="Enter textbook name here..."></div>
+                                data-placeholder="Enter textbook name here..."><%= locals.syl && syl.textbook ? syl.textbook : '' %></div>
                         </div>
                         </br>
                         <div class="info-item">
                             <label>REFERENCES</label>
                             <div class="course-editable-text multiline" contenteditable="true"
-                                data-placeholder="Enter references here..."></div>
+                                data-placeholder="Enter references here..."><%= locals.syl && syl.references ? syl.references : '' %></div>
                         </div>
                     </section>
                 </div>
             </div>
             <div class="button-footer-outer">
-                <button class="next-btn-rect" onclick="window.history.back()" type="button">
+                <button type="button" class="next-btn-rect" onclick="handleInfoBack()">
                     <span class="material-symbols-outlined">arrow_back</span>
                     <span>BACK</span>
                 </button>
@@ -337,6 +335,11 @@
 
     <script>
         window.CURRENT_SYLLABUS_ID = "<%= locals.syllabusId || '' %>";
+        window.SERVER_SYLLABUS_DATA = {
+            outcomes: <%- JSON.stringify(locals.outcomes || []) %>,
+            mapping: <%- JSON.stringify(locals.mapping || null) %>,
+            syl: <%- JSON.stringify(locals.syl || {}) %>
+        };
     </script>
     <script src="/Syllabus/js/infoSyllabus.js?v=<%= new Date().getTime() %>"></script>
 </body>

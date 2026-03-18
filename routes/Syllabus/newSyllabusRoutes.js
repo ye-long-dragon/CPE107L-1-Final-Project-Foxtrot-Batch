@@ -1,6 +1,8 @@
 import express from 'express';
 import multer from 'multer';
 import Syllabus from '../../models/Syllabus/syllabus.js';
+import ProgramEducationalObjectives from '../../models/Syllabus/programEducationObjectives.js';
+import StudentEducationalObjectives from '../../models/Syllabus/studentEducationalObjectives.js';
 
 const newSyllabusRoutes = express.Router();
 
@@ -14,19 +16,31 @@ const upload = multer({
 /**
  * GET: Render the "Add New Syllabus" page
  */
-newSyllabusRoutes.get('/:syllabusId', (req, res) => {
-    console.log(`DEBUG: Reached newSyllabusRoutes GET /:syllabusId with ID: ${req.params.syllabusId}`);
-    // Passes the category so the sidebar highlights "Syllabus"
-    res.render('Syllabus/newSyllabus', {
-        currentPageCategory: "syllabus",
-        syllabusId: req.params.syllabusId // Inject the ID dynamically
-    });
+newSyllabusRoutes.get('/:syllabusId', async (req, res) => {
+    try {
+        const syllabusId = req.params.syllabusId;
+        console.log(`DEBUG: Reached newSyllabusRoutes GET /:syllabusId with ID: ${syllabusId}`);
+        
+        const peos = await ProgramEducationalObjectives.findOne({ syllabusID: syllabusId });
+        const sos = await StudentEducationalObjectives.findOne({ syllabusID: syllabusId });
+
+        res.render('Syllabus/newSyllabus', {
+            currentPageCategory: "syllabus",
+            syllabusId: syllabusId,
+            peos: peos || null,
+            sos: sos || null
+        });
+    } catch (err) {
+        console.error("Error fetching PEOs/SOs:", err);
+        res.render('Syllabus/newSyllabus', {
+            currentPageCategory: "syllabus",
+            syllabusId: req.params.syllabusId,
+            peos: null,
+            sos: null
+        });
+    }
 });
 
-newSyllabusRoutes.get('/', (req, res) => {
-    console.log("DEBUG: Reached newSyllabusRoutes root GET /");
-    res.send("Reached New Syllabus Router Root");
-});
 
 /**
  * POST: Save the new syllabus to MongoDB

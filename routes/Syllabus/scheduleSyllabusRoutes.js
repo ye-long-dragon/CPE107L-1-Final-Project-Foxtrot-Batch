@@ -14,8 +14,31 @@ import SyllabusApprovalStatus from '../../models/Syllabus/syllabusApprovalStatus
 
 const scheduleSyllabusRoutes = express.Router();
 
-scheduleSyllabusRoutes.get('/', (req, res) => {
-    res.render('Syllabus/scheduleSyllabus', { currentPageCategory: "syllabus" });
+scheduleSyllabusRoutes.get('/:syllabusId', async (req, res) => {
+    try {
+        const syllabusId = req.params.syllabusId;
+        const schedules = await WeeklySchedule.find({ syllabusID: syllabusId }).sort({ week: 1 });
+        const evaluation = await CourseEvaluationPerCO.find({ syllabusID: syllabusId });
+
+        res.render('Syllabus/scheduleSyllabus', { 
+            currentPageCategory: "syllabus",
+            syllabusId: syllabusId,
+            schedules: schedules || [],
+            evaluation: evaluation || [],
+            userRole: req.session.user ? req.session.user.role : '',
+            userId: req.session.user ? req.session.user.id : ''
+        });
+    } catch (err) {
+        console.error("Error fetching schedule/evaluation:", err);
+        res.render('Syllabus/scheduleSyllabus', { 
+            currentPageCategory: "syllabus",
+            syllabusId: req.params.syllabusId,
+            schedules: [],
+            evaluation: [],
+            userRole: req.session.user ? req.session.user.role : '',
+            userId: req.session.user ? req.session.user.id : ''
+        });
+    }
 });
 
 scheduleSyllabusRoutes.post('/submit', async (req, res) => {

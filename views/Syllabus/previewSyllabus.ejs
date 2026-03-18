@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Syllabus Preview</title>
+    <link rel="stylesheet" href="/Syllabus/css/infoSyllabus.css?v=<%= new Date().getTime() %>" />
+    <link rel="stylesheet" href="/Syllabus/css/outcomesTable.css?v=<%= new Date().getTime() %>" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <style>
+        /* Override to ensure read-only look */
+        .course-editable-text[contenteditable="true"] {
+            border-bottom: none !important;
+            cursor: default !important;
+        }
+        .outcomes-editable-text[contenteditable="true"] {
+             cursor: default !important;
+        }
+        .back-btn {
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            color: #444;
+        }
+        .preview-badge {
+            background: #00875a;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+
+
+<body>
+    <div class="dashboard">
+
+        <main class="main-content">
+            <div class="syllabus-top-bar" style="justify-content: space-between; align-items: center; padding: 10px 20px;">
+                <button type="button" class="back-btn" onclick="window.history.back()">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                    <span>Back to Overview</span>
+                </button>
+                <div class="preview-badge">Read-Only Preview</div>
+            </div>
+
+            <div class="syllabus-scroll-area">
+                <div class="syllabus-banner">
+                    <span class="syllabus-banner-title">SYLLABUS PREVIEW</span>
+                </div>
+
+                <div class="syllabus-content-section">
+                    <h2 class="college-header-outside">COURSE SYLLABUS</h2>
+                    <p style="text-align: center; color: #666; font-style: italic; margin-bottom: 20px;">Status: <%= locals.status || 'Archived' %></p>
+
+                    <!-- Course Information Section -->
+                    <section class="content-panel-transparent">
+                        <div class="course-info-container">
+                            <div class="info-row">
+                                <div class="info-item small">
+                                    <label>COURSE CODE</label>
+                                    <div class="course-editable-text"><%= locals.courseCode || '' %></div>
+                                </div>
+                                <div class="info-item large">
+                                    <label>COURSE TITLE</label>
+                                    <div class="course-editable-text"><%= locals.courseTitle || '' %></div>
+                                </div>
+                            </div>
+
+                            <div class="info-row">
+                                <div class="info-item">
+                                    <label>PRE-REQUISITE</label>
+                                    <div class="course-editable-text"><%= locals.syl && syl.preRequisite ? syl.preRequisite : 'None' %></div>
+                                </div>
+                                <div class="info-item">
+                                    <label>CO-REQUISITE</label>
+                                    <div class="course-editable-text"><%= locals.syl && syl.coRequisite ? syl.coRequisite : 'None' %></div>
+                                </div>
+                                <div class="info-item">
+                                    <label>CREDIT UNIT(S)</label>
+                                    <div class="course-editable-text"><%= locals.syl && syl.units ? syl.units : 'N/A' %></div>
+                                </div>
+                            </div>
+
+                            <div class="info-row">
+                                <div class="info-item">
+                                    <label>CLASS SCHEDULE</label>
+                                    <div class="course-editable-text"><%= locals.syl && syl.classSchedule ? syl.classSchedule : 'Not set' %></div>
+                                </div>
+                                <div class="info-item">
+                                    <label>COURSE DESIGN</label>
+                                    <div class="course-editable-text"><%= locals.syl && syl.courseDesign ? syl.courseDesign : 'Not set' %></div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Course Description Section -->
+                    <section class="content-panel-transparent">
+                        <div class="info-item">
+                            <label>COURSE DESCRIPTION</label>
+                            <div class="course-editable-text multiline" style="min-height: 60px;"><%= locals.syl && syl.courseDescription ? syl.courseDescription : 'No description provided.' %></div>
+                        </div>
+                    </section>
+
+                    <!-- Course Outcomes Section -->
+                    <section class="content-panel-transparent">
+                        <div class="content-card-transparent">
+                            <div class="content-label-simple">COURSE OUTCOMES</div>
+
+                            <div class="outcomes-grid-container" id="outcomes-container">
+                                <div class="outcomes-top-header">
+                                    <p class="outcomes-intro">Upon completion of the course, the student will be able to:</p>
+                                    <div class="skills-column-header">
+                                        <span class="skills-main-text">THINKING SKILLS</span>
+                                    </div>
+                                </div>
+
+                                <% if (locals.outcomes && outcomes.length > 0) { %>
+                                    <% outcomes.forEach((co, index) => { %>
+                                        <div class="outcomes-row">
+                                            <div class="outcomes-statement">
+                                                <span class="outcomes-number">CO<%= index + 1 %>.</span>
+                                                <div class="outcomes-editable-text"><%= co.statement %></div>
+                                            </div>
+                                            <div class="outcomes-skills-side">
+                                                <div class="outcomes-editable-text"><%= co.thinkingSkills %></div>
+                                            </div>
+                                        </div>
+                                    <% }); %>
+                                <% } else { %>
+                                    <p style="padding: 20px; text-align: center; color: #999;">No course outcomes defined.</p>
+                                <% } %>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Course Mapping -->
+                    <section class="content-panel-transparent">
+                        <div class="content-card-transparent">
+                            <div class="content-label-simple">COURSE MAPPING</div>
+                        </div>
+                        <div class="course-mapping-container">
+                            <table class="mapping-table">
+                                <thead>
+                                    <tr>
+                                        <th>COURSE OUTCOMES</th>
+                                        <th>PROGRAM</th>
+                                        <th>a</th><th>b</th><th>c</th><th>d</th><th>e</th><th>f</th><th>g</th><th>h</th><th>i</th><th>j</th><th>k</th><th>l</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (locals.mapping && mapping.length > 0) { %>
+                                        <% mapping.forEach(m => { %>
+                                            <tr>
+                                                <td>CO<%= m.coNumber %></td>
+                                                <td><%= m.programCode %></td>
+                                                <% ['a','b','c','d','e','f','g','h','i','j','k','l'].forEach(letter => { %>
+                                                    <td><%= m[letter] || '' %></td>
+                                                <% }); %>
+                                            </tr>
+                                        <% }); %>
+                                    <% } else { %>
+                                        <tr><td colspan="14" style="text-align: center; padding: 20px;">No mapping data available.</td></tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+
+                            <div class="legend">
+                                <strong>Legend:</strong>
+                                <span><span class="legend-letter">I</span> - Introductory</span>,
+                                <span><span class="legend-letter">E</span> - Enabling</span>,
+                                <span><span class="legend-letter">D</span> - Demonstrative</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Concept Map -->
+                    <% if (locals.syl && syl.conceptMapImage) { %>
+                    <section class="content-panel-transparent">
+                        <div class="content-card-transparent">
+                            <div class="content-label-simple">CONCEPT MAP</div>
+                        </div>
+                        <div class="course-mapping-container" style="text-align: center;">
+                            <img src="<%= syl.conceptMapImage %>" alt="Concept Map" style="max-width: 100%; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                        </div>
+                    </section>
+                    <% } %>
+
+                    <section class="content-panel-transparent">
+                        <div class="info-item">
+                            <label>TEXTBOOK</label>
+                            <div class="course-editable-text multiline"><%= locals.syl && syl.textbook ? syl.textbook : 'None specified.' %></div>
+                        </div>
+                        <br>
+                        <div class="info-item">
+                            <label>REFERENCES</label>
+                            <div class="course-editable-text multiline"><%= locals.syl && syl.references ? syl.references : 'None specified.' %></div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+            
+            <div class="button-footer-outer" style="justify-content: center;">
+                 <button type="button" class="next-btn-rect" onclick="window.history.back()" style="width: 200px;">
+                    <span class="material-symbols-outlined">arrow_back</span>
+                    <span>CLOSE PREVIEW</span>
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts disabled for preview -->
+    <script>
+        // Disable any accidental edits
+        document.querySelectorAll('[contenteditable]').forEach(el => {
+            el.setAttribute('contenteditable', 'false');
+        });
+    </script>
+</body>
+
+</html>

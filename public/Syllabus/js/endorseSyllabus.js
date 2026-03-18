@@ -292,7 +292,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!isDeleteMode) {
             const courseId = card.dataset.id;
             const hasDraft = card.dataset.hasdraft === 'true';
-            if (courseId) window.openDraftModal(courseId, hasDraft);
+            const status = card.dataset.status || 'No Syllabus Draft';
+            if (courseId) window.openDraftModal(courseId, hasDraft, status);
             return;
         }
 
@@ -381,7 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (courses.length > 0) {
             courseGrid.innerHTML = courses.map(course => `
-                <div class="course-card" data-id="${course.id}" data-hasdraft="${course.hasDraft}">
+                <div class="course-card" data-id="${course.id}" data-hasdraft="${course.hasDraft}" data-status="${course.status || 'No Syllabus Draft'}">
                     <div class="card-image"><img src="${course.img}" alt="Course Image"></div>
                     <div class="card-content">
                         <span class="course-code">${course.code}</span>
@@ -412,19 +413,28 @@ document.addEventListener('DOMContentLoaded', () => {
 /* =====================================================================
    DRAFT MODAL (Global scope — PC version)
    ===================================================================== */
-window.openDraftModal = function (syllabusId, hasDraft) {
+window.openDraftModal = function (syllabusId, hasDraft, status) {
     const modal = document.getElementById('draftModal');
     const msg = document.getElementById('draftMessage');
     const btn = document.getElementById('draftActionBtn');
 
+    const RestrictedStatuses = ['Approved', 'Pending', 'Archived', 'Endorsed'];
+    const isRestricted = RestrictedStatuses.includes(status);
+
     if (hasDraft) {
-        msg.innerText = 'A syllabus draft already exists for this course.';
-        btn.innerText = 'Edit Syllabus Draft';
-        btn.onclick = () => window.location.href = `/syllabus/edit/${syllabusId}`;
+        if (isRestricted) {
+            msg.innerText = `This syllabus is currently ${status}. Editing is disabled.`;
+            btn.innerText = 'View Syllabus Draft';
+            btn.onclick = () => window.location.href = `/syllabus/preview/${syllabusId}`;
+        } else {
+            msg.innerText = 'A syllabus draft already exists for this course.';
+            btn.innerText = 'Edit Syllabus Draft';
+            btn.onclick = () => window.location.href = `/syllabus/create/${syllabusId}`;
+        }
     } else {
         msg.innerText = "There's no syllabus draft at the moment.";
         btn.innerText = '+ Add Syllabus Draft';
-        btn.onclick = () => { window.closeDraftModal(); window.location.href = '/syllabus/create'; };
+        btn.onclick = () => { window.closeDraftModal(); window.location.href = `/syllabus/create/${syllabusId}`; };
     }
 
     if (modal) modal.style.display = 'flex';

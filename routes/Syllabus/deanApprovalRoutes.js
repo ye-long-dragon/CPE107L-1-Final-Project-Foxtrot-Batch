@@ -1,6 +1,8 @@
 import express from 'express';
 import Syllabus from '../../models/Syllabus/syllabus.js';
 
+import SyllabusApprovalStatus from '../../models/Syllabus/syllabusApprovalStatus.js';
+
 const deanApprovalRouter = express.Router();
 
 /* -----------------------------------------------------------------------
@@ -11,6 +13,7 @@ deanApprovalRouter.get('/:syllabusId', async (req, res) => {
 
     try {
         const syl = await Syllabus.findById(syllabusId).populate('assignedInstructor');
+        const approval = await SyllabusApprovalStatus.findOne({ syllabusID: syllabusId });
 
         if (syl) {
             return res.render('Syllabus/syllabusApprovalDean', {
@@ -21,24 +24,16 @@ deanApprovalRouter.get('/:syllabusId', async (req, res) => {
                 fileType: 'Syllabus Draft',
                 syllabusId,
                 currentPageCategory: 'syllabus',
-                approvalStatus: syl.approvalStatus || 'pending'
+                approvalStatus: approval ? approval.status : 'Pending',
+                existingComment: approval ? (approval.remarks || '') : '',
+                workflowStep: 'approval', // Used by JS for signature logic
+                optionApproveValue: 'Approved'
             });
         }
     } catch (err) {
         console.error('Dean approval detail error:', err);
     }
-
-    // Fallback dummy data
-    res.render('Syllabus/syllabusApprovalDean', {
-        courseName: '[COURSE NAME]',
-        courseCode: '[COURSE CODE]',
-        courseSection: '[COURSE SECTION]',
-        academicYear: '[ACADEMIC YEAR]',
-        fileType: 'Syllabus Draft',
-        syllabusId,
-        currentPageCategory: 'syllabus',
-        approvalStatus: 'pending'
-    });
+    res.redirect('/syllabus/approve');
 });
 
 /* -----------------------------------------------------------------------
@@ -46,30 +41,40 @@ deanApprovalRouter.get('/:syllabusId', async (req, res) => {
    ----------------------------------------------------------------------- */
 deanApprovalRouter.post('/:syllabusId', async (req, res) => {
     const { syllabusId } = req.params;
-    const { comment, status, action } = req.body;
+    const { comment, status, action, signature, signatoryName } = req.body;
 
     try {
-        const syl = await Syllabus.findById(syllabusId);
-
-        if (!syl) {
-            return res.status(404).json({ success: false, message: 'Syllabus not found.' });
+        let approval = await SyllabusApprovalStatus.findOne({ syllabusID: syllabusId });
+        if (!approval) {
+            approval = new SyllabusApprovalStatus({ syllabusID: syllabusId });
         }
 
-        // Update status and dean comment
-        syl.approvalStatus = status || 'pending'; // e.g. "approved", "rejected", "pending"
-        syl.deanComment = comment || '';
-        await syl.save();
+        approval.remarks = comment || '';
 
-        console.log(`Dean Approval [${action}] syllabusId=${syllabusId} status=${syl.approvalStatus} comment=${syl.deanComment}`);
+        if (action === 'draft') {
+            await approval.save();
+            return res.json({ success: true, message: 'Approval draft saved.' });
+        }
 
-        return res.status(200).json({
-            success: true,
-            message: `Approval ${action} saved.`,
-            newStatus: syl.approvalStatus
-        });
+        if (status === 'Approved') {
+            approval.status = 'Approved';
+            approval.approvedBy = 'Dean';
+            approval.approvalDate = new Date();
+            
+            if (signature) approval.Dean_Signature = signature;
+            if (signatoryName) approval.Dean_SignatoryName = signatoryName;
+
+        } else if (status === 'Returned' || status === 'Returned to PC') {
+            approval.status = 'Returned to PC';
+            approval.approvedBy = 'Dean (Returned)';
+            approval.approvalDate = new Date();
+        }
+
+        await approval.save();
+        res.json({ success: true, message: status === 'Returned to PC' ? 'Returned to Program Chair.' : 'Approval submitted.' });
     } catch (err) {
         console.error('Dean approval action error:', err);
-        return res.status(500).json({ success: false, message: 'Internal server error.' });
+        res.status(500).json({ success: false, message: 'Internal server error.' });
     }
 });
 

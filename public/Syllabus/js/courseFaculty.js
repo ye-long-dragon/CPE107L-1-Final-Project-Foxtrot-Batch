@@ -35,8 +35,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const card = e.currentTarget;
         const courseId = card.dataset.id;
         const hasDraft = card.dataset.hasdraft === 'true';
+        const status = card.dataset.status || 'No Syllabus Draft';
         if (courseId) {
-            window.openDraftModal(courseId, hasDraft);
+            window.openDraftModal(courseId, hasDraft, status);
         }
     }
 
@@ -84,7 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (courses.length > 0) {
             courseGrid.innerHTML = courses.map(course => `
-                <div class="course-card" data-id="${course.id}" data-hasdraft="${course.hasDraft}">
+                <div class="course-card" data-id="${course.id}" data-hasdraft="${course.hasDraft}" data-status="${course.status || 'No Syllabus Draft'}">
                     <div class="card-image">
                         <img src="${course.img}" alt="Course Image">
                     </div>
@@ -112,15 +113,24 @@ document.addEventListener('DOMContentLoaded', () => {
 /* =====================================================================
    DRAFT STATUS MODAL LOGIC (GLOBAL SCOPE)
 ===================================================================== */
-window.openDraftModal = function (syllabusId, hasDraft) {
+window.openDraftModal = function (syllabusId, hasDraft, status) {
     const modal = document.getElementById('draftModal');
     const msg = document.getElementById('draftMessage');
     const btn = document.getElementById('draftActionBtn');
 
+    const RestrictedStatuses = ['Approved', 'Pending', 'Archived', 'Endorsed'];
+    const isRestricted = RestrictedStatuses.includes(status);
+
     if (hasDraft) {
-        msg.innerText = "A syllabus draft already exists for this course.";
-        btn.innerText = "Edit Syllabus Draft";
-        btn.onclick = () => window.location.href = `/syllabus/edit/${syllabusId}`;
+        if (isRestricted) {
+            msg.innerText = `This syllabus is currently ${status}. Editing is disabled.`;
+            btn.innerText = "View Syllabus Draft";
+            btn.onclick = () => window.location.href = `/syllabus/preview/${syllabusId}`;
+        } else {
+            msg.innerText = "A syllabus draft already exists for this course.";
+            btn.innerText = "Edit Syllabus Draft";
+            btn.onclick = () => window.location.href = `/syllabus/edit/${syllabusId}`;
+        }
     } else {
         msg.innerText = "There's no syllabus draft at the moment.";
         btn.innerText = "+ Add Syllabus Draft";

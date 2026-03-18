@@ -1,4 +1,5 @@
 import express from "express";
+
 import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -103,6 +104,7 @@ import endorseSyllabusRouter from "./routes/Syllabus/endorseSyllabusRoutes.js";
 import deanApprovalRouter from "./routes/Syllabus/deanApprovalRoutes.js";
 import adminOverviewRouter from "./routes/Syllabus/adminOverviewRoute.js";
 import scheduleSyllabusRoutes from "./routes/Syllabus/scheduleSyllabusRoutes.js";
+import previewRoutes from "./routes/Syllabus/previewRoutes.js";
 
 // ATA
 import ataPages from "./routes/ATA/ataPages.js";
@@ -147,7 +149,6 @@ app.get("/syllabus", (req, res) => {
 });
 
 app.use((req, res, next) => {
-    console.log(`DEBUG: Incoming Request - ${req.method} ${req.url} - (Original URL: ${req.originalUrl})`);
     next();
 });
 
@@ -161,6 +162,7 @@ app.use("/syllabus/schedule", scheduleSyllabusRoutes);
 app.use("/syllabus/tech-assistant", syllabusApprovalTechAsstRouter);
 app.use("/syllabus/prog-chair", endorseSyllabusRouter);
 app.use("/syllabus/dean/approve", deanApprovalRouter);
+app.use("/syllabus/preview", previewRoutes);
 app.use("/syllabus/hr", adminOverviewRouter);
 app.use("/syllabus", courseOverviewRoutes); // wildcard /:userId — MUST be last
 

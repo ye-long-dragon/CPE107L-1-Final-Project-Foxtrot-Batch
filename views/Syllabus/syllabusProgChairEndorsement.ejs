@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="/Syllabus/css/syllabusApprovalDetail.css">
 </head>
 
-<body>
+<body data-user-role="program-chair">
 
     <main class="approval-detail-main">
         <div class="background-overlay"></div>
@@ -227,6 +227,18 @@
                         <p style="color: #666; font-style: italic; margin-bottom: 2.5rem;">No schedule provided.</p>
                     <% } %>
 
+                    <!-- ── Signature Block for PDF Export ── -->
+                    <div id="document-signature-section" style="display: none; margin-top: 4rem; width: 100%; page-break-inside: avoid;">
+                        <div style="width: 350px; text-align: left;">
+                            <p style="font-weight: bold; margin-bottom: 0.5rem; color: #333; font-size: 0.95rem;">Approved by:</p>
+                            <div id="preview-signature-img-container" style="height: 80px; margin-bottom: 5px; position:relative; display: flex; align-items: flex-end;">
+                                <!-- Signature image will be placed here -->
+                            </div>
+                            <p id="preview-signatory-name" style="font-weight: bold; text-decoration: underline; text-transform: uppercase; margin: 0; font-size: 1rem;">PROGRAM CHAIR</p>
+                            <p style="margin: 0; font-size: 0.85rem; color: #555; font-style: italic;">Program Chair</p>
+                        </div>
+                    </div>
+
                 </div>
             </section>
 
@@ -244,7 +256,7 @@
                     if (locals.workflowStep === 'approval') {
                         if (locals.approvalState === 'PC_Approved') {
                             pcStatus = 'approved';
-                            pcLabel = 'Approved';
+                            pcLabel = 'Endorsed';
                         }
                     } else if (locals.workflowStep === 'endorsement') {
                         if (locals.currentStatus === 'Approved') {
@@ -297,10 +309,10 @@
                             <option value="" disabled <%= (!locals.approvalState || locals.approvalState === 'Pending') && locals.currentStatus === 'Pending' ? 'selected' : '' %>>-- Select Status --</option>
                             <option value="<%= locals.optionApproveValue || 'PC_Approved' %>" 
                                 <%= (locals.approvalState === locals.optionApproveValue || locals.currentStatus === locals.optionApproveValue) ? 'selected' : '' %>>
-                                Approve Syllabus
+                                Endorse Syllabus
                             </option>
                             <option value="Reject" <%= (locals.approvalState === 'Rejected' || locals.currentStatus === 'Rejected' || locals.approvalState === 'Returned' || locals.approvalState === 'Rejected') ? 'selected' : '' %>>
-                                Reject Syllabus
+                                Return to Faculty
                             </option>
                         </select>
                     </div>
@@ -309,6 +321,9 @@
                 <!-- ── Signature Box (Approval or Endorsement Only) ── -->
                 <% if (locals.workflowStep === 'approval' || locals.workflowStep === 'endorsement') { %>
                 <div class="ad-sidebar-section" id="signature-section" style="display: none;">
+                    <label class="ad-sidebar-label">Signatory Name</label>
+                    <input type="text" id="signatory-name-input" class="ad-comments-box" placeholder="e.g. Dr. Juan dela Cruz" style="margin-bottom: 15px; padding: 10px 12px; height: 40px; box-sizing: border-box;">
+
                     <label class="ad-sidebar-label">E-Signature</label>
                     <div class="ad-signature-wrapper">
                         <div class="ad-signature-box" id="signature-box">
