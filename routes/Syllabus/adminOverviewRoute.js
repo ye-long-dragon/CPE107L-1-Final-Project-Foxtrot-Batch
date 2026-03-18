@@ -3,6 +3,11 @@ import mongoose from 'mongoose';
 import { mainDB } from '../../database/mongo-dbconnect.js';
 import Syllabus from '../../models/Syllabus/syllabus.js';
 import SyllabusApprovalStatus from '../../models/Syllabus/syllabusApprovalStatus.js';
+import ProgramEducationObjectives from '../../models/Syllabus/programEducationObjectives.js';
+import StudentEducationObjectives from '../../models/Syllabus/studentEducationalObjectives.js';
+import CourseOutcomes from '../../models/Syllabus/courseOutcomes.js';
+import CourseMapping from '../../models/Syllabus/courseMapping.js';
+import WeeklySchedule from '../../models/Syllabus/weeklySchedule.js';
 
 const adminOverviewRouter = express.Router();
 
@@ -140,14 +145,33 @@ adminOverviewRouter.get('/review/:syllabusId', async (req, res) => {
             course = await Syllabus.findById(syllabusId);
         }
 
+        let peos = [], seos = [], cos = [], mappings = [], schedules = [];
+        if (course) {
+            peos = await ProgramEducationObjectives.find({ syllabusID: syllabusId });
+            seos = await StudentEducationObjectives.find({ syllabusID: syllabusId });
+            cos = await CourseOutcomes.find({ syllabusID: syllabusId });
+            mappings = await CourseMapping.find({ syllabusID: syllabusId });
+            schedules = await WeeklySchedule.find({ syllabusID: syllabusId }).sort({ week: 1 });
+        }
+
         // Pass dummy data if actual record missing
         let viewData = {
             syllabusId: syllabusId,
             courseName: course ? course.courseTitle : "Introduction to Demo Course",
             courseCode: course ? course.courseCode : "DEMO101",
-            courseSection: "A1",
-            academicYear: "2025-2026",
-            fileType: "Syllabus Form"
+            courseSection: course ? course.section : "A1",
+            academicYear: course ? course.academicYear : "2025-2026",
+            fileType: "Syllabus Form",
+            peos,
+            seos,
+            cos,
+            mappings,
+            schedules,
+            currentStatus: approval ? approval.status : 'Pending',
+            existingComment: approval ? (approval.remarks || '') : '',
+            hrSignature: approval ? (approval.HR_Signature || null) : null,
+            hrSignatoryName: approval ? (approval.HR_SignatoryName || '') : '',
+            syl: course // Pass the syllabus object for the concept map
         };
 
         res.render('Syllabus/syllabusApprovalHR', viewData);
@@ -162,7 +186,7 @@ adminOverviewRouter.get('/review/:syllabusId', async (req, res) => {
    ----------------------------------------------------------------------- */
 adminOverviewRouter.post('/archive/:syllabusId', async (req, res) => {
     const { syllabusId } = req.params;
-    const { archivedBy } = req.body;
+    const { archivedBy, remarks, signature, signatoryName } = req.body;
 
     try {
         const record = await SyllabusApprovalStatus.findOne({ syllabusID: syllabusId });
@@ -170,8 +194,11 @@ adminOverviewRouter.post('/archive/:syllabusId', async (req, res) => {
         if (record.status !== 'Approved') return res.status(400).json({ success: false, message: 'Only approved syllabuses can be archived.' });
 
         record.status = 'Archived';
+        record.remarks = remarks || record.remarks;
         record.archivedBy = archivedBy || 'HR Admin';
         record.archivedDate = new Date();
+        record.HR_Signature = signature || record.HR_Signature;
+        record.HR_SignatoryName = signatoryName || record.HR_SignatoryName;
         await record.save();
 
         res.json({ success: true, message: 'Syllabus archived successfully.' });

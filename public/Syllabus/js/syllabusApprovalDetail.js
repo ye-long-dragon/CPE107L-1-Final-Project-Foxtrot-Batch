@@ -31,14 +31,15 @@ document.addEventListener('DOMContentLoaded', () => {
             statusDot.classList.add('indicator-pending');
         }
 
-        // Conditional Logic for Program Chair Endorsement or Dean Approval
-        if (btnSubmit && (workflowStep === 'endorsement' || workflowStep === 'approval')) {
+        // Conditional Logic for Program Chair Endorsement, Dean Approval, or HR Archiving
+        if (btnSubmit && (workflowStep === 'endorsement' || workflowStep === 'approval' || workflowStep === 'archiving')) {
             const approveVal = typeof SYLLABUS_APPROVAL_DATA !== 'undefined' ? (SYLLABUS_APPROVAL_DATA.optionApproveValue || 'PC_Approved') : 'PC_Approved';
             
             // Reset button styles initially
             btnSubmit.style.backgroundColor = '';
             btnSubmit.style.color = '';
-            btnSubmit.textContent = workflowStep === 'endorsement' ? 'Endorse Syllabus' : 'Submit Approval';
+            btnSubmit.textContent = workflowStep === 'endorsement' ? 'Endorse Syllabus' : 
+                                    (workflowStep === 'archiving' ? 'Archive Syllabus' : 'Submit Approval');
 
             if (val === approveVal) {
                 // APPROVE SYLLABUS CASE
@@ -162,7 +163,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (signatoryInput && signatoryPreview) {
         signatoryInput.addEventListener('input', (e) => {
-            const defaultText = userRole === 'dean' ? 'DEAN' : 'PROGRAM CHAIR';
+            let defaultText = 'PROGRAM CHAIR';
+            if (userRole === 'dean') defaultText = 'DEAN';
+            else if (userRole === 'hr') defaultText = 'HR ADMIN';
+            
             signatoryPreview.textContent = e.target.value.trim().toUpperCase() || defaultText;
         });
     }

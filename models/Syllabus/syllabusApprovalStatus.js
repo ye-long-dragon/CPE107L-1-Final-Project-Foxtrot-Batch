@@ -21,7 +21,11 @@ const syllabusApprovalStatusSchema = new Schema({
   Dean_SignatoryName: String,
 
   archivedBy: String,
-  archivedDate: Date
+  archivedDate: Date,
+
+  // HR Signature Fields
+  HR_Signature: String,
+  HR_SignatoryName: String
 }, { timestamps: true });
 
 const SyllabusApprovalStatus = mainDB.models.SyllabusApprovalStatus || mainDB.model("SyllabusApprovalStatus", syllabusApprovalStatusSchema);

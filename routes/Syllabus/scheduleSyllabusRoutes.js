@@ -76,7 +76,7 @@ scheduleSyllabusRoutes.post('/submit', async (req, res) => {
         existingSyllabus.references = payload.basicInfo.references || "";
 
         if (payload.conceptMap) {
-            existingSyllabus.courseImage = payload.conceptMap;
+            existingSyllabus.conceptMap = payload.conceptMap;
         }
 
         await existingSyllabus.save();

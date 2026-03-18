@@ -27,9 +27,9 @@ app.get('/ping', (req, res) => {
 });
 const PORT = process.env.PORT || 3000;
 
-// JSON
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// JSON & URL Encoding (Increased limit for Base64 Images)
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Session
 app.use(session({
@@ -47,13 +47,6 @@ app.use((req, res, next) => {
     res.locals.user = req.session.user || null;
     next();
 });
-
-// ========================
-// Middleware
-// ========================
-// ADDED: These are required for the Bulk Delete feature
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
 
 // ========================
 // View Engine Setup

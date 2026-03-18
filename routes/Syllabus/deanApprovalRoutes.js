@@ -2,6 +2,11 @@ import express from 'express';
 import Syllabus from '../../models/Syllabus/syllabus.js';
 
 import SyllabusApprovalStatus from '../../models/Syllabus/syllabusApprovalStatus.js';
+import ProgramEducationObjectives from '../../models/Syllabus/programEducationObjectives.js';
+import StudentEducationObjectives from '../../models/Syllabus/studentEducationalObjectives.js';
+import CourseOutcomes from '../../models/Syllabus/courseOutcomes.js';
+import CourseMapping from '../../models/Syllabus/courseMapping.js';
+import WeeklySchedule from '../../models/Syllabus/weeklySchedule.js';
 
 const deanApprovalRouter = express.Router();
 
@@ -16,6 +21,12 @@ deanApprovalRouter.get('/:syllabusId', async (req, res) => {
         const approval = await SyllabusApprovalStatus.findOne({ syllabusID: syllabusId });
 
         if (syl) {
+            const peos = await ProgramEducationObjectives.find({ syllabusID: syllabusId });
+            const seos = await StudentEducationObjectives.find({ syllabusID: syllabusId });
+            const cos = await CourseOutcomes.find({ syllabusID: syllabusId });
+            const mappings = await CourseMapping.find({ syllabusID: syllabusId });
+            const schedules = await WeeklySchedule.find({ syllabusID: syllabusId }).sort({ week: 1 });
+
             return res.render('Syllabus/syllabusApprovalDean', {
                 courseName: syl.courseTitle || 'Course Name',
                 courseCode: syl.courseCode || 'Course Code',
@@ -27,7 +38,13 @@ deanApprovalRouter.get('/:syllabusId', async (req, res) => {
                 approvalStatus: approval ? approval.status : 'Pending',
                 existingComment: approval ? (approval.remarks || '') : '',
                 workflowStep: 'approval', // Used by JS for signature logic
-                optionApproveValue: 'Approved'
+                optionApproveValue: 'Approved',
+                peos,
+                seos,
+                cos,
+                mappings,
+                schedules,
+                syl // Pass the full syllabus object for the concept map
             });
         }
     } catch (err) {

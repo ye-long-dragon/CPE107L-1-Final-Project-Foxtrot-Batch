@@ -195,6 +195,15 @@
                         <p style="color: #666; font-style: italic; margin-bottom: 2.5rem;">No course mappings provided.</p>
                     <% } %>
 
+                    <h3 style="color:#800000; border-bottom: 2px solid #800000; padding-bottom: 0.5rem; margin-bottom: 1rem; font-weight: 600;">Concept Map</h3>
+                    <% if (locals.syl && locals.syl.conceptMap) { %>
+                        <div style="margin-bottom: 2.5rem; text-align: center; border: 1px solid #ddd; padding: 10px; border-radius: 8px;">
+                            <img src="<%= locals.syl.conceptMap %>" alt="Concept Map" style="max-width: 100%; height: auto; border-radius: 4px;">
+                        </div>
+                    <% } else { %>
+                        <p style="color: #666; font-style: italic; margin-bottom: 2.5rem;">No concept map image provided.</p>
+                    <% } %>
+
                     <h3 style="color:#800000; border-bottom: 2px solid #800000; padding-bottom: 0.5rem; margin-bottom: 1rem; font-weight: 600;">Course Schedule</h3>
                     <% if (locals.schedules && locals.schedules.length > 0) { %>
                         <table style="width:100%; border-collapse: collapse; margin-bottom: 2.5rem; font-size: 0.85rem;">

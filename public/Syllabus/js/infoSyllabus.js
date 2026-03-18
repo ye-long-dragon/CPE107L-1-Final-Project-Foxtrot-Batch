@@ -36,7 +36,10 @@ function autoSaveInfo() {
         // Editor Table (The one with the toolbar)
         editorRows: Array.from(document.querySelectorAll('#outcomes-editor-body tr')).map(row => {
             return Array.from(row.querySelectorAll('.editable-cell')).map(cell => cell.innerHTML);
-        })
+        }),
+
+        // Concept Map
+        conceptMap: document.getElementById('concept-map-preview')?.src || ""
     };
 
     const key = `syllabus_draft_info_${window.CURRENT_SYLLABUS_ID || 'default'}`;
@@ -124,7 +127,17 @@ function loadInfoFromSession() {
         });
     }
 
-    // 5. Cleanup Placeholders
+    // 5. Restore Concept Map
+    if (data.conceptMap && data.conceptMap !== "" && !data.conceptMap.endsWith('undefined')) {
+        const wrapper = document.getElementById('concept-map-wrapper');
+        const preview = document.getElementById('concept-map-preview');
+        if (wrapper && preview) {
+            preview.src = data.conceptMap;
+            wrapper.style.display = 'block';
+        }
+    }
+
+    // 6. Cleanup Placeholders
     refreshPlaceholders();
 }
 
@@ -191,6 +204,16 @@ function loadInfoFromServer() {
                 });
             }
         });
+    }
+
+    // 5. Concept Map from server
+    if (syl && syl.conceptMap) {
+        const wrapper = document.getElementById('concept-map-wrapper');
+        const preview = document.getElementById('concept-map-preview');
+        if (wrapper && preview) {
+            preview.src = syl.conceptMap;
+            wrapper.style.display = 'block';
+        }
     }
 
     refreshPlaceholders();
@@ -455,10 +478,18 @@ outcomesMutationObserver.observe(document.getElementById('outcomes-container'), 
 function previewConceptMap(input) {
   const file = input.files[0];
   if (!file) return;
-  const wrapper = document.getElementById('concept-map-wrapper');
-  const preview = document.getElementById('concept-map-preview');
-  preview.src = URL.createObjectURL(file);
-  wrapper.style.display = 'block';
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+      const wrapper = document.getElementById('concept-map-wrapper');
+      const preview = document.getElementById('concept-map-preview');
+      if (wrapper && preview) {
+          preview.src = e.target.result;
+          wrapper.style.display = 'block';
+          autoSaveInfo(); // Trigger auto-save immediately on upload
+      }
+  };
+  reader.readAsDataURL(file);
 }
 
 function deleteConceptMap() {
@@ -958,7 +989,7 @@ window.saveInfoToSession = function() {
 
         // 6. Concept Map
         const conceptMapImg = document.getElementById('concept-map-preview');
-        if (conceptMapImg && conceptMapImg.src && conceptMapImg.src.startsWith('data:')) {
+        if (conceptMapImg && conceptMapImg.src && conceptMapImg.src.trim() !== "" && !conceptMapImg.src.endsWith('undefined')) {
             payload.conceptMap = conceptMapImg.src;
         }
 
