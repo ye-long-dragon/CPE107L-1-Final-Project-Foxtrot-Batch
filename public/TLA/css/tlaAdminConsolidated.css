@@ -336,6 +336,16 @@ body {
     color: #991b1b;
 }
 
+.sts-hr-approved {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.sts-approved {
+    background: #d1fae5;
+    color: #065f46;
+}
+
 .sts-archived {
     background: #d1fae5;
     color: #065f46;

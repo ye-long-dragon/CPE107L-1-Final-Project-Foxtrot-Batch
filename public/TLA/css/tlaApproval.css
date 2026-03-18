@@ -698,11 +698,9 @@ body {
 }
 
 .chip-pending             { background: #e07b22; }
-.chip-tech-approved       { background: #2563eb; }
 .chip-chair-approved      { background: #7c3aed; }
-.chip-practicum-approved  { background: #4f46e5; }
 .chip-dean-approved       { background: #0f766e; }
-.chip-vpaa-noted          { background: #0891b2; }
-.chip-archived            { background: #1a7f4e; }
+.chip-hr-approved         { background: #0891b2; }
+.chip-approved            { background: #1a7f4e; }
 .chip-returned            { background: #a00100; }
 

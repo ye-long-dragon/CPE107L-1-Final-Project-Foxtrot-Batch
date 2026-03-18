@@ -170,12 +170,10 @@
                     <% if (locals.macroStatus) { %>
                         <span class="macro-status-chip <%=
                             locals.macroStatus === 'Pending' ? 'chip-pending' :
-                            locals.macroStatus === 'Tech-Approved' ? 'chip-tech-approved' :
                             locals.macroStatus === 'Chair-Approved' ? 'chip-chair-approved' :
-                            locals.macroStatus === 'Practicum-Approved' ? 'chip-practicum-approved' :
                             locals.macroStatus === 'Dean-Approved' ? 'chip-dean-approved' :
-                            locals.macroStatus === 'VPAA-Noted' ? 'chip-vpaa-noted' :
-                            locals.macroStatus === 'Archived' ? 'chip-archived' :
+                            locals.macroStatus === 'HR-Approved' ? 'chip-hr-approved' :
+                            locals.macroStatus === 'Approved' ? 'chip-approved' :
                             locals.macroStatus === 'Returned' ? 'chip-returned' : ''
                         %>"><%= locals.macroStatus %></span>
                     <% } %>
@@ -183,8 +181,9 @@
 
                 <div class="approval-tracker">
                     <%
-                        // Build tracker steps with per-step data from the controller
-                        // approvalSteps: { faculty, technical, programChair, practicumCoordinator, dean, vpaa, hr }
+                        // Build tracker steps for the 5-step chain:
+                        // Faculty → Program Chair → Dean → HR/HRMO → VPAA (final)
+                        // approvalSteps: { faculty, programChair, dean, hr, vpaa }
 
                         function fmtDate(d) {
                             if (!d) return '';
@@ -194,15 +193,9 @@
 
                         const steps = [
                             {
-                                role:   'Faculty',
+                                role:   'Professor',
                                 label:  'Submitted',
                                 status: locals.approvalSteps ? approvalSteps.faculty : 'pending',
-                                detail: ''
-                            },
-                            {
-                                role:   'Technical',
-                                label:  'Assessed',
-                                status: locals.approvalSteps ? approvalSteps.technical : 'pending',
                                 detail: ''
                             },
                             {
@@ -212,27 +205,21 @@
                                 detail: ''
                             },
                             {
-                                role:   'Practicum Coord.',
-                                label:  'Validated',
-                                status: locals.approvalSteps ? approvalSteps.practicumCoordinator : 'pending',
-                                detail: ''
-                            },
-                            {
                                 role:   'Dean',
                                 label:  'Approved',
                                 status: locals.approvalSteps ? approvalSteps.dean : 'pending',
                                 detail: ''
                             },
                             {
-                                role:   'VPAA',
-                                label:  'Noted',
-                                status: locals.approvalSteps ? approvalSteps.vpaa : 'pending',
+                                role:   'HR / HRMO',
+                                label:  'Reviewed',
+                                status: locals.approvalSteps ? approvalSteps.hr : 'pending',
                                 detail: ''
                             },
                             {
-                                role:   'HR / HRMO',
-                                label:  'Archived',
-                                status: locals.approvalSteps ? approvalSteps.hr : 'pending',
+                                role:   'VPAA',
+                                label:  'Final Approval',
+                                status: locals.approvalSteps ? approvalSteps.vpaa : 'pending',
                                 detail: ''
                             }
                         ];
@@ -275,12 +262,10 @@
                 <% if (locals.activeStep) { %>
                     <%
                         const stepLabels = {
-                            technical:            'Technical Assessment',
                             programChair:         'Program Chair Endorsement',
-                            practicumCoordinator: 'Practicum Coordinator Validation',
                             dean:                 "Dean's Approval",
-                            vpaa:                 'VPAA Notation',
-                            hr:                   'HR/HRMO Archival'
+                            hr:                   'HR/HRMO Workload Review',
+                            vpaa:                 'VPAA Final Approval'
                         };
                     %>
                     <div class="sidebar-section role-action-panel">
@@ -289,16 +274,11 @@
                             <%= stepLabels[locals.activeStep] || 'Review' %>
                         </p>
                         <p class="action-panel-hint">
-                            <% if (locals.activeStep === 'hr') { %>
-                                You are archiving this TLA permanently on behalf of HR.
-                            <% } else { %>
-                                Select your verdict and submit. A <strong>Returned</strong> verdict will send
-                                the submission back to the faculty member.
-                            <% } %>
+                            Select your verdict and submit. A <strong>Returned</strong> verdict will send
+                            the submission back to the Professor with your remarks.
                         </p>
 
-                        <!-- Verdict dropdown (hidden for HR — HR only archives) -->
-                        <% if (locals.activeStep !== 'hr') { %>
+                        <!-- Verdict dropdown -->
                         <div class="sidebar-section">
                             <label class="sidebar-label">Verdict</label>
                             <div class="status-select-wrapper">
@@ -309,7 +289,6 @@
                                 </select>
                             </div>
                         </div>
-                        <% } %>
 
                         <!-- E-Signature -->
                         <div class="sidebar-section">
@@ -336,7 +315,6 @@
                                 <span class="material-symbols-outlined">picture_as_pdf</span>
                                 Save as PDF
                             </button>
-                            <% if (locals.activeStep !== 'hr') { %>
                             <button type="button" class="btn-action btn-draft" id="btn-save-draft">
                                 <span class="material-symbols-outlined">save</span>
                                 Save Draft
@@ -345,19 +323,6 @@
                                 <span class="material-symbols-outlined">send</span>
                                 Submit Verdict
                             </button>
-                            <% } else { %>
-                            <!-- HR: Archive button posts to dedicated route -->
-                            <form method="POST" action="/admin/tla/archive/<%= locals.tla ? tla._id : '' %>"
-                                  onsubmit="return confirm('Archive this TLA permanently? This action cannot be undone.');
-                                  " class="hr-archive-form">
-                                <input type="hidden" name="comment" id="hr-comment-hidden" value="">
-                                <button type="submit" class="btn-action btn-archive-submit"
-                                        onclick="document.getElementById('hr-comment-hidden').value = document.getElementById('approval-comments').value;">
-                                    <span class="material-symbols-outlined">archive</span>
-                                    Archive TLA
-                                </button>
-                            </form>
-                            <% } %>
                         </div>
                     </div>
 
@@ -371,8 +336,8 @@
                         <p class="readonly-hint">
                             <% if (locals.macroStatus === 'Not Submitted') { %>
                                 This TLA has not been submitted by the faculty yet.
-                            <% } else if (locals.macroStatus === 'Archived') { %>
-                                This TLA has been fully archived. No further action is required.
+                            <% } else if (locals.macroStatus === 'Approved') { %>
+                                This TLA has been fully approved. No further action is required.
                             <% } else { %>
                                 This TLA is currently at a different review step. Your role will be
                                 able to act once it reaches your stage.

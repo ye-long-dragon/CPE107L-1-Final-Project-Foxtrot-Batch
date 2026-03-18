@@ -22,11 +22,36 @@ document.addEventListener('DOMContentLoaded', function () {
         btn.addEventListener('click', function () {
             const input = document.createElement('input');
             input.type = 'file';
-            input.accept = 'image/*,.pdf';
+            input.accept = 'image/*';
             input.onchange = function (e) {
                 const file = e.target.files[0];
                 if (file) {
                     btn.textContent = '\uD83D\uDCCE ' + file.name;
+                    // Convert to base64 and save to user profile
+                    const reader = new FileReader();
+                    reader.onload = function (event) {
+                        const signatureBase64 = event.target.result;
+                        // POST signature to user profile
+                        fetch('/user/update-signature', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ signatureImage: signatureBase64 })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.success) {
+                                console.log('Signature saved to profile:', file.name);
+                            } else {
+                                console.error('Failed to save signature:', data.message);
+                                alert('Error saving signature: ' + data.message);
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Upload error:', err);
+                            alert('Error uploading signature: ' + err.message);
+                        });
+                    };
+                    reader.readAsDataURL(file);
                 }
             };
             input.click();
@@ -43,7 +68,28 @@ document.addEventListener('DOMContentLoaded', function () {
  * pixel-perfect copy of the real TLA document.
  */
 function printTLAForm() {
-    const data = buildPdfPayload();
+    const v = (name) => {
+        const el = document.querySelector(`[name="${name}"]`);
+        return el ? (el.value || '').trim() : '';
+    };
+
+    const data = new URLSearchParams({
+        _tlaId:                      v('_tlaId'),
+        courseCode:                  v('courseCode'),
+        section:                     v('section'),
+        dateofDigitalDay:            v('dateofDigitalDay'),
+        facultyFacilitating:         v('facultyFacilitating') || v('_name'),
+        courseOutcomes:              v('courseOutcomes'),
+        mediatingOutcomes:           v('mediatingOutcomes'),
+        pre_moIloCode:               v('pre_moIloCode'),
+        pre_teacherLearningActivity: v('pre_teacherLearningActivity'),
+        pre_lmsDigitalTool:          v('pre_lmsDigitalTool'),
+        pre_assessment:              v('pre_assessment'),
+        post_moIloCode:              v('post_moIloCode'),
+        post_participantTurnout:     v('post_participantTurnout'),
+        post_assessmentResults:      v('post_assessmentResults'),
+        post_remarks:                v('post_remarks'),
+    });
 
     fetch('/tla/form/generate-docx', { method: 'POST', body: data })
         .then(res => {
@@ -71,6 +117,7 @@ function buildPdfPayload() {
     };
 
     return new URLSearchParams({
+        _tlaId:                      v('_tlaId'),
         courseCode:                  v('courseCode'),
         section:                     v('section'),
         dateofDigitalDay:            v('dateofDigitalDay'),

@@ -123,28 +123,37 @@
                     <div class="module-body" id="tla-body">
                         <%
                             const dotClassMap = {
-                                'Approved':      'dot-green',
-                                'Archived':      'dot-green',
-                                'Pending':       'dot-orange',
-                                'Returned':      'dot-red',
-                                'Draft':         'dot-gray',
-                                'Not Submitted': 'dot-gray'
+                                'Approved':       'dot-green',
+                                'Archived':       'dot-green',
+                                'HR-Approved':    'dot-blue',
+                                'Dean-Approved':  'dot-blue',
+                                'Chair-Approved': 'dot-blue',
+                                'Pending':        'dot-orange',
+                                'Returned':       'dot-red',
+                                'Draft':          'dot-gray',
+                                'Not Submitted':  'dot-gray'
                             };
                             const stsClassMap = {
-                                'Approved':      'sts-approved',
-                                'Archived':      'sts-approved',
-                                'Pending':       'sts-pending',
-                                'Returned':      'sts-rejected',
-                                'Draft':         'sts-not-started',
-                                'Not Submitted': 'sts-not-started'
+                                'Approved':       'sts-approved',
+                                'Archived':       'sts-approved',
+                                'HR-Approved':    'sts-pending',
+                                'Dean-Approved':  'sts-pending',
+                                'Chair-Approved': 'sts-pending',
+                                'Pending':        'sts-pending',
+                                'Returned':       'sts-rejected',
+                                'Draft':          'sts-not-started',
+                                'Not Submitted':  'sts-not-started'
                             };
                             const stsTextMap = {
-                                'Approved':      'APPROVED',
-                                'Archived':      'ARCHIVED',
-                                'Pending':       'PENDING',
-                                'Returned':      'RETURNED',
-                                'Draft':         'DRAFT',
-                                'Not Submitted': 'NOT STARTED'
+                                'Approved':       'APPROVED',
+                                'Archived':       'ARCHIVED',
+                                'HR-Approved':    'HR APPROVED',
+                                'Dean-Approved':  'DEAN APPROVED',
+                                'Chair-Approved': 'CHAIR APPROVED',
+                                'Pending':        'PENDING',
+                                'Returned':       'RETURNED',
+                                'Draft':          'DRAFT',
+                                'Not Submitted':  'NOT STARTED'
                             };
                         %>
                         <% weeks.forEach(function(week) { %>

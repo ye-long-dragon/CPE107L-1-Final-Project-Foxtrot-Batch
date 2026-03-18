@@ -12,16 +12,14 @@ const tlaSchema = new Schema({
   status: {
     type: String,
     enum: [
-      "Draft",
-      "Pending",
-      "Tech-Approved",
-      "Chair-Approved",
-      "Practicum-Approved",
-      "Dean-Approved",
-      "VPAA-Noted",
-      "Approved",
-      "Returned",
-      "Archived"
+      "Draft",              // Faculty working on it
+      "Pending",            // Submitted, awaiting Program-Chair
+      "Chair-Approved",     // Program Chair endorsed, awaiting Dean
+      "Dean-Approved",      // Dean approved, awaiting HR/HRMO
+      "HR-Approved",        // HR/HRMO approved, awaiting VPAA
+      "Approved",           // VPAA final approval — fully complete
+      "Returned",           // Rejected at any stage, back to Professor
+      "Archived"            // Legacy / admin-archived
     ],
     default: "Draft"
   },

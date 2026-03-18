@@ -26,14 +26,18 @@
             <h1>COLLEGE TEACHING-LEARNING ACTIVITY</h1>
 
             <!-- Status badge for non-editable records -->
-            <% if (status && ['Pending','Tech-Approved','Chair-Approved','Practicum-Approved','Dean-Approved','VPAA-Noted','Approved','Archived'].includes(status.status)) { %>
+            <% if (status && ['Pending','Chair-Approved','Dean-Approved','HR-Approved','Approved','Archived'].includes(status.status)) { %>
                 <div class="status-badge status-badge--locked">
-                    <% if (['Pending','Tech-Approved','Chair-Approved','Practicum-Approved'].includes(status.status)) { %>
-                        &#9203; This TLA is <strong>Pending</strong> approval. Pre-digital section is locked.
-                    <% } else if (['Dean-Approved','Approved'].includes(status.status)) { %>
-                        &#9989; Pre-digital session <strong>Approved</strong>. You may now fill in the post-digital section.
-                    <% } else if (status.status === 'VPAA-Noted') { %>
-                        &#9203; This TLA is <strong>VPAA Noted</strong> and awaiting HR archival.
+                    <% if (status.status === 'Pending') { %>
+                        &#9203; This TLA is <strong>Pending</strong> Program Chair review. Pre-digital section is locked.
+                    <% } else if (status.status === 'Chair-Approved') { %>
+                        &#9203; This TLA is <strong>Chair-Approved</strong>, awaiting Dean review.
+                    <% } else if (status.status === 'Dean-Approved') { %>
+                        &#9203; This TLA is <strong>Dean-Approved</strong>, awaiting HR/HRMO review.
+                    <% } else if (status.status === 'HR-Approved') { %>
+                        &#9203; This TLA is <strong>HR-Approved</strong>, awaiting VPAA final approval.
+                    <% } else if (status.status === 'Approved') { %>
+                        &#9989; This TLA has been <strong>Approved</strong> by VPAA. Fully complete.
                     <% } else { %>
                         &#128274; This TLA is <strong><%= status.status %></strong> and cannot be edited.
                     <% } %>
@@ -42,16 +46,17 @@
 
             <%
                 const formAction = tla ? '/tla/form/' + tla._id : '/tla/form';
-                // Pre-digital locked when Pending, Approved, or Archived
-                const isLocked   = status && ['Pending','Tech-Approved','Chair-Approved','Practicum-Approved','Dean-Approved','VPAA-Noted','Approved','Archived'].includes(status.status);
+                // Pre-digital locked when in approval chain or fully approved
+                const isLocked   = status && ['Pending','Chair-Approved','Dean-Approved','HR-Approved','Approved','Archived'].includes(status.status);
                 const backToOverviewLink = (locals.syllabusId && String(locals.syllabusId).trim())
-                    ? '/tla/overview/' + locals.syllabusId
+                    ? ('/tla/overview/' + locals.syllabusId)
                     : '/tla/overview';
             %>
             
             <form id="tla-form" action="<%= formAction %>" method="POST">
-                <input type="hidden" name="syllabusId" value="<%= locals.syllabusId || '' %>">
-
+                <% if (tla) { %>
+                <input type="hidden" name="_tlaId" value="<%= tla._id %>">
+                <% } %>
                 <div class="form-section top-section">
                     <div class="form-row two-col">
                         <div class="form-group">
@@ -112,10 +117,8 @@
                 </div>
                 
                 <%
-                    // Post-digital is editable only when the pre-digital has been approved
-                    const postUnlocked = status && ['Dean-Approved', 'Approved'].includes(status.status);
-                    // Keep pre-digital locked, but allow post-digital once Dean has approved.
-                    const postDisabled = !postUnlocked;
+                    // Post-digital is editable when the form itself is editable (Draft/Returned/new)
+                    const postDisabled = isLocked;
                 %>
 
                 <div class="form-sections-row">
@@ -188,22 +191,15 @@
                 <div class="form-actions">
                     <% const currentStatus = status ? status.status : null; %>
 
-                    <% if (currentStatus === 'Archived') { %>
-                        <!-- Archived: read-only, no edits -->
+                    <% if (currentStatus === 'Approved' || currentStatus === 'Archived') { %>
+                        <!-- Fully approved / archived: read-only -->
                         <button type="button" class="btn-save" onclick="window.location.href='<%= backToOverviewLink %>'">BACK TO DASHBOARD</button>
                         <button type="button" class="btn-pdf" onclick="viewTLAForm()">VIEW PDF</button>
                         <button type="button" class="btn-pdf" onclick="printTLAForm()">DOWNLOAD AS PDF</button>
 
-                    <% } else if (['Pending','Tech-Approved','Chair-Approved','Practicum-Approved','VPAA-Noted'].includes(currentStatus)) { %>
-                        <!-- Pending: waiting for approval, no edits -->
+                    <% } else if (['Pending','Chair-Approved','Dean-Approved','HR-Approved'].includes(currentStatus)) { %>
+                        <!-- In approval chain: waiting for review, no edits -->
                         <button type="button" class="btn-save" onclick="window.location.href='<%= backToOverviewLink %>'">BACK TO DASHBOARD</button>
-                        <button type="button" class="btn-pdf" onclick="viewTLAForm()">VIEW PDF</button>
-                        <button type="button" class="btn-pdf" onclick="printTLAForm()">DOWNLOAD AS PDF</button>
-
-                    <% } else if (['Approved','Dean-Approved'].includes(currentStatus)) { %>
-                        <!-- Approved: can only fill/submit post-digital -->
-                        <button type="submit" name="action" value="submit-post" class="btn-submit">SUBMIT POST-DIGITAL</button>
-                        <button type="button" class="btn-pdf" onclick="viewTLAForm()">VIEW PDF</button>
                         <button type="button" class="btn-pdf" onclick="printTLAForm()">DOWNLOAD AS PDF</button>
 
                     <% } else { %>
