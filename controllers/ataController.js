@@ -397,13 +397,7 @@ export const approveATA = async (req, res) => {
                 case 'PENDING_CHAIR':
                     if (primaryRole === 'Program-Chair' && action === 'ENDORSE') {
                         const hasPracticum = form.sectionE_Practicum && form.sectionE_Practicum.length > 0;
-                        
-                        // 👇 SMART ROUTING: If the form belongs to a Dean, skip the Dean queue!
-                        if (form.position === 'Dean') {
-                            newStatus = hasPracticum ? 'PENDING_PRACTICUM' : 'PENDING_VPAA';
-                        } else {
-                            newStatus = hasPracticum ? 'PENDING_PRACTICUM' : 'PENDING_DEAN';
-                        }
+                        newStatus = hasPracticum ? 'PENDING_PRACTICUM' : 'PENDING_DEAN';
                         historyStatus = 'ENDORSED';
                     } else return res.status(403).json({ error: "Invalid action for Chair." });
                     break;
@@ -419,8 +413,19 @@ export const approveATA = async (req, res) => {
                                 .map(row => row.coordinator.trim().toLowerCase())
                         )];
 
+                        // 👇 CYCLE RESET FIX: Find the start of the CURRENT approval cycle
+                        let lastResetIndex = -1;
+                        for (let i = form.approvalHistory.length - 1; i >= 0; i--) {
+                            const status = form.approvalHistory[i].approvalStatus;
+                            if (status === 'RETURNED' || status === 'REJECTED' || status === 'RESUBMITTED') {
+                                lastResetIndex = i;
+                                break;
+                            }
+                        }
+
+                        // 👇 ONLY count Practicum Coordinators who signed AFTER the most recent return!
                         const signedCoordinators = form.approvalHistory
-                            .filter(log => log.approvalStatus === 'VALIDATED' || log.approverRole === 'Practicum-Coordinator')
+                            .filter((log, index) => index > lastResetIndex && (log.approvalStatus === 'VALIDATED' || log.approverRole === 'Practicum-Coordinator'))
                             .map(log => log.approverName.trim().toLowerCase());
 
                         signedCoordinators.push(adminFullName.toLowerCase()); 
@@ -428,8 +433,8 @@ export const approveATA = async (req, res) => {
                         const allSigned = requiredCoordinators.every(reqName => signedCoordinators.includes(reqName));
 
                         if (allSigned) {
-                            // 👇 SMART ROUTING: If the form belongs to a Dean, skip the Dean queue!
-                            newStatus = (form.position === 'Dean') ? 'PENDING_VPAA' : 'PENDING_DEAN'; 
+                            // 👇 REMOVED THE DEAN SKIP: Form now goes to the Dean to sign off!
+                            newStatus = 'PENDING_DEAN'; 
                         } else {
                             newStatus = 'PENDING_PRACTICUM'; 
                         }
@@ -497,15 +502,27 @@ export const approveATA = async (req, res) => {
                 row.coordinator && row.coordinator.trim().toLowerCase() === adminFullName.toLowerCase()
             );
             
-            const alreadyValidated = form.approvalHistory.some(log =>
-                log.approverRole === 'Practicum-Coordinator' && log.approverName.toLowerCase() === adminFullName.toLowerCase()
+            // 👇 CYCLE RESET FOR STAY ON PAGE
+            let lastResetIndex = -1;
+            for (let i = form.approvalHistory.length - 1; i >= 0; i--) {
+                const status = form.approvalHistory[i].approvalStatus;
+                if (status === 'RETURNED' || status === 'REJECTED' || status === 'RESUBMITTED') {
+                    lastResetIndex = i;
+                    break;
+                }
+            }
+
+            // 👇 Ignore validations from the previous cycle!
+            const alreadyValidated = form.approvalHistory.some((log, index) =>
+                index > lastResetIndex &&
+                log.approverRole === 'Practicum-Coordinator' && 
+                log.approverName.toLowerCase() === adminFullName.toLowerCase()
             );
 
             if (userIsListedCoord && !alreadyValidated) {
                 stayOnPage = true; 
             }
         }
-
         res.status(200).json({ 
             message: `Success! Form is now ${newStatus}`,
             newStatus: newStatus,
@@ -582,10 +599,6 @@ export const getPendingApprovals = async (req, res) => {
 
         let pendingForms = await ATAForm.find(query).sort({ createdAt: -1 });
 
-        // 👇 NEW: THE INBOX HIDER 
-        // Hides multi-coordinator forms from people who have already signed them!
-        // 👇 UPGRADED: DUAL-ROLE INBOX HIDER 
-        // Checks if you have signed for the specific required step, not just anywhere in the history!
         pendingForms = pendingForms.filter(form => {
             let requiredRoleForStep = '';
             
@@ -595,22 +608,28 @@ export const getPendingApprovals = async (req, res) => {
             else if (form.status === 'PENDING_VPAA') requiredRoleForStep = 'VPAA';
             else if (form.status === 'PENDING_HR') requiredRoleForStep = 'HR';
 
-            // Find the index of the MOST RECENT "RESUBMITTED" action by the Professor
-            let lastResubmitIndex = -1;
+            // 👇 THE FIX: Find the start of the CURRENT approval cycle.
+            // A new cycle begins if the form was RETURNED, REJECTED, or RESUBMITTED.
+            let lastResetIndex = -1;
             for (let i = form.approvalHistory.length - 1; i >= 0; i--) {
-                if (form.approvalHistory[i].approvalStatus === 'RESUBMITTED') {
-                    lastResubmitIndex = i;
+                const status = form.approvalHistory[i].approvalStatus;
+                if (status === 'RETURNED' || status === 'REJECTED' || status === 'RESUBMITTED') {
+                    lastResetIndex = i;
                     break;
                 }
             }
 
-            // Check if Marites signed it AFTER the last time it was resubmitted
+            // Check if the current user signed it AFTER the most recent reset
             const alreadySignedForThisStep = form.approvalHistory.some((log, index) => {
-                // If this signature happened BEFORE the resubmission, ignore it!
-                if (index < lastResubmitIndex) return false;
+                // Ignore everything that happened in previous cycles (before the return/fix)
+                if (index <= lastResetIndex) return false;
+
+                // Ignore the Return/Reject logs themselves
+                if (log.approvalStatus === 'RETURNED' || log.approvalStatus === 'REJECTED') return false;
 
                 const nameMatch = log.approverName.toLowerCase() === fullName.toLowerCase();
-                const roleMatch = log.approverRole === requiredRoleForStep || (requiredRoleForStep === 'HR' && ['HR', 'HRMO'].includes(log.approverRole));
+                const roleMatch = log.approverRole === requiredRoleForStep || 
+                                 (requiredRoleForStep === 'HR' && ['HR', 'HRMO'].includes(log.approverRole));
                 
                 return nameMatch && roleMatch;
             });
