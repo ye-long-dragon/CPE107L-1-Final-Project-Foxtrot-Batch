@@ -1154,7 +1154,7 @@ document.getElementById('adminAnnouncementForm').addEventListener('submit', asyn
     };
 
     try {
-        const res  = await fetch('/admin/announcement', {
+        const res  = await fetch(' /api/announcement', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body:    JSON.stringify(payload),
@@ -1182,7 +1182,7 @@ document.querySelectorAll('.btn-delete').forEach(btn => {
         if (!id) return;
         if (!confirm('Delete this announcement?')) return;
         try {
-            const res  = await fetch(`/admin/announcement/${id}`, { method: 'DELETE' });
+            const res  = await fetch(` /api/announcement/${id}`, { method: 'DELETE' });
             const data = await res.json();
             if (data.success) { item.remove(); showToast('Deleted.', 'success'); }
             else showToast('Delete failed.', 'error');
