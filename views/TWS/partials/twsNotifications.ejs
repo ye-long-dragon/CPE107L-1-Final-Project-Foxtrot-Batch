@@ -10,21 +10,30 @@
   }
 
   .tws-notif-bell {
+    position: relative;
+    width: 52px;
+    height: 52px;
     border: 1px solid rgba(255, 255, 255, 0.35);
-    border-radius: 999px;
+    border-radius: 50%;
     background: rgba(15, 23, 42, 0.92);
     color: #fff;
-    font-size: 12px;
-    font-weight: 800;
-    padding: 10px 14px;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    justify-content: center;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    padding: 0;
+  }
+
+  .tws-notif-bell-icon {
+    font-size: 24px;
+    line-height: 1;
   }
 
   .tws-notif-count {
+    position: absolute;
+    top: -4px;
+    right: -4px;
     min-width: 20px;
     height: 20px;
     border-radius: 999px;
@@ -36,6 +45,7 @@
     font-size: 11px;
     font-weight: 900;
     padding: 0 6px;
+    border: 2px solid rgba(15, 23, 42, 0.92);
   }
 
   .tws-notif-panel {
@@ -180,7 +190,7 @@
   </div>
 
   <button type="button" class="tws-notif-bell" id="twsNotifBell" aria-label="Open notifications">
-    <span>Notifications</span>
+    <span class="material-symbols-outlined tws-notif-bell-icon">notifications</span>
     <span class="tws-notif-count" id="twsNotifCount">0</span>
   </button>
 </div>
@@ -218,7 +228,9 @@
     }
 
     function updateCount() {
-      countEl.textContent = String(unreadCount());
+      const count = unreadCount();
+      countEl.textContent = String(count);
+      countEl.style.display = count > 0 ? "inline-flex" : "none";
     }
 
     async function markAsRead(notificationId) {
@@ -455,7 +467,7 @@
     });
 
     stream.onerror = () => {
-      // Keep silent; EventSource retries automatically.
+      // EventSource retries automatically.
     };
 
     window.addEventListener("beforeunload", () => {
