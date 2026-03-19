@@ -12,12 +12,14 @@ professorRoutes.get('/', isAuthenticated, async (req, res) => {
             .lean();
         res.render('MainPages/institution', {
             announcements,
-            user: req.session.user
+            user: req.session.user,
+            currentPageCategory: 'institution'
         });
     } catch (error) {
         res.render('MainPages/institution', {
             announcements: [],
-            user: req.session.user
+            user: req.session.user,
+            currentPageCategory: 'institution'
         });
     }
 });

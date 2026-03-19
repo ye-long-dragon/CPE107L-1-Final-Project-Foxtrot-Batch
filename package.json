@@ -25,6 +25,7 @@
   "author": "A361 - Foxtrot Batch - Computer Engineering",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "docx-preview": "^0.3.7",
     "docxtemplater": "^3.68.3",
