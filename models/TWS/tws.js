@@ -4,7 +4,9 @@ const facultySchema = new Schema(
   {
     name: { type: String, default: "" },
     empId: { type: String, default: "" },
+    email: { type: String, default: "" },
     dept: { type: String, default: "" },
+    program: { type: String, default: "" },
     acadYear: { type: String, default: "" },
     term: { type: String, default: "" },
     empStatus: { type: String, default: "" },
@@ -49,13 +51,36 @@ const twsSchema = new Schema(
     },
 
     assignedFacultyId: { type: String, default: "" },
+    assignedFacultyEmail: { type: String, default: "" },
     assignedFacultyName: { type: String, default: "" },
+
+    facultySigned: { type: Boolean, default: false },
+    facultySignedAt: { type: Date, default: null },
+    facultySignatureImage: { type: String, default: "" },
+    facultySignerName: { type: String, default: "" },
+    facultySignerEmpId: { type: String, default: "" },
+    facultySignerEmail: { type: String, default: "" },
+
+    programChairSigned: { type: Boolean, default: false },
+    programChairSignedAt: { type: Date, default: null },
+    programChairSignatureImage: { type: String, default: "" },
+    programChairSignerName: { type: String, default: "" },
+    programChairSignerEmpId: { type: String, default: "" },
+    programChairSignerEmail: { type: String, default: "" },
+
+    deanSigned: { type: Boolean, default: false },
+    deanSignedAt: { type: Date, default: null },
+    deanSignatureImage: { type: String, default: "" },
+    deanSignerName: { type: String, default: "" },
+    deanSignerEmpId: { type: String, default: "" },
+    deanSignerEmail: { type: String, default: "" },
 
     status: {
       type: String,
       enum: [
         "Draft",
         "Sent to Faculty",
+        "Faculty Approved",
         "Sent to Dean",
         "Approved",
         "Rejected",
@@ -74,6 +99,10 @@ const twsSchema = new Schema(
     sentToDeanAt: { type: Date, default: null },
     approvedAt: { type: Date, default: null },
     archivedAt: { type: Date, default: null },
+
+    facultyNotes: { type: String, default: "" },
+    facultyNotesUpdatedAt: { type: Date, default: null },
+    facultyNotesUpdatedBy: { type: String, default: "" },
 
     loads: {
       type: [loadRowSchema],

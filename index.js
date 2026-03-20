@@ -24,8 +24,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // JSON
-app.use(express.json()); 
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Session
 app.use(session({
@@ -63,6 +63,7 @@ import adminRoutes from "./routes/MainPages/adminRoutes.js";
 import progChairRoutes from "./routes/MainPages/progChairRoutes.js";
 import deanRoutes from "./routes/MainPages/deanRoutes.js";
 import userRoutes from './routes/APIs/userRoutes.js';
+import announcementRoutes from "./routes/APIs/MainPages/adminAnnouncementsApi.js"
 
 // TLA
 import dashBoardRoutes from "./routes/TLA/tlaDashboardRoutes.js";
@@ -111,14 +112,15 @@ app.use("/login",loginRoutes);
 // Redirect users to their role-specific dashboard route.
 app.get("/institution", isAuthenticated, (req, res, next) => {
     const role = req.session?.user?.role;
-
+ 
     if (role === "Program-Chair") return res.redirect("/progChair/institution");
-    if (role === "Dean") return res.redirect("/dean/institution");
+    if (role === "Dean")          return res.redirect("/dean/institution");
+    if (role === "VPAA")          return res.redirect("/vpaa/institution");
     if (role === "Admin" || role === "HR" || role === "Super-Admin") {
         return res.redirect("/admin/institution");
     }
-
-    // Professors continue to the mounted /institution professor route.
+ 
+    // Professors and anyone else fall through to the professor route
     return next();
 });
 
@@ -127,6 +129,7 @@ app.use("/admin/users", userRoutes); //admin user API
 app.use("/admin",adminRoutes);
 app.use("/progChair", progChairRoutes);
 app.use("/dean", deanRoutes);
+app.use("/api", announcementRoutes)
 
 //TLA Pages
 app.use("/tla/dashboard", dashBoardRoutes);
@@ -134,7 +137,16 @@ app.use("/tla/courses", coursesRoutes);
 app.use("/tla/overview", overviewRoutes);
 app.use("/tla/form", formRoutes);
 app.use("/tla/approval", approvalRoutes);
-app.get("/tla", (req, res) => res.redirect("/tla/courses"));
+app.get("/tla", (req, res) => {
+    const role = req.session?.user?.role;
+    const approvalRoles = ['Program-Chair', 'Dean', 'HR', 'HRMO', 'VPAA', 'Technical', 'Practicum-Coordinator', 'Admin', 'Super-Admin'];
+    if (role && approvalRoles.includes(role)) return res.redirect("/admin/tla");
+    return res.redirect("/tla/courses");
+});
+
+// Redirects for removed TLA routes
+app.get("/tla/admin-overview", (req, res) => res.redirect("/admin/tla"));
+app.get("/tla/hr", (req, res) => res.redirect("/admin/tla"));
 
 // TLA APIs
 app.use("/api/tla/approval",      tlaApprovalApiRoutes);

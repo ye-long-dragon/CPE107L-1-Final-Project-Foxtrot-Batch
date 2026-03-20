@@ -28,7 +28,7 @@ const userSchema = new Schema({
 
 	role: {
 		type: String,
-		enum: ["Professor", "Program-Chair", "Dean", "HR", "Admin", "Super-Admin", 'Practicum-Coordinator', 'VPAA', 'HRMO', 'HR'],
+		enum: ["Professor", "Program-Chair", "Dean", "HR", "Admin", "Super-Admin", "Practicum-Coordinator", "VPAA", "HRMO" ],
 		default: "Professor"
 	},
 
@@ -51,7 +51,7 @@ const userSchema = new Schema({
             // CEA
             "AR", "ChE", "CE", "CpE", "EE", "ECE", "IE", "ME",
             // CHS
-            "BIO", "PHARM", "PSYCH", "PT", "MEDTECH" ,
+            "BIO", "PHARM", "PSYCH", "PT", "MEDTECH",
 			"N/A"
         ]
     },
@@ -70,13 +70,12 @@ const userSchema = new Schema({
 		type: String,
 		unique: true
 	},
-	
-  isPracticumCoordinator: {
-    type: Boolean,
-    default: false
-  },
-	signatureImage: { type: String, default: "" }
 
-	}, { timestamps: true });
+	signatureImage: {
+		type: String,
+		default: ""
+	}
+
+}, { timestamps: true });
 
 export default userSchema;
