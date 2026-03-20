@@ -309,9 +309,8 @@
                     <div class="ad-status-select-wrapper">
                         <span class="ad-status-indicator" id="status-indicator"></span>
                         <select id="approval-status" class="ad-status-select">
-                            <option value="Approved" <%=locals.currentStatus==='Approved' ? 'selected' : '' %>>Approved</option>
-                            <option value="Returned to PC" <%=locals.currentStatus==='Returned to PC' || locals.currentStatus==='Returned' ? 'selected' : '' %>>Return to Program Chair</option>
-                            <option value="Pending" <%=locals.currentStatus==='Pending' ? 'selected' : '' %>>Pending</option>
+                            <option value="Approved" <%=locals.currentStatus==='Approved' ? 'selected' : '' %>>Approve</option>
+                            <option value="Returned to PC" <%=locals.currentStatus==='Returned to PC' || locals.currentStatus==='Returned' ? 'selected' : '' %>>Reject</option>
                         </select>
                     </div>
                 </div>

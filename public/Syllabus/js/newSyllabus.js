@@ -255,6 +255,37 @@ observeContainers.forEach(id => {
 
 /* ── Save Draft and Route to Info ── */
 window.saveNewToSession = function() {
+    // 1. Validation for PEOs and SOs
+    const peoRows = document.querySelectorAll('#peo-container .peo-row');
+    const soRows = document.querySelectorAll('#so-container .peo-row');
+
+    if (peoRows.length === 0 || soRows.length === 0) {
+        alert("All fields are required.");
+        return;
+    }
+
+    // Validate PEO content and checkboxes
+    for (let i = 0; i < peoRows.length; i++) {
+        const text = peoRows[i].querySelector('.peo-editable-text')?.innerText.trim();
+        const checks = Array.from(peoRows[i].querySelectorAll('input[type="checkbox"]'));
+        if (!text || !checks.some(c => c.checked)) {
+            alert("All fields are required.");
+            peoRows[i].querySelector('.peo-editable-text').focus();
+            return;
+        }
+    }
+
+    // Validate SO content and checkboxes
+    for (let i = 0; i < soRows.length; i++) {
+        const text = soRows[i].querySelector('.peo-editable-text')?.innerText.trim();
+        const checks = Array.from(soRows[i].querySelectorAll('input[type="checkbox"]'));
+        if (!text || !checks.some(c => c.checked)) {
+            alert("All fields are required.");
+            soRows[i].querySelector('.peo-editable-text').focus();
+            return;
+        }
+    }
+
     const key = `syllabusFormDraft_${window.CURRENT_SYLLABUS_ID || 'default'}`;
     const payload = JSON.parse(sessionStorage.getItem(key)) || {};
     try {

@@ -30,6 +30,51 @@ function addRow(tbody, colCount) {
         const div = document.createElement('div');
         div.className = 'editable-cell';
         div.contentEditable = 'true';
+
+        // Input Restrictions [cite: 173]
+        div.addEventListener('keydown', (e) => {
+            const tbodyId = tbody.id;
+            const colIndex = parseInt(td.dataset.colIndex);
+
+            // Allowed control keys for all restricted cells
+            const controlKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter', 'Home', 'End'];
+            if (controlKeys.includes(e.key) || (e.ctrlKey || e.metaKey)) return;
+
+            // Evaluation Table: Weights (LT, PE, Modular, Final) should only be numbers
+            if (tbodyId === 'evaluation-editor-body' && [3, 4, 5, 6].includes(colIndex)) {
+                if (!/^[0-9.]$/.test(e.key)) {
+                    e.preventDefault();
+                } else if (e.key === '.' && div.innerText.includes('.')) {
+                    e.preventDefault(); // Prevent double decimals
+                }
+            }
+
+            // Assessment Table: MSP column should allow numbers, dots, and %
+            if (tbodyId === 'assessment-editor-body' && colIndex === 2) {
+                if (!/^[0-9.%]$/.test(e.key)) {
+                    e.preventDefault();
+                }
+            }
+        });
+
+        // Prevention for Pasting
+        div.addEventListener('paste', (e) => {
+            const tbodyId = tbody.id;
+            const colIndex = parseInt(td.dataset.colIndex);
+            const text = (e.clipboardData || window.clipboardData).getData('text');
+
+            if (tbodyId === 'evaluation-editor-body' && [3, 4, 5, 6].includes(colIndex)) {
+                if (!/^[0-9.]*$/.test(text) || (text.includes('.') && div.innerText.includes('.'))) {
+                    e.preventDefault();
+                }
+            }
+            if (tbodyId === 'assessment-editor-body' && colIndex === 2) {
+                if (!/^[0-9.%]*$/.test(text)) {
+                    e.preventDefault();
+                }
+            }
+        });
+
         td.appendChild(div);
         tr.appendChild(td);
 
@@ -529,13 +574,19 @@ window.submitSyllabus = async function() {
             return;
         }
 
-        // 2. Course Schedule Table
+        // 2. Course Schedule Table Validation
         const scheduleRows = document.querySelectorAll('#schedule-editor-body tr');
+        if (scheduleRows.length === 0) {
+            alert("All fields are required.");
+            return;
+        }
+        
+        let scheduleFilled = false;
         payload.weeklySchedule = Array.from(scheduleRows)
             .filter(r => r.style.display !== 'none') // skip hidden merged cells
             .map(row => {
                 const cells = row.querySelectorAll('.editable-cell');
-                return {
+                const rowData = {
                     week: cells[0]?.innerText.trim() || '',
                     coNumber: cells[1]?.innerText.trim() || '',
                     moNumber: cells[2]?.innerText.trim() || '',
@@ -549,15 +600,28 @@ window.submitSyllabus = async function() {
                     referenceNum: cells[10]?.innerText.trim() || '',
                     dateCovered: cells[11]?.innerText.trim() || ''
                 };
+                if (rowData.week || rowData.coverageTopic) scheduleFilled = true;
+                return rowData;
             });
+            
+        if (!scheduleFilled) {
+            alert("All fields are required.");
+            return;
+        }
 
-        // 3. Course Evaluation Table
+        // 3. Course Evaluation Table Validation
         const evalRows = document.querySelectorAll('#evaluation-editor-body tr');
+        if (evalRows.length === 0) {
+            alert("All fields are required.");
+            return;
+        }
+        
+        let evalFilled = false;
         payload.courseEvaluation = Array.from(evalRows)
             .filter(r => r.style.display !== 'none')
             .map(row => {
                 const cells = row.querySelectorAll('.editable-cell');
-                return {
+                const rowData = {
                     moduleCode: cells[0]?.innerText.trim() || '',
                     coNumber: cells[1]?.innerText.trim() || '',
                     mediatingOutcome: cells[2]?.innerText.trim() || '',
@@ -566,20 +630,40 @@ window.submitSyllabus = async function() {
                     modularWeight: cells[5]?.innerText.trim() || '',
                     finalWeight: cells[6]?.innerText.trim() || ''
                 };
+                if (rowData.moduleCode || rowData.coNumber) evalFilled = true;
+                return rowData;
             });
 
-        // 4. Assessment Tasks (CO Assessment) Table
+        if (!evalFilled) {
+            alert("All fields are required.");
+            return;
+        }
+
+        // 4. Assessment Tasks (CO Assessment) Table Validation
         const assessRows = document.querySelectorAll('#assessment-editor-body tr');
+        if (assessRows.length === 0) {
+            alert("All fields are required.");
+            return;
+        }
+        
+        let assessFilled = false;
         payload.courseOutcomesAssessment = Array.from(assessRows)
             .filter(r => r.style.display !== 'none')
             .map(row => {
                 const cells = row.querySelectorAll('.editable-cell');
-                return {
+                const rowData = {
                     coNumber: cells[0]?.innerText.trim() || '',
                     assessmentTasks: cells[1]?.innerText.trim() || '',
                     minSatisfactoryPerf: cells[2]?.innerText.trim() || ''
                 };
+                if (rowData.coNumber || rowData.assessmentTasks) assessFilled = true;
+                return rowData;
             });
+
+        if (!assessFilled) {
+            alert("All fields are required.");
+            return;
+        }
             
         // POST to backend
         const fetchResponse = await fetch('/syllabus/schedule/submit', {

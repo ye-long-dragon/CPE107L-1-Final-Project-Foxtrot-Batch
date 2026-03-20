@@ -52,4 +52,8 @@ deanRoutes.get("/institution", isAuthenticated, authorizeRoles("Dean"), async (r
     }
 });
 
+deanRoutes.get("/syllabus", isAuthenticated, authorizeRoles("Dean"), async (req, res) => {
+    res.redirect("/syllabus/approve");
+});
+
 export default deanRoutes;

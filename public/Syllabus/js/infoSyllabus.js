@@ -49,13 +49,61 @@ function autoSaveInfo() {
 
 
 function handleInfoBack() {
-    // Force a save right now
     autoSaveInfo();
+    setTimeout(() => { window.history.back(); }, 100);
+}
+
+function handleInfoNext() {
+    // 1. Basic Fields Validation
+    const courseCode = document.querySelector('.info-item.small .course-editable-text')?.innerText.trim();
+    const courseTitle = document.querySelector('.info-item.large .course-editable-text')?.innerText.trim();
+    const courseDescription = document.querySelector('.multiline[data-placeholder*="course description"]')?.innerText.trim();
+    const creditUnits = document.querySelector('.info-row:nth-child(2) .info-item:nth-child(3) .course-editable-text')?.innerText.trim();
+    const textbook = document.querySelector('.multiline[data-placeholder*="textbook"]')?.innerText.trim();
+    const references = document.querySelector('.multiline[data-placeholder*="references"]')?.innerText.trim();
+
+    if (!courseCode || !courseTitle || !courseDescription || !creditUnits || !textbook || !references) {
+        alert("All fields are required.");
+        return;
+    }
+
+    // 2. Outcomes (CO) Validation
+    const coRows = document.querySelectorAll('#outcomes-container .outcomes-row');
+    if (coRows.length === 0) {
+        alert("All fields are required.");
+        return;
+    }
     
-    // Briefly delay to ensure storage is written, then go back
-    setTimeout(() => {
-        window.history.back();
-    }, 100);
+    for (let i = 0; i < coRows.length; i++) {
+        const statement = coRows[i].querySelector('.outcomes-statement .outcomes-editable-text')?.innerText.trim();
+        if (!statement) {
+            alert("All fields are required.");
+            coRows[i].querySelector('.outcomes-statement .outcomes-editable-text').focus();
+            return;
+        }
+    }
+
+    // 3. Mapping Validation (At least one alignment per CO) [cite: 173]
+    const mappingRows = document.querySelectorAll('#mapping-body tr');
+    for (let i = 0; i < mappingRows.length; i++) {
+        const triggers = mappingRows[i].querySelectorAll('.custom-dropdown-trigger');
+        const hasAssignment = Array.from(triggers).some(t => t.dataset.value && t.dataset.value !== 'none');
+        if (!hasAssignment) {
+            alert("All fields are required.");
+            return;
+        }
+    }
+
+    // 4. Concept Map Validation (Optional but recommended to remind)
+    const conceptMapImg = document.getElementById('concept-map-preview')?.src;
+    if (!conceptMapImg || conceptMapImg.endsWith('undefined') || conceptMapImg === window.location.href) {
+        if (!confirm("No Concept Map has been attached. Do you want to proceed anyway?")) {
+            return;
+        }
+    }
+
+    // 5. Force Save to Draft
+    saveInfoToSession();
 }
 
 function loadInfoFromSession() {
@@ -428,15 +476,38 @@ function buildMappingRow(index, totalRows) {
 }
 
 function syncMappingRows() {
-  const editorBody = document.getElementById('outcomes-editor-body');
-  if (!editorBody) return;
-  const total = editorBody.querySelectorAll('tr').length;
+  const container = document.getElementById('outcomes-container');
+  if (!container) return;
+  const total = container.querySelectorAll('.outcomes-row').length;
+  
+  const mappingBody = document.getElementById('mapping-body');
+  if (!mappingBody) return;
+
+  // Preserve existing selections before wiping to avoid data loss
+  const existingValues = {};
+  mappingBody.querySelectorAll('tr').forEach(tr => {
+      const coIndex = tr.dataset.coIndex;
+      const triggers = tr.querySelectorAll('.custom-dropdown-trigger');
+      const rowValues = Array.from(triggers).map(t => t.dataset.value || '');
+      existingValues[coIndex] = rowValues;
+  });
 
   // Clear existing mapping rows
-  tableBody.innerHTML = '';
+  mappingBody.innerHTML = '';
 
   for (let i = 1; i <= total; i++) {
-    tableBody.appendChild(buildMappingRow(i, total));
+    const row = buildMappingRow(i, total);
+    // Restore values if they existed
+    if (existingValues[i]) {
+        const triggers = row.querySelectorAll('.custom-dropdown-trigger');
+        existingValues[i].forEach((val, colIdx) => {
+            if (triggers[colIdx] && val && val !== 'none') {
+                triggers[colIdx].dataset.value = val;
+                triggers[colIdx].textContent = val;
+            }
+        });
+    }
+    mappingBody.appendChild(row);
   }
 
   // Update the program cell rowspan if it exists
@@ -526,6 +597,21 @@ function renumberEditorRows() {
     const tds = tr.querySelectorAll('td');
     tds.forEach((td, j) => {
       td.dataset.colIndex = j.toString();
+      
+      // Ensure listeners are attached (for static/re-indexed rows)
+      if (!td.dataset.listenersInit) {
+        td.dataset.listenersInit = '1';
+        td.addEventListener('mousedown', (e) => {
+          isSelecting = true;
+          const box = document.getElementById('table-selection-box');
+          if (box) box.classList.add('dragging');
+          startCell = td;
+          updateRange(td, td);
+        });
+        td.addEventListener('mouseenter', (e) => {
+          if (isSelecting) extendSelection(td);
+        });
+      }
     });
   });
 }
@@ -547,17 +633,6 @@ function addEditorRow() {
     }
     td.appendChild(div);
     tr.appendChild(td);
-
-    td.addEventListener('mousedown', (e) => {
-      isSelecting = true;
-      const box = document.getElementById('table-selection-box');
-      if (box) box.classList.add('dragging');
-      startCell = td;
-      updateRange(td, td);
-    });
-    td.addEventListener('mouseenter', (e) => {
-      if (isSelecting) extendSelection(td);
-    });
   }
 
   body.appendChild(tr);
@@ -680,9 +755,7 @@ document.addEventListener('mouseup', () => {
 // Initial Rows
 document.addEventListener('DOMContentLoaded', () => {
   const body = document.getElementById('outcomes-editor-body');
-  if (body) {
-    addEditorRow();
-    addEditorRow();
+  if (body && body.querySelectorAll('tr').length === 0) {
     addEditorRow();
   }
 });
@@ -894,8 +967,6 @@ window.onload = () => {
         const body = document.getElementById('outcomes-editor-body');
         if (body && body.querySelectorAll('tr').length === 0) {
             addEditorRow();
-            addEditorRow();
-            addEditorRow();
         }
     }
 
@@ -938,11 +1009,8 @@ window.saveInfoToSession = function() {
             classSchedule: editableBoxes[5]?.innerText.trim() || '',
             courseDesign: editableBoxes[6]?.innerText.trim() || '',
             courseDescription: editableBoxes[7]?.innerText.trim() || '',
-            term: editableBoxes[8]?.innerText.trim() || '',
-            schoolYear: editableBoxes[9]?.innerText.trim() || '',
-            programPreparedFor: editableBoxes[10]?.innerText.trim() || '',
-            textbook: editableBoxes[11]?.innerText.trim() || '',
-            references: editableBoxes[12]?.innerText.trim() || ''
+            textbook: editableBoxes[8]?.innerText.trim() || '',
+            references: editableBoxes[9]?.innerText.trim() || ''
         };
 
         // 2. Program Educational Objectives (PEOs)

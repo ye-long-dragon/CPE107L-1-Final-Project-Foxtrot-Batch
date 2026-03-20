@@ -182,7 +182,7 @@
                 if (response.ok) {
                     if (result.role === 'Admin' || result.role === 'Super-Admin') {
                         window.location.href = '/admin/institution';
-                    } else if (role === 'professor') {
+                    } else if (result.role === 'Professor' || result.role === 'professor') {
                         window.location.href = '/institution';
                     } else if (result.role === 'Program-Chair') {
                         window.location.href = '/progChair/institution';
