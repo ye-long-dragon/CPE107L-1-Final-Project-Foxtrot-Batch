@@ -28,7 +28,11 @@ const syllabusApprovalStatusSchema = new Schema({
 
   // HR Signature Fields
   HR_Signature: String,
-  HR_SignatoryName: String
+  HR_SignatoryName: String,
+
+  // Faculty / Course Coordinator Signature Fields
+  Faculty_Signature: String,
+  Faculty_SignatoryName: String
 }, { timestamps: true });
 
 const SyllabusApprovalStatus = mainDB.models.SyllabusApprovalStatus || mainDB.model("SyllabusApprovalStatus", syllabusApprovalStatusSchema);

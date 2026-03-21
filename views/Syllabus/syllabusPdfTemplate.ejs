@@ -394,11 +394,13 @@
         <div style="width: 23%;">
             <p style="margin-bottom: 25px;"><strong>PREPARED BY:</strong></p>
             <div style="border-bottom: 1px solid #000; text-align: center; min-height: 40px;">
-                <% if (syl.assignedInstructor && syl.assignedInstructor.signature) { %>
-                    <img src="<%= syl.assignedInstructor.signature %>" style="max-height: 40px;">
+                <% if (approval && approval.Faculty_Signature) { %>
+                    <img src="<%= approval.Faculty_Signature %>" style="max-height: 40px;">
+                <% } else if (syl.assignedInstructor && syl.assignedInstructor.signatureImage) { %>
+                    <img src="<%= syl.assignedInstructor.signatureImage %>" style="max-height: 40px;">
                 <% } %>
             </div>
-            <p style="font-size: 9pt; font-weight: bold; text-align: center; margin: 3px 0;"><%= syl.assignedInstructor ? (syl.assignedInstructor.firstName + ' ' + syl.assignedInstructor.lastName).toUpperCase() : 'FACULTY' %></p>
+            <p style="font-size: 9pt; font-weight: bold; text-align: center; margin: 3px 0;"><%= (approval && approval.Faculty_SignatoryName) ? approval.Faculty_SignatoryName.toUpperCase() : (syl.assignedInstructor ? (syl.assignedInstructor.firstName + ' ' + syl.assignedInstructor.lastName).toUpperCase() : 'FACULTY') %></p>
             <p style="text-align: center; color: #666;">Course Coordinator</p>
         </div>
         <div style="width: 23%;">

@@ -80,4 +80,63 @@ coursesOverviewFacultyRouter.get('/', async (req, res) => {
     }
 });
 
+/**
+ * POST — Save faculty e-signature before PDF download
+ */
+coursesOverviewFacultyRouter.post('/sign-faculty/:syllabusId', async (req, res) => {
+    try {
+        const { syllabusId } = req.params;
+        const { signatureImage } = req.body;
+
+        if (!signatureImage) {
+            return res.status(400).json({ success: false, message: 'No signature provided.' });
+        }
+
+        const loggedInUser = req.session && req.session.user ? req.session.user : null;
+        if (!loggedInUser) {
+            return res.status(401).json({ success: false, message: 'Not authenticated.' });
+        }
+
+        const facultyName = [loggedInUser.firstName, loggedInUser.lastName].filter(Boolean).join(' ');
+
+        const approval = await SyllabusApprovalStatus.findOne({ syllabusID: syllabusId });
+        if (!approval) {
+            return res.status(404).json({ success: false, message: 'Approval record not found.' });
+        }
+
+        if (approval.status !== 'Archived') {
+            return res.status(403).json({ success: false, message: 'Syllabus must be verified by HR before signing.' });
+        }
+
+        approval.Faculty_Signature = signatureImage;
+        approval.Faculty_SignatoryName = facultyName;
+        await approval.save();
+
+        return res.json({ success: true, message: 'Signature saved successfully.' });
+    } catch (error) {
+        console.error('Error saving faculty signature:', error);
+        return res.status(500).json({ success: false, message: 'Internal server error.' });
+    }
+});
+
+/**
+ * GET — Check if a faculty signature already exists for a syllabus
+ */
+coursesOverviewFacultyRouter.get('/check-signature/:syllabusId', async (req, res) => {
+    try {
+        const { syllabusId } = req.params;
+        const approval = await SyllabusApprovalStatus.findOne({ syllabusID: syllabusId });
+        if (!approval) {
+            return res.json({ hasSigned: false });
+        }
+        return res.json({
+            hasSigned: !!approval.Faculty_Signature,
+            signatureImage: approval.Faculty_Signature || null
+        });
+    } catch (error) {
+        console.error('Error checking faculty signature:', error);
+        return res.status(500).json({ hasSigned: false });
+    }
+});
+
 export default coursesOverviewFacultyRouter;

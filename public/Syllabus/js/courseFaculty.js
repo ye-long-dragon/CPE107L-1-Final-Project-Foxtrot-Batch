@@ -169,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
 /* =====================================================================
    DRAFT STATUS MODAL LOGIC (GLOBAL SCOPE)
 ===================================================================== */
-window.openDraftModal = function (syllabusId, hasDraft, status, courseTitle) {
+window.openDraftModal = async function (syllabusId, hasDraft, status, courseTitle) {
     const modal = document.getElementById('draftModal');
     const msg = document.getElementById('draftMessage');
     const btn = document.getElementById('draftActionBtn');
@@ -195,12 +195,35 @@ window.openDraftModal = function (syllabusId, hasDraft, status, courseTitle) {
             btn.innerText = 'View Syllabus';
             btn.onclick = () => window.location.href = `/syllabus/preview/${syllabusId}`;
 
-            // Show Download PDF button — uses the proper PDF template via Puppeteer
+            // Check if faculty has already signed
+            let hasSigned = false;
+            try {
+                const sigRes = await fetch(`/faculty/check-signature/${syllabusId}`);
+                const sigData = await sigRes.json();
+                hasSigned = sigData.hasSigned;
+            } catch (e) {
+                console.error('Error checking signature:', e);
+            }
+
             if (downloadBtn) {
                 downloadBtn.style.display = 'flex';
-                downloadBtn.onclick = () => {
-                    window.open(`/syllabus/preview/generate-pdf/${syllabusId}`, '_blank');
-                };
+
+                if (hasSigned) {
+                    // Already signed — show "Download PDF" that downloads directly
+                    downloadBtn.innerHTML = '<i class="fas fa-download" style="margin-right: 6px;"></i> Download PDF';
+                    downloadBtn.style.background = '#2e7d32';
+                    downloadBtn.onclick = () => {
+                        window.open(`/syllabus/preview/generate-pdf/${syllabusId}`, '_blank');
+                    };
+                } else {
+                    // Not signed — show "Sign PDF" that opens signature modal
+                    downloadBtn.innerHTML = '<i class="fas fa-pen-nib" style="margin-right: 6px;"></i> Sign PDF';
+                    downloadBtn.style.background = '#b30000';
+                    downloadBtn.onclick = () => {
+                        window.closeDraftModal();
+                        window.openSignatureModal(syllabusId);
+                    };
+                }
             }
         } else if (isRestricted) {
             msg.innerText = `This syllabus is currently ${status}. Editing is disabled.`;
@@ -233,4 +256,231 @@ window.addEventListener('click', function (event) {
     if (event.target === draftModal) {
         draftModal.style.display = "none";
     }
+    const sigModal = document.getElementById('signatureModal');
+    if (event.target === sigModal) {
+        sigModal.style.display = "none";
+    }
 });
+
+
+/* =====================================================================
+   FACULTY SIGNATURE MODAL LOGIC (GLOBAL SCOPE)
+===================================================================== */
+(function () {
+    let sigCanvas, sigCtx, sigDrawing = false, sigHasStroke = false;
+    let currentSyllabusId = null;
+
+    function initCanvas() {
+        sigCanvas = document.getElementById('facultySigCanvas');
+        if (!sigCanvas) return;
+        sigCtx = sigCanvas.getContext('2d');
+
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
+        const rect = sigCanvas.getBoundingClientRect();
+        sigCanvas.width = rect.width * ratio;
+        sigCanvas.height = rect.height * ratio;
+        sigCtx.setTransform(ratio, 0, 0, ratio, 0, 0);
+        sigCtx.lineWidth = 2.2;
+        sigCtx.lineCap = 'round';
+        sigCtx.lineJoin = 'round';
+        sigCtx.strokeStyle = '#111';
+        repaintGuide();
+    }
+
+    function repaintGuide() {
+        if (!sigCtx || !sigCanvas) return;
+        const ratio = window.devicePixelRatio || 1;
+        const w = sigCanvas.width / ratio;
+        const h = sigCanvas.height / ratio;
+        sigCtx.fillStyle = '#fff';
+        sigCtx.fillRect(0, 0, w, h);
+        sigCtx.strokeStyle = '#111';
+    }
+
+    function getPos(evt) {
+        const rect = sigCanvas.getBoundingClientRect();
+        const point = evt.touches ? evt.touches[0] : evt;
+        return { x: point.clientX - rect.left, y: point.clientY - rect.top };
+    }
+
+    function startDraw(evt) {
+        evt.preventDefault();
+        sigDrawing = true;
+        const pos = getPos(evt);
+        sigCtx.beginPath();
+        sigCtx.moveTo(pos.x, pos.y);
+    }
+
+    function draw(evt) {
+        if (!sigDrawing) return;
+        evt.preventDefault();
+        const pos = getPos(evt);
+        sigCtx.lineTo(pos.x, pos.y);
+        sigCtx.stroke();
+        sigHasStroke = true;
+    }
+
+    function endDraw(evt) {
+        if (evt) evt.preventDefault();
+        sigDrawing = false;
+    }
+
+    function setStatusMsg(text, isError) {
+        const el = document.getElementById('sigStatusMsg');
+        if (!el) return;
+        el.textContent = text || '';
+        el.style.color = isError ? '#b30000' : '#2e7d32';
+    }
+
+    // ---- Public: Open signature modal ----
+    window.openSignatureModal = async function (syllabusId) {
+        currentSyllabusId = syllabusId;
+        const modal = document.getElementById('signatureModal');
+        if (!modal) return;
+
+        // Reset UI
+        const canvasArea = sigCanvas ? sigCanvas.parentElement : null;
+        const alreadySigned = document.getElementById('sigAlreadySigned');
+        setStatusMsg('');
+        sigHasStroke = false;
+
+        // Check if faculty already signed
+        try {
+            const res = await fetch(`/faculty/check-signature/${syllabusId}`);
+            const data = await res.json();
+
+            if (data.hasSigned && data.signatureImage) {
+                // Already signed — show preview with direct download
+                if (canvasArea) canvasArea.style.display = 'none';
+                if (alreadySigned) {
+                    alreadySigned.style.display = 'block';
+                    const previewImg = document.getElementById('sigPreviewImg');
+                    if (previewImg) previewImg.src = data.signatureImage;
+                }
+            } else {
+                // Not signed yet — show canvas
+                if (canvasArea) canvasArea.style.display = 'block';
+                if (alreadySigned) alreadySigned.style.display = 'none';
+            }
+        } catch (err) {
+            console.error('Error checking signature:', err);
+            if (canvasArea) canvasArea.style.display = 'block';
+            if (alreadySigned) alreadySigned.style.display = 'none';
+        }
+
+        // Show modal FIRST so canvas gets real dimensions
+        modal.style.display = 'flex';
+
+        // Init canvas on next frame (after layout) so getBoundingClientRect works
+        requestAnimationFrame(() => {
+            initCanvas();
+        });
+    };
+
+    window.closeSignatureModal = function () {
+        const modal = document.getElementById('signatureModal');
+        if (modal) modal.style.display = 'none';
+    };
+
+    // Wait for DOM
+    document.addEventListener('DOMContentLoaded', () => {
+        sigCanvas = document.getElementById('facultySigCanvas');
+        if (!sigCanvas) return;
+        sigCtx = sigCanvas.getContext('2d');
+
+        // Canvas drawing events
+        sigCanvas.addEventListener('mousedown', startDraw);
+        sigCanvas.addEventListener('mousemove', draw);
+        window.addEventListener('mouseup', endDraw);
+        sigCanvas.addEventListener('touchstart', startDraw, { passive: false });
+        sigCanvas.addEventListener('touchmove', draw, { passive: false });
+        sigCanvas.addEventListener('touchend', endDraw, { passive: false });
+
+        // Clear button
+        const clearBtn = document.getElementById('sigClearBtn');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                sigHasStroke = false;
+                repaintGuide();
+                setStatusMsg('Canvas cleared.', false);
+            });
+        }
+
+        // Sign & Download button
+        const saveBtn = document.getElementById('sigSaveBtn');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', async () => {
+                if (!sigHasStroke) {
+                    setStatusMsg('Please draw your signature first.', true);
+                    return;
+                }
+                if (!currentSyllabusId) {
+                    setStatusMsg('No syllabus selected.', true);
+                    return;
+                }
+
+                saveBtn.disabled = true;
+                saveBtn.textContent = 'Saving...';
+
+                try {
+                    const signatureImage = sigCanvas.toDataURL('image/png');
+                    const res = await fetch(`/faculty/sign-faculty/${currentSyllabusId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ signatureImage })
+                    });
+                    const data = await res.json();
+
+                    if (!res.ok || !data.success) {
+                        setStatusMsg(data.message || 'Failed to save signature.', true);
+                        saveBtn.disabled = false;
+                        saveBtn.innerHTML = '<i class="fas fa-check" style="margin-right: 6px;"></i> Sign & Download PDF';
+                        return;
+                    }
+
+                    setStatusMsg('Signature saved! Generating PDF...', false);
+
+                    // Now trigger PDF download
+                    window.open(`/syllabus/preview/generate-pdf/${currentSyllabusId}`, '_blank');
+
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = '<i class="fas fa-check" style="margin-right: 6px;"></i> Sign & Download PDF';
+
+                    // Close modal after short delay
+                    setTimeout(() => {
+                        window.closeSignatureModal();
+                    }, 800);
+                } catch (err) {
+                    console.error('Signature save error:', err);
+                    setStatusMsg('Something went wrong while saving.', true);
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = '<i class="fas fa-check" style="margin-right: 6px;"></i> Sign & Download PDF';
+                }
+            });
+        }
+
+        // Direct download button (already signed)
+        const downloadDirectBtn = document.getElementById('sigDownloadDirectBtn');
+        if (downloadDirectBtn) {
+            downloadDirectBtn.addEventListener('click', () => {
+                if (currentSyllabusId) {
+                    window.open(`/syllabus/preview/generate-pdf/${currentSyllabusId}`, '_blank');
+                    setTimeout(() => window.closeSignatureModal(), 500);
+                }
+            });
+        }
+
+        // Re-sign button
+        const resignBtn = document.getElementById('sigResignBtn');
+        if (resignBtn) {
+            resignBtn.addEventListener('click', () => {
+                const canvasArea = sigCanvas ? sigCanvas.parentElement : null;
+                const alreadySigned = document.getElementById('sigAlreadySigned');
+                if (canvasArea) canvasArea.style.display = 'block';
+                if (alreadySigned) alreadySigned.style.display = 'none';
+                initCanvas();
+                setStatusMsg('');
+            });
+        }
+    });
+})();
