@@ -37,7 +37,7 @@
         <div class="bb-header" style="flex-shrink: 0;">
             <h1 class="bb-title">Acceptance of Teaching Assignment</h1>
             <p class="bb-subtitle">
-                Welcome, <strong><%= typeof user !== 'undefined' ? user.name : 'Faculty' %></strong> | 
+                Welcome, <strong><%= typeof user !== 'undefined' ? (user.name || (user.firstName + ' ' + user.lastName)) : 'Faculty' %></strong> | 
                 <%= typeof role !== 'undefined' ? role : 'Professor' %>
                 <% if (typeof role !== 'undefined' && role === 'Dean') { %>
                     (CEA)
@@ -51,15 +51,24 @@
             
             <%
                 const currentRole = typeof role !== 'undefined' ? role : 'Professor';
-                const isExecutive = ['VPAA', 'HR', 'HRMO'].includes(currentRole);
-                const isAdmin = ['Program-Chair', 'Dean', 'Admin', 'VPAA', 'HR', 'HRMO'].includes(currentRole);
-                const canViewArchived = ['HR', 'HRMO'].includes(currentRole);
                 const isPracCoord = typeof user !== 'undefined' && user.isPracticumCoordinator;
+                
+                // 1. Who can see personal faculty forms (New, My Pending, My Approved, Info Banner)
+                // -> Everyone EXCEPT Admin, VPAA, HR, and HRMO
+                const canViewFacultyCards = !['Admin', 'VPAA', 'HR', 'HRMO'].includes(currentRole);
+                
+                // 2. Who gets an Approval Inbox & History 
+                // -> Chairs, Deans, VPAA, HR, HRMO, and Practicum Coordinators (Admin is excluded!)
+                const canApproveForms = ['Program-Chair', 'Dean', 'VPAA', 'HR', 'HRMO'].includes(currentRole) || isPracCoord;
+                
+                // 3. Who can see the Master Archive
+                // -> HR, HRMO, and Admin
+                const canViewArchived = ['HR', 'HRMO', 'Admin'].includes(currentRole);
             %>
 
             <div class="bb-grid">
 
-                <% if (!isExecutive) { %>
+                <% if (canViewFacultyCards) { %>
                     <a href="/ata/new" class="bb-card card-new">
                         <div class="bb-card-top">
                             <i class="fas fa-file-signature"></i>
@@ -91,7 +100,7 @@
                     </a>
                 <% } %>
 
-                <% if (isAdmin || isPracCoord) { %>
+                <% if (canApproveForms) { %>
                     <a href="/ata/pending" class="bb-card card-inbox">
                         <div class="bb-card-top">
                             <i class="fas fa-inbox"></i>
@@ -127,7 +136,23 @@
 
             </div>
 
-            <% if (!isExecutive) { %>
+            <% 
+                // STRICT SECURITY: Only Admin and HR can see the Pipeline
+                const canViewPipeline = ['Admin', 'HR', 'HRMO'].includes(currentRole);
+            %>
+            
+            <% if (canViewPipeline && typeof pipelineData !== 'undefined' && pipelineData.length > 0) { %>
+                <div style="margin-top: 25px; padding: 20px; background-color: #fff; border: 1px solid #e0e0e0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+                    <h3 style="margin-bottom: 5px; color: #333; font-size: 1.2rem;">Active Pipeline Bottlenecks</h3>
+                    <p style="color: #666; font-size: 0.9rem; margin-bottom: 20px;">Global real-time tracking of forms awaiting administrative action.</p>
+                    
+                    <div style="position: relative; height: 300px; width: 100%;">
+                        <canvas id="chokePointChart"></canvas>
+                    </div>
+                </div>
+            <% } %>
+
+            <% if (canViewFacultyCards) { %>
                 <div class="bb-info-banner">
                     <div class="bb-info-item">
                         <span>Last Submission</span>
@@ -148,7 +173,15 @@
                 </div>
             <% } %>
             
-        </div> </main>
+        </div> 
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Only inject the data into the browser if the user has permission
+        const pipelineChartData = <%- (typeof currentRole !== 'undefined' && ['Admin', 'HR', 'HRMO'].includes(currentRole) && typeof pipelineData !== 'undefined') ? JSON.stringify(pipelineData) : '[]' %>;
+    </script>
     <script src="/ATA/js/ata_client.js"></script>
+    <script src="/ATA/js/dashboard-window.js"></script>
 </body>
 </html>
