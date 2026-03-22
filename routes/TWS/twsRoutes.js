@@ -39,7 +39,7 @@ const router = express.Router();
 /* ── User model — user.js exports a schema, not a model ── */
 const UserModel = mongoose.models.User || mongoose.model("User", User);
 
-const LOGO_PATH = path.join(process.cwd(), "public", "TWS", "img", "logo.png");
+const LOGO_PATH = path.join(process.cwd(), "public", "ATA", "images", "mapua_logo.png");
 
 /* ======================================================
    MIDDLEWARE
@@ -364,7 +364,7 @@ function safeNum(value, fallback = 0) {
 
   // Header
   if (logo) {
-    page.drawImage(logo, { x: leftMargin, y: 500, width: 42, height: 42 });
+    page.drawImage(logo, { x: leftMargin, y: 495, width: 50, height: 50 });
   }
 
   drawText("Mapua Malayan Colleges Mindanao", 80, 532, { size: 12, bold: true });
@@ -374,9 +374,10 @@ function safeNum(value, fallback = 0) {
   drawRightText("Instructor Schedule", rightMargin, 532, { size: 12, bold: true });
   drawRightText(`${payload.termLabel} | AY ${payload.ayLabel}`, rightMargin, 518, { size: 9, bold: true });
 
-  drawCenteredText(payload.facultyName || "INSTRUCTOR", 421, 480, {
+  drawCenteredText(String(payload.facultyName || "INSTRUCTOR").toUpperCase(), 421, 480, {
     size: 12,
     bold: true,
+    color: rgb(0.70, 0.16, 0.16),
   });
 
   // Main layout
@@ -385,9 +386,9 @@ function safeNum(value, fallback = 0) {
   const scheduleW = 560;
   const scheduleH = 315;
 
-  const detailsX = 605;
+  const detailsX = 620;
   const detailsY = 145;
-  const detailsW = 210;
+  const detailsW = 195;
   const detailsH = 315;
 
   drawRect(scheduleX, scheduleY, scheduleW, scheduleH, null, 1);
@@ -500,26 +501,28 @@ function safeNum(value, fallback = 0) {
     });
 
     const code = item?.code || "-";
-    const sectionRoom = String(item?.sectionRoom || "-").replace(/\s*\|\s*/g, "|");
-    const timeLabel = `${parsed.start}-${parsed.end}`.replace(/\s*-\s*/g, "-");
+    const sectionRoom = String(item?.sectionRoom || "-").replace(/\s*\|\s*/g, " | ");
 
-    drawCenteredText(truncateText(code, 16), blockX + blockW / 2, blockY + blockH - 10, {
-      size: 6.8,
-      bold: true,
-    });
-    drawCenteredText(truncateText(sectionRoom, 20), blockX + blockW / 2, blockY + blockH - 20, {
-      size: 5.8,
-    });
-    drawCenteredText(truncateText(timeLabel, 20), blockX + blockW / 2, blockY + blockH - 29, {
-      size: 5.8,
-    });
+    if (blockH < 38) {
+      // small block: code + section/room
+      drawCenteredText(truncateText(code, 14), blockX + blockW / 2, blockY + blockH - 10, {
+        size: 6.0,
+        bold: true,
+      });
+      drawCenteredText(truncateText(sectionRoom, 16), blockX + blockW / 2, blockY + 5, {
+        size: 4.8,
+      });
+    } else {
+      // normal block: code + section/room
+      drawCenteredText(truncateText(code, 16), blockX + blockW / 2, blockY + blockH - 10, {
+        size: 6.4,
+        bold: true,
+      });
+      drawCenteredText(truncateText(sectionRoom, 18), blockX + blockW / 2, blockY + blockH - 21, {
+        size: 5.2,
+      });
+    }
   }
-
-  // Details panel
-  drawCenteredText("Load Details", detailsX + detailsW / 2, detailsY + detailsH - 18, {
-    size: 11,
-    bold: true,
-  });
 
   let detailY = detailsY + detailsH - 40;
 
@@ -542,52 +545,78 @@ function safeNum(value, fallback = 0) {
   statRow("Total Hours", format2(payload.totalHours), true);
   divider();
 
+  // Reserve space at the bottom for Unit Distribution
+  const reservedBottomSpace = 110;
+  const detailBottomLimit = detailsY + reservedBottomSpace;
+
   if (!payload.createdWorkload.length) {
-    drawText("No schedule assigned.", detailsX + 10, detailY, { size: 8 });
-    detailY -= 16;
+    drawText("No schedule assigned.", detailsX + 10, detailY, { size: 7.5 });
+    detailY -= 14;
   } else {
-    for (const item of payload.createdWorkload.slice(0, 8)) {
+    const sortedWorkload = [...payload.createdWorkload].sort((a, b) => {
+      return String(a?.code || "").localeCompare(String(b?.code || ""));
+    });
+
+    for (const item of sortedWorkload) {
+      const estimatedNeeded = 18;
+
+      if (detailY - estimatedNeeded < detailBottomLimit) break;
+
       drawText(`${truncateText(item?.code || "-", 16)}`, detailsX + 10, detailY, {
-        size: 8,
+        size: 7.2,
         bold: true,
       });
+
       drawRightText(format2(item?.units || 0), detailsX + detailsW - 10, detailY, {
-        size: 8,
+        size: 7.2,
         bold: true,
       });
-      detailY -= 10;
+
+      detailY -= 8;
+
+      const lineText = `${item?.day || ""} ${item?.startTime || ""} - ${item?.endTime || ""} | ${item?.sectionRoom || "-"}`;
 
       drawWrappedText(
-        `${item?.timeSlot || "No schedule"} | ${item?.sectionRoom || "-"}`,
+        lineText,
         detailsX + 10,
         detailY,
         detailsW - 20,
-        { size: 6.8, lineHeight: 8 }
+        { size: 5.8, lineHeight: 6.5 }
       );
-      detailY -= 18;
 
-      drawLine(detailsX + 8, detailY + 5, detailsX + detailsW - 8, detailY + 5, 0.6);
+      detailY -= 11;
+
+      drawLine(detailsX + 8, detailY + 3, detailsX + detailsW - 8, detailY + 3, 0.5);
       detailY -= 4;
     }
   }
 
   divider();
-  drawCenteredText("Unit Distribution", detailsX + detailsW / 2, detailY, {
+  drawCenteredText("Unit Distribution", detailsX + detailsW / 2, detailY + 4, {
     size: 9,
     bold: true,
   });
-  detailY -= 16;
+  detailY -= 10;
 
-  statRow("Academic", format2(payload.academicUnits));
-  statRow("PE", format2(payload.peUnits));
-  statRow("Values", format2(payload.valuesUnits));
-  statRow("NSTP", format2(payload.nstpUnits));
-  statRow("Deloading", format2(payload.deloadingUnits));
-  divider();
-  statRow("Total Units", format2(payload.totalUnits), true);
+  const compactStatRow = (label, value, isBold = false) => {
+    drawText(label, detailsX + 10, detailY, { size: 8, bold: isBold });
+    drawRightText(value, detailsX + detailsW - 10, detailY, { size: 8, bold: true });
+    detailY -= 11;
+  };
+
+  compactStatRow("Academic", format2(payload.academicUnits));
+  compactStatRow("PE", format2(payload.peUnits));
+  compactStatRow("Values", format2(payload.valuesUnits));
+  compactStatRow("NSTP", format2(payload.nstpUnits));
+  compactStatRow("Deloading", format2(payload.deloadingUnits));
+
+  drawLine(detailsX + 8, detailY + 5, detailsX + detailsW - 8, detailY + 5, 1);
+  detailY -= 7;
+
+  compactStatRow("Total Units", format2(payload.totalUnits), true);
 
   // Signatures
-  const sigTopY = 80;
+  const sigTopY = 62;
   const sigWidth = 210;
   const sigHeight = 40;
 
@@ -627,7 +656,7 @@ function safeNum(value, fallback = 0) {
   drawRightText(
     `Generated on ${payload.generatedAt}`,
     rightMargin,
-    28,
+    18,
     { size: 7.5, color: gray }
   );
 
