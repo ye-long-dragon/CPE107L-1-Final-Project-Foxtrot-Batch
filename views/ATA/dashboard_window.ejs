@@ -51,15 +51,24 @@
             
             <%
                 const currentRole = typeof role !== 'undefined' ? role : 'Professor';
-                const isExecutive = ['VPAA', 'HR', 'HRMO'].includes(currentRole);
-                const isAdmin = ['Program-Chair', 'Dean', 'Admin', 'VPAA', 'HR', 'HRMO'].includes(currentRole);
-                const canViewArchived = ['HR', 'HRMO'].includes(currentRole);
                 const isPracCoord = typeof user !== 'undefined' && user.isPracticumCoordinator;
+                
+                // 1. Who can see personal faculty forms (New, My Pending, My Approved, Info Banner)
+                // -> Everyone EXCEPT Admin, VPAA, HR, and HRMO
+                const canViewFacultyCards = !['Admin', 'VPAA', 'HR', 'HRMO'].includes(currentRole);
+                
+                // 2. Who gets an Approval Inbox & History 
+                // -> Chairs, Deans, VPAA, HR, HRMO, and Practicum Coordinators (Admin is excluded!)
+                const canApproveForms = ['Program-Chair', 'Dean', 'VPAA', 'HR', 'HRMO'].includes(currentRole) || isPracCoord;
+                
+                // 3. Who can see the Master Archive
+                // -> HR, HRMO, and Admin
+                const canViewArchived = ['HR', 'HRMO', 'Admin'].includes(currentRole);
             %>
 
             <div class="bb-grid">
 
-                <% if (!isExecutive) { %>
+                <% if (canViewFacultyCards) { %>
                     <a href="/ata/new" class="bb-card card-new">
                         <div class="bb-card-top">
                             <i class="fas fa-file-signature"></i>
@@ -91,7 +100,7 @@
                     </a>
                 <% } %>
 
-                <% if (isAdmin || isPracCoord) { %>
+                <% if (canApproveForms) { %>
                     <a href="/ata/pending" class="bb-card card-inbox">
                         <div class="bb-card-top">
                             <i class="fas fa-inbox"></i>
@@ -127,7 +136,7 @@
 
             </div>
 
-            <% if (!isExecutive) { %>
+            <% if (canViewFacultyCards) { %>
                 <div class="bb-info-banner">
                     <div class="bb-info-item">
                         <span>Last Submission</span>
