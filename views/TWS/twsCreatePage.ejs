@@ -13,8 +13,26 @@
 
 <body class="tws-app-body">
   <div class="tws-app-layout">
-    <aside class="tws-app-sidebar">
-      <%- include("../partials/sideMenuBar", { currentPageCategory: "tws" }) %>
+    <% const role = user.role.toLowerCase(); %>
+
+    <aside class="tws-sidebar">
+      <% if (role.includes("prog")) { %>
+
+        <%- include("../MainPages/progChair/partials/progChairMenuBar", { currentPageCategory: "tws", user }) %>
+
+      <% } else if (role.includes("dean")) { %>
+
+        <%- include("../MainPages/dean/partials/deanMenuBar", { currentPageCategory: "tws", user }) %>
+
+      <% } else if (role.includes("admin")) { %>
+
+        <%- include("../MainPages/admin/partials/adminSideMenuBar", { currentPageCategory: "tws", user }) %>
+
+      <% } else { %>
+
+        <%- include("../partials/sideMenuBar", { currentPageCategory: "tws", user }) %>
+
+      <% } %>
     </aside>
 
     <main class="tws-app-main">
