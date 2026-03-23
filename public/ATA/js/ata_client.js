@@ -1250,3 +1250,79 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.updateDotsOnly) window.updateDotsOnly();
     }
 });
+
+// ==========================================
+// 📊 ADMIN PIPELINE: CHOKE POINT CHART
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // 1. Safety Check: Only run this if the data bridge exists (Admin/HR view)
+    if (typeof pipelineChartData !== 'undefined' && pipelineChartData.length > 0) {
+        
+        const canvas = document.getElementById('chokePointChart');
+        if (!canvas) return; // Exit if the canvas isn't on the screen
+
+        // 2. Extract the data arrays from the JSON bridge
+        const labels = pipelineChartData.map(item => item.label);
+        const dataCounts = pipelineChartData.map(item => item.count);
+
+        // 3. Find the "Choke Point" (The highest number in the array)
+        const maxCount = Math.max(...dataCounts);
+
+        // 4. Dynamic Styling: Highlight the choke point in Red, others in neutral Gray
+        const backgroundColors = dataCounts.map(count => {
+            // If it's the highest number (and greater than 0), make it Mapúa Red!
+            if (count === maxCount && maxCount > 0) {
+                return '#C8102E'; // Bold Red for Bottleneck
+            }
+            return '#E0E0E0'; // Soft Gray for normal flow
+        });
+
+        // 5. Draw the Chart
+        new Chart(canvas, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Active Forms',
+                    data: dataCounts,
+                    backgroundColor: backgroundColors,
+                    borderRadius: 6, // Modern rounded corners
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { 
+                        display: false // Hide legend since it's obvious
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return ` ${context.parsed.y} Forms waiting`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { 
+                            precision: 0 // No decimals (you can't have 1.5 forms)
+                        },
+                        grid: {
+                            color: '#f0f0f0'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false // Cleaner look
+                        }
+                    }
+                }
+            }
+        });
+    }
+});

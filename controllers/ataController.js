@@ -1143,7 +1143,6 @@ export const viewAtaPdf = async (req, res) => {
 // ==========================================
 export const renderDashboard = async (req, res) => {
     try {
-        // 👇 FIXED: Tell it to check req.session.user (which your login system uses)
         const sessionData = req.session?.user || req.user;
         
         if (!sessionData) {
@@ -1157,7 +1156,6 @@ export const renderDashboard = async (req, res) => {
         else if (sessionData.id) sessionUserID = sessionData.id;
         else if (sessionData.employeeId) sessionUserID = sessionData.employeeId;
 
-        // If it's still unknown, block the database call so it doesn't crash
         if (sessionUserID === "unknown") {
             console.error("Could not extract a valid ID from the session object.");
             return res.redirect('/login');
@@ -1194,6 +1192,40 @@ export const renderDashboard = async (req, res) => {
             effectiveUnits = (latestForm.totalEffectiveUnits || 0) + (latestForm.totalRemedialUnits || 0);
         }
 
+        // 👇 PHASE 1, TASK 1: THE CHOKE POINT AGGREGATION
+        let pipelineData = [];
+        
+        // Only run this heavy query for roles that actually need the global chart
+        if (['Admin', 'HR', 'HRMO'].includes(liveRole)) {
+            const rawCounts = await ATAForm.aggregate([
+                {
+                    $match: {
+                        // Ignore Drafts, Finalized, and Archived forms. We only want active bottlenecks.
+                        status: { $nin: ['DRAFT', 'FINALIZED', 'ARCHIVED'] }
+                    }
+                },
+                {
+                    $group: {
+                        _id: '$status',
+                        count: { $sum: 1 }
+                    }
+                }
+            ]);
+
+            // Enforce the exact order of the State Machine so the chart flows logically
+            const statusOrder = ['PENDING_CHAIR', 'PENDING_PRACTICUM', 'PENDING_DEAN', 'PENDING_VPAA', 'PENDING_HR'];
+            
+            pipelineData = statusOrder.map(status => {
+                const found = rawCounts.find(item => item._id === status);
+                return {
+                    // Strips 'PENDING_' so the chart labels are clean (e.g., 'DEAN', 'CHAIR')
+                    label: status.replace('PENDING_', ''), 
+                    count: found ? found.count : 0
+                };
+            });
+        }
+
+        // 👇 PHASE 1, TASK 2: PASS THE PIPELINE DATA TO EJS
         res.render('ATA/dashboard_window', {
             user: liveUser,
             role: liveRole, 
@@ -1205,7 +1237,8 @@ export const renderDashboard = async (req, res) => {
             lastStatus,
             totalUnits,
             effectiveUnits,
-            currentPageCategory: 'ata' // Ensures the sidebar highlights the ATA button!
+            pipelineData, // <-- Successfully injected!
+            currentPageCategory: 'ata' 
         });
 
     } catch (error) {
