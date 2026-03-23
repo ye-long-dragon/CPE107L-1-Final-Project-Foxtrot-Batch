@@ -35,8 +35,8 @@ router.get('/pdf/:id', requireAuth, viewAtaPdf);
 // When they click "Start New ATA Form", run the new function!
 router.get('/new', requireAuth, renderNewATA);
 
-// Archived ATAs (HR Only)
-router.get('/archived-atas', requireAuth, checkRole('HR', 'HRMO'), getArchivedATAs);
+// Archived ATAs (HR, HRMO, and Admin)
+router.get('/archived-atas', requireAuth, checkRole('HR', 'HRMO', 'Admin'), getArchivedATAs);
 
 router.get('/pdf-xray', discoverPdfFields);
 

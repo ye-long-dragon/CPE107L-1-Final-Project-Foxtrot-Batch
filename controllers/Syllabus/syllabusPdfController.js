@@ -105,6 +105,16 @@ export async function generateSyllabusPdf(req, res) {
         
         await page.setContent(html, { waitUntil: 'networkidle0' });
         
+        // Format submission date based on approval record
+        let submissionDate = 'N/A';
+        if (approval && approval.createdAt) {
+            const d = new Date(approval.createdAt);
+            submissionDate = (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear();
+        } else {
+            const d = new Date();
+            submissionDate = (d.getMonth() + 1) + '/' + d.getDate() + '/' + d.getFullYear();
+        }
+
         // Define Header Template
         const headerTemplate = `
             <div style="font-family: Arial, sans-serif; font-size: 8pt; width: 100%; margin: 0 15mm; border-bottom: 1px solid #000; padding-bottom: 5px; display: flex; align-items: flex-start; justify-content: space-between;">
@@ -114,7 +124,7 @@ export async function generateSyllabusPdf(req, res) {
                 <div style="text-align: right;">
                     <table style="border-collapse: collapse; border: 1px solid #000; font-size: 7pt;">
                         <tr><td style="border: 1px solid #000; padding: 2px;">REVISION NO.:</td><td style="border: 1px solid #000; padding: 2px; width: 40px; text-align: center;">00</td></tr>
-                        <tr><td style="border: 1px solid #000; padding: 2px;">REVISION DATE:</td><td style="border: 1px solid #000; padding: 2px; width: 40px; text-align: center;">3/24/2024</td></tr>
+                        <tr><td style="border: 1px solid #000; padding: 2px;">REVISION DATE:</td><td style="border: 1px solid #000; padding: 2px; width: 40px; text-align: center;">${submissionDate}</td></tr>
                     </table>
                 </div>
             </div>
@@ -136,7 +146,7 @@ export async function generateSyllabusPdf(req, res) {
                     </tr>
                     <tr style="text-align: center;">
                         <td style="border: 1px solid #000;">${syl.courseTitle}</td>
-                        <td style="border: 1px solid #000;">${syl.academicYear || ''} / ${syl.term || ''}</td>
+                        <td style="border: 1px solid #000;">${syl.schoolYear || ''} / ${syl.term || ''}</td>
                         <td style="border: 1px solid #000;">${preparedBy}</td>
                         <td style="border: 1px solid #000;">${approvedBy}</td>
                         <td style="border: 1px solid #000;"><span class="pageNumber"></span> OF <span class="totalPages"></span></td>

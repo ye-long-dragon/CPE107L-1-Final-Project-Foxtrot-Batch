@@ -9,6 +9,7 @@ function autoSaveInfo() {
         // Basic Info Grid
         courseCode: document.querySelector('.info-item.small .course-editable-text')?.innerText.trim() || "",
         courseTitle: document.querySelector('.info-item.large .course-editable-text')?.innerText.trim() || "",
+        ayTerm: document.getElementById('ay-term-field')?.innerText.trim() || "",
         preRequisite: getGridText(1, 0),
         coRequisite: getGridText(1, 1),
         creditUnits: getGridText(1, 2),
@@ -57,12 +58,13 @@ function handleInfoNext() {
     // 1. Basic Fields Validation
     const courseCode = document.querySelector('.info-item.small .course-editable-text')?.innerText.trim();
     const courseTitle = document.querySelector('.info-item.large .course-editable-text')?.innerText.trim();
+    const ayTerm = document.getElementById('ay-term-field')?.innerText.trim();
     const courseDescription = document.querySelector('.multiline[data-placeholder*="course description"]')?.innerText.trim();
     const creditUnits = document.querySelector('.info-row:nth-child(2) .info-item:nth-child(3) .course-editable-text')?.innerText.trim();
     const textbook = document.querySelector('.multiline[data-placeholder*="textbook"]')?.innerText.trim();
     const references = document.querySelector('.multiline[data-placeholder*="references"]')?.innerText.trim();
 
-    if (!courseCode || !courseTitle || !courseDescription || !creditUnits || !textbook || !references) {
+    if (!courseCode || !courseTitle || !ayTerm || !courseDescription || !creditUnits || !textbook || !references) {
         alert("All fields are required.");
         return;
     }
@@ -120,6 +122,9 @@ function loadInfoFromSession() {
     // 1. Restore Grid & Multilines
     document.querySelector('.info-item.small .course-editable-text').innerText = data.courseCode || "";
     document.querySelector('.info-item.large .course-editable-text').innerText = data.courseTitle || "";
+    const ayTermEl = document.getElementById('ay-term-field');
+    if (ayTermEl) ayTermEl.innerText = data.ayTerm || "";
+
     setGridText(1, 0, data.preRequisite);
     setGridText(1, 1, data.coRequisite);
     setGridText(1, 2, data.creditUnits);
@@ -208,6 +213,11 @@ function loadInfoFromServer() {
         const courseTitleEl = document.querySelector('.info-item.large .course-editable-text');
         if (courseCodeEl && syl.courseCode && !courseCodeEl.innerText.trim()) courseCodeEl.innerText = syl.courseCode;
         if (courseTitleEl && syl.courseTitle && !courseTitleEl.innerText.trim()) courseTitleEl.innerText = syl.courseTitle;
+
+        const ayTermEl = document.getElementById('ay-term-field');
+        if (ayTermEl && (syl.academicYear || syl.schoolYear || syl.term) && !ayTermEl.innerText.trim()) {
+            ayTermEl.innerText = `${syl.academicYear || syl.schoolYear || ''} / ${syl.term || ''}`;
+        }
 
         // Also fill other basic info fields if available
         const setGridText = (rowIdx, itemIdx, val) => {
@@ -1025,20 +1035,36 @@ window.saveInfoToSession = function() {
     const payload = JSON.parse(sessionStorage.getItem(key)) || {};
 
     try {
-        // 1. Basic Info - Select all editable text areas in the main DOM order
-        const editableBoxes = document.querySelectorAll('.course-editable-text');
-        
+        // Helper to get text by row and item index for the grid
+        const getGridText = (rowIdx, itemIdx) => {
+            return document.querySelectorAll('.info-row')[rowIdx]
+                ?.querySelectorAll('.course-editable-text')[itemIdx]?.innerText.trim() || "";
+        };
+
+        const ayTermStr = document.getElementById('ay-term-field')?.innerText.trim() || '';
+        let termStr = '';
+        let schoolYearStr = '';
+        if (ayTermStr && ayTermStr.includes('/')) {
+            const parts = ayTermStr.split('/');
+            schoolYearStr = parts[0].trim();
+            termStr = parts[1].trim();
+        } else {
+            schoolYearStr = ayTermStr;
+        }
+
         payload.basicInfo = {
-            courseCode: editableBoxes[0]?.innerText.trim() || '',
-            courseTitle: editableBoxes[1]?.innerText.trim() || '',
-            preRequisite: editableBoxes[2]?.innerText.trim() || '',
-            coRequisite: editableBoxes[3]?.innerText.trim() || '',
-            units: editableBoxes[4]?.innerText.trim() || '',
-            classSchedule: editableBoxes[5]?.innerText.trim() || '',
-            courseDesign: editableBoxes[6]?.innerText.trim() || '',
-            courseDescription: editableBoxes[7]?.innerText.trim() || '',
-            textbook: editableBoxes[8]?.innerText.trim() || '',
-            references: editableBoxes[9]?.innerText.trim() || ''
+            courseCode: document.querySelector('.info-item.small .course-editable-text')?.innerText.trim() || '',
+            courseTitle: document.querySelector('.info-item.large .course-editable-text')?.innerText.trim() || '',
+            preRequisite: getGridText(1, 0),
+            coRequisite: getGridText(1, 1),
+            units: getGridText(1, 2),
+            classSchedule: getGridText(2, 0),
+            courseDesign: getGridText(2, 1),
+            courseDescription: document.querySelector('.multiline[data-placeholder*="course description"]')?.innerText.trim() || '',
+            textbook: document.querySelector('.multiline[data-placeholder*="textbook"]')?.innerText.trim() || '',
+            references: document.querySelector('.multiline[data-placeholder*="references"]')?.innerText.trim() || '',
+            term: termStr,
+            schoolYear: schoolYearStr
         };
 
         // 2. Program Educational Objectives (PEOs)

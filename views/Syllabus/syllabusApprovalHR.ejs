@@ -66,7 +66,7 @@
                     <table class="ad-data-table ad-data-table-wide">
                         <tr><td style="font-weight:bold; width: 30%; background:#f9f9f9;">Course Code</td><td><%= locals.courseCode %></td></tr>
                         <tr><td style="font-weight:bold; background:#f9f9f9;">Course Title</td><td><%= locals.courseName %></td></tr>
-
+                        <tr><td style="font-weight:bold; background:#f9f9f9;">AY / Term</td><td><%= locals.syl && locals.syl.schoolYear ? locals.syl.schoolYear : '' %> / <%= locals.syl && locals.syl.term ? locals.syl.term : '' %></td></tr>
                     </table>
 
                     <h3 class="ad-section-heading">Program Educational Objectives (PEO)</h3>

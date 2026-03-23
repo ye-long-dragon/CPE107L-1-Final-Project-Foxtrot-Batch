@@ -36,9 +36,9 @@ router.get("/", (req, res) => {
 // ==========================================
 router.get("/new", requireAuth, async (req, res) => {
     try {
-        // 👇 SECURITY BLOCK: Kick executives out if they type the URL
+        // 👇 SECURITY BLOCK: Kick executives and Admin out if they type the URL
         const userRole = req.user.role || "";
-        if (['VPAA', 'HR', 'HRMO'].includes(userRole)) {
+        if (['Admin', 'VPAA', 'HR', 'HRMO'].includes(userRole)) {
             return res.redirect('/ata/dashboard/window');
         }
 
