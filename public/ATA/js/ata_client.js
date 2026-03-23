@@ -1177,35 +1177,35 @@ document.addEventListener('DOMContentLoaded', () => {
             if(inputs[3]) inputs[3].value = item.effectiveDate || '';
         });
 
-        // --- D. Section C: Other Colleges (Note: Needs specific logic if mixed in form2) ---
-        // Since form2 mixes Section B and C, we find the divider and only look at rows after it
+        // --- D. Section C: Other Colleges (FIXED) ---
         if (data.sectionC_OtherCollege && data.sectionC_OtherCollege.length > 0) {
             const form2 = document.getElementById('form2');
-            const divider = form2.querySelector('.form-divider');
-            if (divider) {
-                // Find the Add Button specifically for Section C (the one after the divider)
-                const addBtns = form2.querySelectorAll('.add-course-btn button');
-                const addBtnC = addBtns[addBtns.length - 1]; // Usually the second one
-
-                for (let i = 1; i < data.sectionC_OtherCollege.length; i++) {
-                    if(addBtnC) addBtnC.click();
-                }
-
-                // Get all course rows, but only process those that come AFTER the divider
-                const allCourseRows = Array.from(form2.querySelectorAll('.course-row'));
-                const sectionCRows = allCourseRows.filter(row => {
-                    return row.compareDocumentPosition(divider) & Node.DOCUMENT_POSITION_PRECEDING;
-                });
-
-                data.sectionC_OtherCollege.forEach((item, index) => {
-                    if (sectionCRows[index]) {
-                        const inputs = sectionCRows[index].querySelectorAll('input, select');
-                        if(inputs[0]) inputs[0].value = item.courseCode || '';
-                        if(inputs[1]) inputs[1].value = item.section || '';
-                        if(inputs[2]) inputs[2].value = item.units || '';
-                        if(inputs[3]) inputs[3].value = item.effectiveDate || '';
+            if (form2) {
+                // Directly target the SECOND form-row (which is Section C)
+                const sectionCContainer = form2.querySelectorAll('.form-row')[1];
+                
+                if (sectionCContainer) {
+                    const addBtnC = sectionCContainer.querySelector('.add-course-btn button');
+                    
+                    // Click the add button to spawn enough rows
+                    for (let i = 1; i < data.sectionC_OtherCollege.length; i++) {
+                        if (addBtnC) addBtnC.click();
                     }
-                });
+
+                    // Grab all the spawned rows specifically inside Section C
+                    const sectionCRows = sectionCContainer.querySelectorAll('.course-row');
+                    
+                    // Fill them up!
+                    data.sectionC_OtherCollege.forEach((item, index) => {
+                        if (sectionCRows[index]) {
+                            const inputs = sectionCRows[index].querySelectorAll('input, select');
+                            if(inputs[0]) inputs[0].value = item.courseCode || '';
+                            if(inputs[1]) inputs[1].value = item.section || '';
+                            if(inputs[2]) inputs[2].value = item.units || '';
+                            if(inputs[3]) inputs[3].value = item.effectiveDate || '';
+                        }
+                    });
+                }
             }
         }
 

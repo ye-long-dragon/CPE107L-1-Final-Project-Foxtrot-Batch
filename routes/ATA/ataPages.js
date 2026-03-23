@@ -1,6 +1,7 @@
 import express from "express";
 import { requireAuth } from "../../middleware/ata_authMiddleware.js";
 import ATAForm from "../../models/ATA/ATAForm.js";
+import { renderDashboard } from "../../controllers/ataController.js";
 
 // 👇 FIX: We import mainDB to access the compiled User model to get Coordinator names!
 import { mainDB } from '../../database/mongo-dbconnect.js';
@@ -62,82 +63,10 @@ router.get("/new", requireAuth, async (req, res) => {
 });
 
 // ==========================================
-// 📊 DYNAMIC DASHBOARD ROUTE (Live DB Fetch Fix)
+// 📊 DASHBOARD ROUTE (Now using the Controller!)
 // ==========================================
-router.get("/dashboard/window", requireAuth, async (req, res) => {
-    try {
-        let sessionUserID = "unknown";
-        if (req.user) {
-            if (req.user._id && req.user._id.$oid) sessionUserID = req.user._id.$oid;
-            else if (req.user._id) sessionUserID = req.user._id.toString();
-            else if (req.user.id) sessionUserID = req.user.id;
-            else if (req.user.employeeId) sessionUserID = req.user.employeeId;
-        }
+router.get("/dashboard/window", requireAuth, renderDashboard);
 
-        const User = mainDB.model('User');
-        const liveUser = await User.findById(sessionUserID);
-
-        if (!liveUser) {
-             return res.status(404).send("User not found.");
-        }
-
-        // Extract the exact boolean directly from the database!
-        const isPracticumCoordinator = liveUser.isPracticumCoordinator === true;
-
-        // Create the safeUser object using the live data
-        const safeUser = {
-            ...liveUser._doc, // Spreads the actual MongoDB document data
-            name: `${liveUser.firstName || ''} ${liveUser.lastName || ''}`.trim() || "Faculty",
-            role: liveUser.role || "Professor",
-            program: liveUser.program || liveUser.department || "",
-            isPracticumCoordinator: isPracticumCoordinator
-        };
-
-        const myPendingCount = await ATAForm.countDocuments({ 
-            userID: sessionUserID, 
-            status: { $regex: '^PENDING' } 
-        });
-
-        const myApprovedCount = await ATAForm.countDocuments({ 
-            userID: sessionUserID, 
-            status: 'FINALIZED' 
-        });
-
-        const latestForm = await ATAForm.findOne({ userID: sessionUserID }).sort({ createdAt: -1 });
-
-        let lastSubmissionDate = "None";
-        let lastStatus = "None";
-        let totalUnits = 0;
-        let effectiveUnits = 0;
-
-        if (latestForm) {
-            lastSubmissionDate = new Date(latestForm.createdAt).toLocaleDateString('en-US', { 
-                month: 'short', day: 'numeric', year: 'numeric' 
-            });
-            lastStatus = latestForm.status.replace('_', ' '); 
-            totalUnits = latestForm.totalTeachingUnits || 0;
-            effectiveUnits = (latestForm.totalEffectiveUnits || 0) + (latestForm.totalRemedialUnits || 0);
-        }
-
-        res.render("ATA/dashboard_window", {
-            user: safeUser,
-            role: safeUser.role,
-            employmentType: safeUser.employmentType || "Full-Time",
-            isPracticumCoordinator: isPracticumCoordinator, // 👈 Safely passed to EJS!
-            myPendingCount: myPendingCount,  
-            myApprovedCount: myApprovedCount,
-            lastSubmissionDate: lastSubmissionDate, 
-            lastStatus: lastStatus,                 
-            totalUnits: totalUnits,                 
-            effectiveUnits: effectiveUnits,         
-            currentPageCategory: 'ata'
-        });
-
-    } catch (error) {
-        console.error("Error loading dashboard data:", error);
-        res.status(500).send("Server Error loading dashboard.");
-    }
-});
 // ==========================================
 // 📄 VIEW MY SUBMISSIONS (SECURED)
 // ==========================================
