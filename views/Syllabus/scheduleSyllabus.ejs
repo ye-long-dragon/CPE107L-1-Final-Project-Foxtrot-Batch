@@ -5,6 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Syllabus Schedule</title>
+    <link rel="icon" type="image/x-icon" href="/common/img/chalkboardLogo.ico">
     <link rel="stylesheet" href="/Syllabus/css/infoSyllabus.css?v=<%= new Date().getTime() %>" />
     <link rel="stylesheet" href="/Syllabus/css/outcomesTable.css?v=<%= new Date().getTime() %>" />
     <link rel="stylesheet" href="/Syllabus/css/scheduleSyllabus.css?v=<%= new Date().getTime() %>" />
@@ -314,6 +315,59 @@
 
             </div>
 
+            <!-- ── Signature Modal for Program Chair and Dean ── -->
+            <div id="submit-signature-modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+                <div id="submit-signature-section" style="background: white; padding: 30px; border-radius: 8px; border-top: 5px solid #a00100; box-shadow: 0 4px 20px rgba(0,0,0,0.2); width: 90%; max-width: 550px; position: relative;">
+                    <button type="button" id="submit-signature-close" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 24px; cursor: pointer; color: #888;">&times;</button>
+                    <h3 style="margin-top: 0; font-size: 1.2rem; color: #333; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                        <span class="material-symbols-outlined" style="color: #a00100;">edit_document</span>
+                        E-Signature Required
+                    </h3>
+                    <p style="font-size: 0.95rem; color: #555; margin-bottom: 25px;">As a Program Chair or Dean, your syllabus draft will be automatically endorsed/approved upon submission. Please provide your e-signature.</p>
+
+                    <div style="display: flex; flex-direction: column; gap: 20px;">
+                        <div>
+                            <label style="display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 8px; color: #333;">Signatory Name <span style="color:red">*</span></label>
+                            <input type="text" id="submit-signatory-name" class="syllabus-input" placeholder="e.g. Dr. Juan dela Cruz" style="width: 100%; border: 1px solid #ccc; border-radius: 4px; padding: 10px; box-sizing: border-box;">
+                        </div>
+
+                        <div>
+                            <label style="display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 8px; color: #333;">E-Signature <span style="color:red">*</span></label>
+                            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                                <button type="button" id="submit-tab-upload" style="padding: 8px 16px; border: none; background: #a00100; color: white; border-radius: 4px; cursor: pointer; font-size: 0.85rem; transition: background 0.2s;">Upload Image</button>
+                                <button type="button" id="submit-tab-draw" style="padding: 8px 16px; border: 1px solid #ccc; background: #fff; color: #333; border-radius: 4px; cursor: pointer; font-size: 0.85rem; transition: background 0.2s;">Draw Signature</button>
+                            </div>
+
+                            <!-- Upload Tab Content -->
+                            <div id="submit-content-upload">
+                                <div id="submit-signature-box" style="width: 100%; min-height: 140px; border: 2px dashed #bbb; border-radius: 6px; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; background: #fafafa; overflow: hidden; transition: border-color 0.2s;">
+                                    <span id="submit-signature-placeholder" style="color: #777; font-size: 0.95rem;"><span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 5px;">upload</span>Click to upload signature</span>
+                                    <input type="file" id="submit-signature-upload" accept="image/*" style="display: none;">
+                                    <img id="submit-signature-preview" src="" style="display: none; max-width: 100%; max-height: 136px; object-fit: contain; pointer-events: none;">
+                                    <button type="button" id="submit-signature-remove" style="display: none; position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 26px; height: 26px; cursor: pointer; align-items: center; justify-content: center; font-size: 16px;">&times;</button>
+                                </div>
+                            </div>
+
+                            <!-- Draw Tab Content -->
+                            <div id="submit-content-draw" style="display: none;">
+                                <div style="border: 2px solid #bbb; border-radius: 6px; background: #fff; overflow: hidden;">
+                                    <canvas id="submit-signature-canvas" width="496" height="150" style="display: block; width: 100%; touch-action: none; cursor: crosshair;"></canvas>
+                                </div>
+                                <div style="margin-top: 10px; display: flex; gap: 10px;">
+                                    <button type="button" id="submit-clear-canvas" style="padding: 8px 16px; border: 1px solid #ccc; background: white; cursor: pointer; border-radius: 4px; font-size: 0.85rem;">Clear</button>
+                                    <button type="button" id="submit-use-drawn" style="padding: 8px 16px; border: none; background: #28a745; color: white; cursor: pointer; border-radius: 4px; font-size: 0.85rem;">Save Drawn Signature</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 30px; display: flex; justify-content: flex-end; gap: 15px;">
+                        <button type="button" id="submit-signature-cancel" style="padding: 10px 24px; border: 1px solid #ccc; background: #fff; cursor: pointer; border-radius: 4px; font-weight: 600; font-size: 0.95rem;">Cancel</button>
+                        <button type="button" id="submit-signature-confirm" style="padding: 10px 24px; border: none; background: #a00100; color: white; cursor: pointer; border-radius: 4px; font-weight: 600; font-size: 0.95rem;">Confirm & Submit</button>
+                    </div>
+                </div>
+            </div>
+
             <div class="button-footer-outer">
                 <button class="next-btn-rect" onclick="window.history.back()" type="button">
                     <span class="material-symbols-outlined">arrow_back</span>
@@ -333,8 +387,9 @@
         window.USER_ROLE = "<%= locals.userRole || '' %>";
         window.USER_ID = "<%= locals.userId || '' %>";
         window.SERVER_SYLLABUS_DATA = {
-            schedules: <% - JSON.stringify(locals.schedules || []) %>,
-            evaluation: <% - JSON.stringify(locals.evaluation || []) %>
+            schedules: <%- JSON.stringify(locals.schedules || []) %>,
+            evaluation: <%- JSON.stringify(locals.evaluation || []) %>,
+            assessment: <%- JSON.stringify(locals.assessment || []) %>
         };
     </script>
     <script src="/Syllabus/js/scheduleSyllabus.js?v=<%= new Date().getTime() %>"></script>

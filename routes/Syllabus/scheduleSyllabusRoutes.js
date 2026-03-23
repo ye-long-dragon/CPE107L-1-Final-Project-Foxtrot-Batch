@@ -19,12 +19,14 @@ scheduleSyllabusRoutes.get('/:syllabusId', async (req, res) => {
         const syllabusId = req.params.syllabusId;
         const schedules = await WeeklySchedule.find({ syllabusID: syllabusId }).sort({ week: 1 });
         const evaluation = await CourseEvaluationPerCO.find({ syllabusID: syllabusId });
+        const courseOutcomes = await CourseOutcomes.find({ syllabusID: syllabusId });
 
         res.render('Syllabus/scheduleSyllabus', {
             currentPageCategory: "syllabus",
             syllabusId: syllabusId,
             schedules: schedules || [],
             evaluation: evaluation || [],
+            assessment: courseOutcomes || [],
             userRole: req.session.user ? req.session.user.role : '',
             userId: req.session.user ? req.session.user.id : ''
         });
@@ -35,6 +37,7 @@ scheduleSyllabusRoutes.get('/:syllabusId', async (req, res) => {
             syllabusId: req.params.syllabusId,
             schedules: [],
             evaluation: [],
+            assessment: [],
             userRole: req.session.user ? req.session.user.role : '',
             userId: req.session.user ? req.session.user.id : ''
         });
@@ -112,10 +115,20 @@ scheduleSyllabusRoutes.post('/submit', async (req, res) => {
 
         // 3. Save Course Outcomes
         if (payload.courseOutcomesEditor && payload.courseOutcomesEditor.length > 0) {
+            let assessmentIndex = 0;
             for (const co of payload.courseOutcomesEditor) {
-                const assessmentTask = payload.courseOutcomesAssessment?.find(
-                    a => a.coNumber === co.coNumber
-                );
+                let assessmentTask = payload.courseOutcomesAssessment?.find(a => {
+                    const aNum = (a.coNumber || '').replace(/\D/g, '');
+                    const coNum = (co.coNumber || '').replace(/\D/g, '');
+                    if (aNum && coNum) return aNum === coNum;
+                    return (a.coNumber || '').trim() === (co.coNumber || '').trim();
+                });
+
+                // Fallback to row index if the user typed non-matching labels like 'CO. test'
+                if (!assessmentTask && payload.courseOutcomesAssessment && payload.courseOutcomesAssessment.length > assessmentIndex) {
+                    assessmentTask = payload.courseOutcomesAssessment[assessmentIndex];
+                }
+
                 const newCo = new CourseOutcomes({
                     syllabusID,
                     coNumber: co.coNumber,
@@ -125,6 +138,7 @@ scheduleSyllabusRoutes.post('/submit', async (req, res) => {
                     minSatisfactoryPerf: assessmentTask ? (parseFloat(assessmentTask.minSatisfactoryPerf) || 0) : 0
                 });
                 await newCo.save();
+                assessmentIndex++;
             }
         }
 
@@ -174,7 +188,8 @@ scheduleSyllabusRoutes.post('/submit', async (req, res) => {
                     onlineTaskWeight: parseFloat(evalEntry.assessmentWeightLT) || 0,
                     longExaminationWeight: parseFloat(evalEntry.assessmentWeightPE) || 0,
                     moduleWeight: parseFloat(evalEntry.modularWeight) || 0,
-                    finalWeight: parseFloat(evalEntry.finalWeight) || 0
+                    finalWeight: parseFloat(evalEntry.finalWeight) || 0,
+                    mediatingOutcome: evalEntry.mediatingOutcome || ""
                 });
                 await newEval.save();
             }
@@ -185,6 +200,8 @@ scheduleSyllabusRoutes.post('/submit', async (req, res) => {
         const userName = req.session?.user
             ? `${req.session.user.firstName || ''} ${req.session.user.lastName || ''}`.trim()
             : '';
+        const reqSignatoryName = req.body.signatoryName || '';
+        const reqSignatureData = req.body.signatureData || null;
 
         let initialStatus = 'Pending';
         let initialRemarks = 'Syllabus Initial Submission';
@@ -197,7 +214,13 @@ scheduleSyllabusRoutes.post('/submit', async (req, res) => {
             approvalData.approvedBy = 'Program Chair';
             approvalData.approvalDate = new Date();
             approvalData.PC_Remarks = 'Auto-endorsed by Program Chair';
-            approvalData.PC_SignatoryName = userName;
+            approvalData.PC_SignatoryName = reqSignatoryName || userName;
+            approvalData.PC_Signature = reqSignatureData;
+            
+            // Apply signature to Faculty "Prepared By" as well
+            approvalData.Faculty_SignatoryName = reqSignatoryName || userName;
+            approvalData.Faculty_Signature = reqSignatureData;
+
         } else if (userRole === 'Dean' || userRole === 'dean') {
             // Dean submits → auto-endorse + auto-approve, skip to HR
             initialStatus = 'Approved';
@@ -205,8 +228,15 @@ scheduleSyllabusRoutes.post('/submit', async (req, res) => {
             approvalData.approvedBy = 'Dean';
             approvalData.approvalDate = new Date();
             approvalData.PC_Remarks = 'Auto-endorsed (submitted by Dean)';
+            approvalData.PC_SignatoryName = reqSignatoryName || userName;
+            approvalData.PC_Signature = reqSignatureData;
             approvalData.Dean_Remarks = 'Auto-approved by Dean';
-            approvalData.Dean_SignatoryName = userName;
+            approvalData.Dean_SignatoryName = reqSignatoryName || userName;
+            approvalData.Dean_Signature = reqSignatureData;
+
+            // Apply signature to Faculty "Prepared By" as well
+            approvalData.Faculty_SignatoryName = reqSignatoryName || userName;
+            approvalData.Faculty_Signature = reqSignatureData;
         }
 
         approvalData.status = initialStatus;

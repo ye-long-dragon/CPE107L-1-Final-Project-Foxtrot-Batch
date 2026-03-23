@@ -7,6 +7,7 @@ import StudentEducationObjectives from '../../models/Syllabus/studentEducational
 import CourseOutcomes from '../../models/Syllabus/courseOutcomes.js';
 import CourseMapping from '../../models/Syllabus/courseMapping.js';
 import WeeklySchedule from '../../models/Syllabus/weeklySchedule.js';
+import CourseEvaluationPerCO from '../../models/Syllabus/courseEvaluationPerCO.js';
 
 const deanApprovalRouter = express.Router();
 
@@ -26,6 +27,7 @@ deanApprovalRouter.get('/:syllabusId', async (req, res) => {
             const cos = await CourseOutcomes.find({ syllabusID: syllabusId });
             const mappings = await CourseMapping.find({ syllabusID: syllabusId });
             const schedules = await WeeklySchedule.find({ syllabusID: syllabusId }).sort({ week: 1 });
+            const evaluations = await CourseEvaluationPerCO.find({ syllabusID: syllabusId }).sort({ moduleCode: 1 });
 
             return res.render('Syllabus/syllabusApprovalDean', {
                 courseName: syl.courseTitle || 'Course Name',
@@ -45,9 +47,12 @@ deanApprovalRouter.get('/:syllabusId', async (req, res) => {
                 cos,
                 mappings,
                 schedules,
+                evaluations,
                 syl,
                 pcSignature: approval ? (approval.PC_Signature || null) : null,
                 pcSignatoryName: approval ? (approval.PC_SignatoryName || '') : '',
+                facultySignature: approval ? (approval.Faculty_Signature || null) : null,
+                facultySignatoryName: approval ? (approval.Faculty_SignatoryName || '') : '',
                 user: req.session.user
             });
         }

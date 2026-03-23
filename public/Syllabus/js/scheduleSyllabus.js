@@ -529,8 +529,11 @@ function loadSchedule() {
 }
 
 // Wire it up
+let finalSignatureBase64 = null;
+
 window.addEventListener('load', () => {
     initColorPalette();
+    initSignatureUI();
 
     const key = `syllabus_draft_schedule_${window.CURRENT_SYLLABUS_ID || 'default'}`;
     const savedSessionData = sessionStorage.getItem(key);
@@ -557,6 +560,169 @@ window.addEventListener('load', () => {
     });
 });
 
+function initSignatureUI() {
+    const role = (window.USER_ROLE || '').toLowerCase();
+    const isPcOrDean = role === 'program-chair' || role === 'program chair' || role === 'dean';
+    
+    // We don't show the overlay here; it is shown in submitSyllabus()
+    const overlay = document.getElementById('submit-signature-modal-overlay');
+    if (!overlay || !isPcOrDean) return;
+
+    // Close/Cancel Modal
+    const hideModal = () => { overlay.style.display = 'none'; };
+    document.getElementById('submit-signature-close').addEventListener('click', hideModal);
+    document.getElementById('submit-signature-cancel').addEventListener('click', hideModal);
+
+    // Confirm & Submit
+    document.getElementById('submit-signature-confirm').addEventListener('click', () => {
+        const sigNameInput = document.getElementById('submit-signatory-name');
+        const sigName = sigNameInput ? sigNameInput.value.trim() : '';
+
+        if (!sigName) {
+            alert("Please enter the Signatory Name before submitting.");
+            if (sigNameInput) sigNameInput.focus();
+            return;
+        }
+        if (!finalSignatureBase64) {
+            alert("Please upload or draw and save an E-Signature before submitting.");
+            return;
+        }
+
+        if (window.currentSubmissionPayload) {
+            window.currentSubmissionPayload.signatoryName = sigName;
+            window.currentSubmissionPayload.signatureData = finalSignatureBase64;
+            overlay.style.display = 'none';
+            executeFinalSubmit(window.currentSubmissionPayload);
+        }
+    });
+
+    const tabUpload = document.getElementById('submit-tab-upload');
+    const tabDraw = document.getElementById('submit-tab-draw');
+    const contentUpload = document.getElementById('submit-content-upload');
+    const contentDraw = document.getElementById('submit-content-draw');
+
+    // Tabs
+    tabUpload.addEventListener('click', () => {
+        tabUpload.style.background = '#a00100'; tabUpload.style.color = 'white';
+        tabUpload.style.border = 'none';
+        tabDraw.style.background = '#fff'; tabDraw.style.color = '#333';
+        tabDraw.style.border = '1px solid #ccc';
+        contentUpload.style.display = 'block'; contentDraw.style.display = 'none';
+        finalSignatureBase64 = null; // Reset when switching
+    });
+    tabDraw.addEventListener('click', () => {
+        tabDraw.style.background = '#a00100'; tabDraw.style.color = 'white';
+        tabDraw.style.border = 'none';
+        tabUpload.style.background = '#fff'; tabUpload.style.color = '#333';
+        tabUpload.style.border = '1px solid #ccc';
+        contentDraw.style.display = 'block'; contentUpload.style.display = 'none';
+        finalSignatureBase64 = null;
+        resizeCanvas();
+    });
+
+    // Upload Logic
+    const box = document.getElementById('submit-signature-box');
+    const input = document.getElementById('submit-signature-upload');
+    const preview = document.getElementById('submit-signature-preview');
+    const placeholder = document.getElementById('submit-signature-placeholder');
+    const btnRemove = document.getElementById('submit-signature-remove');
+
+    box.addEventListener('click', (e) => {
+        if(e.target !== btnRemove) input.click();
+    });
+
+    input.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            finalSignatureBase64 = ev.target.result;
+            preview.src = finalSignatureBase64;
+            preview.style.display = 'block';
+            placeholder.style.display = 'none';
+            btnRemove.style.display = 'flex';
+            box.style.borderColor = '#28a745';
+        };
+        reader.readAsDataURL(file);
+    });
+
+    btnRemove.addEventListener('click', (e) => {
+        e.stopPropagation();
+        finalSignatureBase64 = null;
+        input.value = '';
+        preview.src = '';
+        preview.style.display = 'none';
+        placeholder.style.display = 'block';
+        btnRemove.style.display = 'none';
+        box.style.borderColor = '#bbb';
+    });
+
+    // Draw Logic
+    const canvas = document.getElementById('submit-signature-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let isDrawing = false;
+    let hasDrawn = false;
+
+    function resizeCanvas() {
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
+        canvas.width = canvas.offsetWidth * ratio;
+        canvas.height = canvas.offsetHeight * ratio;
+        ctx.scale(ratio, ratio);
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#000';
+    }
+
+    function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: clientX - rect.left, y: clientY - rect.top };
+    }
+
+    const startDraw = (e) => {
+        e.preventDefault();
+        isDrawing = true;
+        hasDrawn = true;
+        const pos = getPos(e);
+        ctx.beginPath();
+        ctx.moveTo(pos.x, pos.y);
+    };
+    const makeDraw = (e) => {
+        if (!isDrawing) return;
+        e.preventDefault();
+        const pos = getPos(e);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+    };
+    const endDraw = () => { isDrawing = false; };
+
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', makeDraw);
+    canvas.addEventListener('mouseup', endDraw);
+    canvas.addEventListener('mouseout', endDraw);
+    canvas.addEventListener('touchstart', startDraw, { passive: false });
+    canvas.addEventListener('touchmove', makeDraw, { passive: false });
+    canvas.addEventListener('touchend', endDraw);
+
+    document.getElementById('submit-clear-canvas').addEventListener('click', () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        hasDrawn = false;
+        finalSignatureBase64 = null;
+    });
+
+    document.getElementById('submit-use-drawn').addEventListener('click', () => {
+        if (!hasDrawn) {
+            alert('Please draw a signature first.');
+            return;
+        }
+        finalSignatureBase64 = canvas.toDataURL('image/png');
+        alert('Drawn signature saved for submission!');
+    });
+}
+
 /* ── Final Submission Integration ── */
 window.submitSyllabus = async function () {
     try {
@@ -574,6 +740,7 @@ window.submitSyllabus = async function () {
             return;
         }
 
+        // Roles checked later to show modal
         // 2. Course Schedule Table Validation
         const scheduleRows = document.querySelectorAll('#schedule-editor-body tr');
         if (scheduleRows.length === 0) {
@@ -665,7 +832,33 @@ window.submitSyllabus = async function () {
             return;
         }
 
-        // POST to backend
+        // 5. Finalize Submission or Show Modal
+        const role = (window.USER_ROLE || '').toLowerCase();
+        const isPcOrDean = role === 'program-chair' || role === 'program chair' || role === 'dean';
+
+        if (isPcOrDean) {
+            window.currentSubmissionPayload = payload;
+            const overlay = document.getElementById('submit-signature-modal-overlay');
+            if (overlay) {
+                overlay.style.display = 'flex';
+            } else {
+                // Flashback safe execution if overlay is missing
+                executeFinalSubmit(payload);
+            }
+            return;
+        } else {
+            // Normal fallback for faculties
+            executeFinalSubmit(payload);
+        }
+
+    } catch (error) {
+        console.error("Submission failed:", error);
+        alert("An error occurred during submission. Check console for details.");
+    }
+};
+
+async function executeFinalSubmit(payload) {
+    try {
         const fetchResponse = await fetch('/syllabus/schedule/submit', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -693,16 +886,15 @@ window.submitSyllabus = async function () {
         } else {
             alert('Error saving syllabus: ' + (result.error || 'Unknown error'));
         }
-
     } catch (error) {
-        console.error("Submission failed:", error);
-        alert("An error occurred during submission. Check console for details.");
+        console.error("Submission backend call failed:", error);
+        alert("An error occurred communicating with the server. Check console for details.");
     }
-};
+}
 
 function loadFromServer() {
     if (!window.SERVER_SYLLABUS_DATA) return;
-    const { schedules, evaluation } = window.SERVER_SYLLABUS_DATA;
+    const { schedules, evaluation, assessment } = window.SERVER_SYLLABUS_DATA;
 
     // Restore Weekly Schedule
     const scheduleBody = document.getElementById('schedule-editor-body');
@@ -748,6 +940,22 @@ function loadFromServer() {
             }
         });
     }
+
+    // Restore Course Outcomes Assessment Tasks
+    const assessmentBody = document.getElementById('assessment-editor-body');
+    if (assessmentBody && assessment && assessment.length > 0) {
+        assessmentBody.innerHTML = '';
+        assessment.forEach(item => {
+            addAssessmentRow();
+            const lastRow = assessmentBody.lastElementChild;
+            const cells = lastRow.querySelectorAll('.editable-cell');
+            if (cells.length >= 3) {
+                cells[0].innerText = item.coNumber || "";
+                cells[1].innerText = item.assessmentTasks || "";
+                cells[2].innerText = item.minSatisfactoryPerf || "0";
+            }
+        });
+    }
 }
 
 function loadFromSession() {
@@ -789,3 +997,20 @@ function loadFromSession() {
         });
     }
 }
+
+// ==========================================
+// RUN ON LOAD: Load Data into the HTML DOM!
+// ==========================================
+window.addEventListener('load', () => {
+    const key = `syllabus_draft_schedule_${window.CURRENT_SYLLABUS_ID || 'default'}`;
+    const savedSessionData = sessionStorage.getItem(key);
+    const hasServerData = window.SERVER_SYLLABUS_DATA && 
+                          ( (window.SERVER_SYLLABUS_DATA.schedules && window.SERVER_SYLLABUS_DATA.schedules.length > 0) || 
+                            (window.SERVER_SYLLABUS_DATA.evaluation && window.SERVER_SYLLABUS_DATA.evaluation.length > 0) );
+
+    if (hasServerData && !savedSessionData) {
+        loadFromServer();
+    } else if (savedSessionData) {
+        loadFromSession();
+    }
+});

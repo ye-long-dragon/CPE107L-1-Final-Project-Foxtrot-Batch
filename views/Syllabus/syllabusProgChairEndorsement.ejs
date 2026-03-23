@@ -269,7 +269,7 @@
                     <% } %>
 
                     <h3 class="ad-section-heading">Course Outcomes Assessment</h3>
-                    <% if (locals.evaluations && locals.evaluations.length > 0) { %>
+                    <% if (locals.cos && locals.cos.length > 0) { %>
                         <p style="font-size:0.85rem; color:#555; margin-bottom:10px;">Achievement of course outcomes is based on the following:</p>
                         <table class="ad-data-table" style="font-size: 0.85rem;">
                             <thead>
@@ -280,11 +280,11 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <% locals.evaluations.forEach(function(ev) { %>
+                                <% locals.cos.forEach(function(co) { %>
                                     <tr>
-                                        <td style="font-weight:bold;">CO. <%= ev.coNumber || '-' %></td>
-                                        <td><%= ev.assessmentTasks || '-' %></td>
-                                        <td><%= ev.minSatisfactoryPerf || '0%' %></td>
+                                        <td style="font-weight:bold;">CO <%= co.coNumber ? co.coNumber.replace('CO', '') : '-' %></td>
+                                        <td><%= co.assessmentTasks || '-' %></td>
+                                        <td><%= co.minSatisfactoryPerf || '0' %>%</td>
                                     </tr>
                                 <% }); %>
                             </tbody>
@@ -294,14 +294,48 @@
                     <% } %>
 
                     <!-- ── Signature Block for PDF Export ── -->
-                    <div id="document-signature-section" class="ad-signature-block">
-                        <div class="ad-signature-block-content">
-                            <p class="ad-signature-label">Approved by:</p>
-                            <div id="preview-signature-img-container" class="ad-signature-img-container">
-                                <!-- Signature image will be placed here -->
-                            </div>
-                            <p id="preview-signatory-name" class="ad-signature-name">PROGRAM CHAIR</p>
-                            <p class="ad-signature-title">Program Chair</p>
+                    <div id="document-signature-section" style="margin-top:2rem; padding-top:1.5rem; border-top:2px solid #e0e0e0; page-break-inside: avoid;">
+                        <div style="display:flex; justify-content:space-evenly; gap:2rem; flex-wrap:wrap; margin-bottom:1.5rem;">
+                            <% const isPcPreparer = locals.facultySignatoryName && locals.pcSignatoryName && (locals.facultySignatoryName === locals.pcSignatoryName); %>
+                            
+                            <% if (isPcPreparer) { %>
+                                <!-- Faculty / PC Combined Signature -->
+                                <div style="text-align:center; flex:1; min-width:200px;">
+                                    <p style="font-weight:600; font-size:0.85rem; color:#666; margin-bottom:8px;">Prepared & Endorsed by:</p>
+                                    <% if (locals.pcSignature) { %>
+                                        <div style="margin-bottom:6px;">
+                                            <img src="<%= locals.pcSignature %>" alt="PC Signature" style="max-height:60px; max-width:150px;">
+                                        </div>
+                                    <% } else { %>
+                                        <div style="height:60px; border-bottom:1px solid #999; width:150px; margin:0 auto 6px;"></div>
+                                    <% } %>
+                                    <p style="font-weight:700; font-size:0.9rem; margin:4px 0 2px;"><%= locals.pcSignatoryName || 'PROGRAM CHAIR' %></p>
+                                    <p style="font-size:0.8rem; color:#888;">Program Chair</p>
+                                </div>
+                            <% } else { %>
+                                <!-- Faculty Signature -->
+                                <div style="text-align:center; flex:1; min-width:200px;">
+                                    <p style="font-weight:600; font-size:0.85rem; color:#666; margin-bottom:8px;">Prepared by:</p>
+                                    <% if (locals.facultySignature) { %>
+                                        <div style="margin-bottom:6px;">
+                                            <img src="<%= locals.facultySignature %>" alt="Faculty Signature" style="max-height:60px; max-width:150px;">
+                                        </div>
+                                    <% } else { %>
+                                        <div style="height:60px; border-bottom:1px solid #999; width:150px; margin:0 auto 6px;"></div>
+                                    <% } %>
+                                    <p style="font-weight:700; font-size:0.9rem; margin:4px 0 2px;"><%= locals.facultySignatoryName || 'FACULTY' %></p>
+                                    <p style="font-size:0.8rem; color:#888;">Course Coordinator</p>
+                                </div>
+                                <!-- Program Chair Signature (Preview) -->
+                                <div class="ad-signature-block-content" style="text-align:center; flex:1; min-width:200px;">
+                                    <p class="ad-signature-label" style="font-weight:600; font-size:0.85rem; color:#666; margin-bottom:8px;">Approved by:</p>
+                                    <div id="preview-signature-img-container" class="ad-signature-img-container" style="margin-bottom:6px; height:60px; max-width:150px; margin:0 auto;">
+                                        <!-- Signature image will be placed here -->
+                                    </div>
+                                    <p id="preview-signatory-name" class="ad-signature-name" style="font-weight:700; font-size:0.9rem; margin:4px 0 2px;">PROGRAM CHAIR</p>
+                                    <p class="ad-signature-title" style="font-size:0.8rem; color:#888;">Program Chair</p>
+                                </div>
+                            <% } %>
                         </div>
                     </div>
 

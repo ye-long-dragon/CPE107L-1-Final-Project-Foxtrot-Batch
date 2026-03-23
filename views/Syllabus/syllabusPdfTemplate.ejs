@@ -360,6 +360,34 @@
     </table>
     <p style="font-size: 7pt; font-style: italic; margin-top: -10px;">*OT – Online Tasks/Quiz/Lab; LE – Long Examination; FP – Final Project</p>
 
+    <!-- Course Outcomes Assessment -->
+    <h2 class="section-title">Course Outcomes Assessment</h2>
+    <p style="font-size: 8pt; margin-bottom: 5px;">Achievement of course outcomes is based on the following:</p>
+    <table>
+        <thead>
+            <tr>
+                <th style="width:25%;">Course Outcomes</th>
+                <th style="width:40%;">Assessment Tasks</th>
+                <th style="width:35%; text-align: center;">Min. Performance</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% if (outcomes && outcomes.length > 0) { %>
+                <% outcomes.forEach(co => { %>
+                    <tr>
+                        <td style="font-weight:bold;">CO <%= co.coNumber ? co.coNumber.replace('CO', '') : '-' %></td>
+                        <td><%= co.assessmentTasks || '-' %></td>
+                        <td style="text-align: center;"><%= co.minSatisfactoryPerf || '0' %>%</td>
+                    </tr>
+                <% }); %>
+            <% } else { %>
+                <tr>
+                    <td colspan="3" style="text-align: center; font-style: italic;">No course outcomes assessment provided.</td>
+                </tr>
+            <% } %>
+        </tbody>
+    </table>
+
     <!-- Grading System -->
     <h2 class="section-title">Grading System</h2>
     <div style="display: flex; gap: 20px;">
@@ -391,39 +419,86 @@
     <!-- Signatures -->
     <h2 class="section-title">Approvals</h2>
     <div style="display: flex; justify-content: space-between; margin-top: 15px; font-size: 8pt;">
-        <div style="width: 23%;">
-            <p style="margin-bottom: 25px;"><strong>PREPARED BY:</strong></p>
-            <div style="border-bottom: 1px solid #000; text-align: center; min-height: 40px;">
-                <% if (approval && approval.Faculty_Signature) { %>
-                    <img src="<%= approval.Faculty_Signature %>" style="max-height: 40px;">
-                <% } else if (syl.assignedInstructor && syl.assignedInstructor.signatureImage) { %>
-                    <img src="<%= syl.assignedInstructor.signatureImage %>" style="max-height: 40px;">
-                <% } %>
+        <% 
+            const isPcPreparer = approval && approval.Faculty_SignatoryName && approval.PC_SignatoryName && (approval.Faculty_SignatoryName === approval.PC_SignatoryName);
+            const isDeanPreparer = approval && approval.Faculty_SignatoryName && approval.Dean_SignatoryName && (approval.Faculty_SignatoryName === approval.Dean_SignatoryName);
+            
+            let colWidth = "23%";
+            if (isDeanPreparer) {
+                colWidth = "40%";
+            } else if (isPcPreparer) {
+                colWidth = "30%";
+            }
+        %>
+
+        <% if (isDeanPreparer) { %>
+            <div style="width: <%= colWidth %>;">
+                <p style="margin-bottom: 25px;"><strong>PREPARED AND APPROVED BY:</strong></p>
+                <div style="border-bottom: 1px solid #000; text-align: center; min-height: 40px;">
+                    <% if (approval && approval.Dean_Signature) { %>
+                        <img src="<%= approval.Dean_Signature %>" style="max-height: 40px;">
+                    <% } %>
+                </div>
+                <p style="font-size: 9pt; font-weight: bold; text-align: center; margin: 3px 0;"><%= (approval && approval.Dean_SignatoryName) ? approval.Dean_SignatoryName.toUpperCase() : 'DEAN' %></p>
+                <p style="text-align: center; color: #666;">Dean</p>
             </div>
-            <p style="font-size: 9pt; font-weight: bold; text-align: center; margin: 3px 0;"><%= (approval && approval.Faculty_SignatoryName) ? approval.Faculty_SignatoryName.toUpperCase() : (syl.assignedInstructor ? (syl.assignedInstructor.firstName + ' ' + syl.assignedInstructor.lastName).toUpperCase() : 'FACULTY') %></p>
-            <p style="text-align: center; color: #666;">Course Coordinator</p>
-        </div>
-        <div style="width: 23%;">
-            <p style="margin-bottom: 25px;"><strong>ENDORSED BY:</strong></p>
-            <div style="border-bottom: 1px solid #000; text-align: center; min-height: 40px;">
-                <% if (approval && approval.PC_Signature) { %>
-                    <img src="<%= approval.PC_Signature %>" style="max-height: 40px;">
-                <% } %>
+        <% } else if (isPcPreparer) { %>
+            <div style="width: <%= colWidth %>;">
+                <p style="margin-bottom: 25px;"><strong>PREPARED & ENDORSED BY:</strong></p>
+                <div style="border-bottom: 1px solid #000; text-align: center; min-height: 40px;">
+                    <% if (approval && approval.PC_Signature) { %>
+                        <img src="<%= approval.PC_Signature %>" style="max-height: 40px;">
+                    <% } %>
+                </div>
+                <p style="font-size: 9pt; font-weight: bold; text-align: center; margin: 3px 0;"><%= (approval && approval.PC_SignatoryName) ? approval.PC_SignatoryName.toUpperCase() : 'PROGRAM CHAIR' %></p>
+                <p style="text-align: center; color: #666;">Program Chair</p>
             </div>
-            <p style="font-size: 9pt; font-weight: bold; text-align: center; margin: 3px 0;"><%= (approval && approval.PC_SignatoryName) ? approval.PC_SignatoryName.toUpperCase() : 'PROGRAM CHAIR' %></p>
-            <p style="text-align: center; color: #666;">Program Chair</p>
-        </div>
-        <div style="width: 23%;">
-            <p style="margin-bottom: 25px;"><strong>APPROVED BY:</strong></p>
-            <div style="border-bottom: 1px solid #000; text-align: center; min-height: 40px;">
-                <% if (approval && approval.Dean_Signature) { %>
-                    <img src="<%= approval.Dean_Signature %>" style="max-height: 40px;">
-                <% } %>
+            <div style="width: <%= colWidth %>;">
+                <p style="margin-bottom: 25px;"><strong>APPROVED BY:</strong></p>
+                <div style="border-bottom: 1px solid #000; text-align: center; min-height: 40px;">
+                    <% if (approval && approval.Dean_Signature) { %>
+                        <img src="<%= approval.Dean_Signature %>" style="max-height: 40px;">
+                    <% } %>
+                </div>
+                <p style="font-size: 9pt; font-weight: bold; text-align: center; margin: 3px 0;"><%= (approval && approval.Dean_SignatoryName) ? approval.Dean_SignatoryName.toUpperCase() : 'DEAN' %></p>
+                <p style="text-align: center; color: #666;">Dean</p>
             </div>
-            <p style="font-size: 9pt; font-weight: bold; text-align: center; margin: 3px 0;"><%= (approval && approval.Dean_SignatoryName) ? approval.Dean_SignatoryName.toUpperCase() : 'DEAN' %></p>
-            <p style="text-align: center; color: #666;">Dean</p>
-        </div>
-        <div style="width: 23%;">
+        <% } else { %>
+            <div style="width: <%= colWidth %>;">
+                <p style="margin-bottom: 25px;"><strong>PREPARED BY:</strong></p>
+                <div style="border-bottom: 1px solid #000; text-align: center; min-height: 40px;">
+                    <% if (approval && approval.Faculty_Signature) { %>
+                        <img src="<%= approval.Faculty_Signature %>" style="max-height: 40px;">
+                    <% } else if (syl.assignedInstructor && syl.assignedInstructor.signatureImage) { %>
+                        <img src="<%= syl.assignedInstructor.signatureImage %>" style="max-height: 40px;">
+                    <% } %>
+                </div>
+                <p style="font-size: 9pt; font-weight: bold; text-align: center; margin: 3px 0;"><%= (approval && approval.Faculty_SignatoryName) ? approval.Faculty_SignatoryName.toUpperCase() : (syl.assignedInstructor ? (syl.assignedInstructor.firstName + ' ' + syl.assignedInstructor.lastName).toUpperCase() : 'FACULTY') %></p>
+                <p style="text-align: center; color: #666;">Course Coordinator</p>
+            </div>
+            <div style="width: <%= colWidth %>;">
+                <p style="margin-bottom: 25px;"><strong>ENDORSED BY:</strong></p>
+                <div style="border-bottom: 1px solid #000; text-align: center; min-height: 40px;">
+                    <% if (approval && approval.PC_Signature) { %>
+                        <img src="<%= approval.PC_Signature %>" style="max-height: 40px;">
+                    <% } %>
+                </div>
+                <p style="font-size: 9pt; font-weight: bold; text-align: center; margin: 3px 0;"><%= (approval && approval.PC_SignatoryName) ? approval.PC_SignatoryName.toUpperCase() : 'PROGRAM CHAIR' %></p>
+                <p style="text-align: center; color: #666;">Program Chair</p>
+            </div>
+            <div style="width: <%= colWidth %>;">
+                <p style="margin-bottom: 25px;"><strong>APPROVED BY:</strong></p>
+                <div style="border-bottom: 1px solid #000; text-align: center; min-height: 40px;">
+                    <% if (approval && approval.Dean_Signature) { %>
+                        <img src="<%= approval.Dean_Signature %>" style="max-height: 40px;">
+                    <% } %>
+                </div>
+                <p style="font-size: 9pt; font-weight: bold; text-align: center; margin: 3px 0;"><%= (approval && approval.Dean_SignatoryName) ? approval.Dean_SignatoryName.toUpperCase() : 'DEAN' %></p>
+                <p style="text-align: center; color: #666;">Dean</p>
+            </div>
+        <% } %>
+
+        <div style="width: <%= colWidth %>;">
             <p style="margin-bottom: 25px;"><strong>VERIFIED BY:</strong></p>
             <div style="border-bottom: 1px solid #000; text-align: center; min-height: 40px;">
                 <% if (approval && approval.HR_Signature) { %>
