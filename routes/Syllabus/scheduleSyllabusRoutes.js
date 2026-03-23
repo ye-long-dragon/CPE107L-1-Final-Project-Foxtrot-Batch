@@ -20,7 +20,7 @@ scheduleSyllabusRoutes.get('/:syllabusId', async (req, res) => {
         const schedules = await WeeklySchedule.find({ syllabusID: syllabusId }).sort({ week: 1 });
         const evaluation = await CourseEvaluationPerCO.find({ syllabusID: syllabusId });
 
-        res.render('Syllabus/scheduleSyllabus', { 
+        res.render('Syllabus/scheduleSyllabus', {
             currentPageCategory: "syllabus",
             syllabusId: syllabusId,
             schedules: schedules || [],
@@ -30,7 +30,7 @@ scheduleSyllabusRoutes.get('/:syllabusId', async (req, res) => {
         });
     } catch (err) {
         console.error("Error fetching schedule/evaluation:", err);
-        res.render('Syllabus/scheduleSyllabus', { 
+        res.render('Syllabus/scheduleSyllabus', {
             currentPageCategory: "syllabus",
             syllabusId: req.params.syllabusId,
             schedules: [],
@@ -44,12 +44,12 @@ scheduleSyllabusRoutes.get('/:syllabusId', async (req, res) => {
 scheduleSyllabusRoutes.post('/submit', async (req, res) => {
     try {
         const payload = req.body;
-        console.log("RECEIVED PAYLOAD FROM FRONTEND:", JSON.stringify({ 
-            hasBasicInfo: !!payload.basicInfo, 
-            hasId: !!payload.syllabusId, 
-            syllabusIdValue: payload.syllabusId 
+        console.log("RECEIVED PAYLOAD FROM FRONTEND:", JSON.stringify({
+            hasBasicInfo: !!payload.basicInfo,
+            hasId: !!payload.syllabusId,
+            syllabusIdValue: payload.syllabusId
         }));
-        
+
         const syllabusID = payload.syllabusId;
         if (!syllabusID) {
             return res.status(400).json({ success: false, error: "Missing course ID from payload." });
@@ -59,7 +59,7 @@ scheduleSyllabusRoutes.post('/submit', async (req, res) => {
         if (!existingSyllabus) {
             return res.status(404).json({ success: false, error: "Course not found in database." });
         }
-        
+
         // 1. Update existing main Syllabus document
         existingSyllabus.courseCode = payload.basicInfo.courseCode || existingSyllabus.courseCode;
         existingSyllabus.courseTitle = payload.basicInfo.courseTitle || existingSyllabus.courseTitle;

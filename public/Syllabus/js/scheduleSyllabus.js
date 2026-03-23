@@ -491,11 +491,11 @@ function applyActiveColor() {
 
 function autoSaveSchedule() {
     const data = {
-        schedule: Array.from(document.querySelectorAll('#schedule-editor-body tr')).map(row => 
+        schedule: Array.from(document.querySelectorAll('#schedule-editor-body tr')).map(row =>
             Array.from(row.querySelectorAll('.editable-cell')).map(cell => cell.innerHTML)),
-        evaluation: Array.from(document.querySelectorAll('#evaluation-editor-body tr')).map(row => 
+        evaluation: Array.from(document.querySelectorAll('#evaluation-editor-body tr')).map(row =>
             Array.from(row.querySelectorAll('.editable-cell')).map(cell => cell.innerHTML)),
-        assessment: Array.from(document.querySelectorAll('#assessment-editor-body tr')).map(row => 
+        assessment: Array.from(document.querySelectorAll('#assessment-editor-body tr')).map(row =>
             Array.from(row.querySelectorAll('.editable-cell')).map(cell => cell.innerHTML))
     };
     const key = `syllabus_draft_schedule_${window.CURRENT_SYLLABUS_ID || 'default'}`;
@@ -522,7 +522,7 @@ function loadSchedule() {
                 t.func();
                 const lastRow = body.lastElementChild;
                 const cells = lastRow.querySelectorAll('.editable-cell');
-                rowContent.forEach((html, i) => { if(cells[i]) cells[i].innerHTML = html; });
+                rowContent.forEach((html, i) => { if (cells[i]) cells[i].innerHTML = html; });
             });
         }
     });
@@ -531,12 +531,12 @@ function loadSchedule() {
 // Wire it up
 window.addEventListener('load', () => {
     initColorPalette();
-    
+
     const key = `syllabus_draft_schedule_${window.CURRENT_SYLLABUS_ID || 'default'}`;
     const savedSessionData = sessionStorage.getItem(key);
-    const hasServerData = window.SERVER_SYLLABUS_DATA && 
-                          ( (window.SERVER_SYLLABUS_DATA.schedules && window.SERVER_SYLLABUS_DATA.schedules.length > 0) || 
-                            (window.SERVER_SYLLABUS_DATA.evaluation && window.SERVER_SYLLABUS_DATA.evaluation.length > 0) );
+    const hasServerData = window.SERVER_SYLLABUS_DATA &&
+        ((window.SERVER_SYLLABUS_DATA.schedules && window.SERVER_SYLLABUS_DATA.schedules.length > 0) ||
+            (window.SERVER_SYLLABUS_DATA.evaluation && window.SERVER_SYLLABUS_DATA.evaluation.length > 0));
 
     if (hasServerData && !savedSessionData) {
         loadFromServer();
@@ -558,7 +558,7 @@ window.addEventListener('load', () => {
 });
 
 /* ── Final Submission Integration ── */
-window.submitSyllabus = async function() {
+window.submitSyllabus = async function () {
     try {
         // 1. Get step 1 data
         const key = `syllabusFormDraft_${window.CURRENT_SYLLABUS_ID || 'default'}`;
@@ -580,7 +580,7 @@ window.submitSyllabus = async function() {
             alert("All fields are required.");
             return;
         }
-        
+
         let scheduleFilled = false;
         payload.weeklySchedule = Array.from(scheduleRows)
             .filter(r => r.style.display !== 'none') // skip hidden merged cells
@@ -603,7 +603,7 @@ window.submitSyllabus = async function() {
                 if (rowData.week || rowData.coverageTopic) scheduleFilled = true;
                 return rowData;
             });
-            
+
         if (!scheduleFilled) {
             alert("All fields are required.");
             return;
@@ -615,7 +615,7 @@ window.submitSyllabus = async function() {
             alert("All fields are required.");
             return;
         }
-        
+
         let evalFilled = false;
         payload.courseEvaluation = Array.from(evalRows)
             .filter(r => r.style.display !== 'none')
@@ -645,7 +645,7 @@ window.submitSyllabus = async function() {
             alert("All fields are required.");
             return;
         }
-        
+
         let assessFilled = false;
         payload.courseOutcomesAssessment = Array.from(assessRows)
             .filter(r => r.style.display !== 'none')
@@ -664,21 +664,21 @@ window.submitSyllabus = async function() {
             alert("All fields are required.");
             return;
         }
-            
+
         // POST to backend
         const fetchResponse = await fetch('/syllabus/schedule/submit', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
-        
+
         const result = await fetchResponse.json();
-        
+
         if (result.success) {
             const key = `syllabusFormDraft_${window.CURRENT_SYLLABUS_ID || 'default'}`;
             sessionStorage.removeItem(key);
             alert('Syllabus successfully compiled and submitted for review!');
-            
+
             // Role-based redirection
             const role = (window.USER_ROLE || '').toLowerCase();
             if (role === 'dean') {
@@ -693,7 +693,7 @@ window.submitSyllabus = async function() {
         } else {
             alert('Error saving syllabus: ' + (result.error || 'Unknown error'));
         }
-        
+
     } catch (error) {
         console.error("Submission failed:", error);
         alert("An error occurred during submission. Check console for details.");
