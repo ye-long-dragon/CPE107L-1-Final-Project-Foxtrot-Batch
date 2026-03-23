@@ -779,6 +779,11 @@ export const viewAtaPdf = async (req, res) => {
         const form = await ATAForm.findById(req.params.id);
         if (!form) return res.status(404).send("Form not found");
 
+        // 👇 FETCH THE USER TO GET THEIR EXACT DEPARTMENT
+        const User = mainDB.model('User');
+        const formOwner = await User.findById(form.userID);
+        const actualCollege = (formOwner ? (formOwner.department || formOwner.college) : form.college) || "CEA";
+
         const templatePath = path.join(__dirname, '../templates/ATA-College-Blank.pdf'); 
         const existingPdfBytes = fs.readFileSync(templatePath);
         const pdfDoc = await PDFDocument.load(existingPdfBytes);
@@ -801,7 +806,16 @@ export const viewAtaPdf = async (req, res) => {
 
         fillText('text_1tvhi', form.facultyName);
         fillText('text_5jvwx', form.position);
-        fillText('COLLEGE', form.college);
+        
+        // 👇 THE FIX: Treat the College Dropdown exactly like a text field!
+        try { 
+            // Try to set it as a text field first (handles the "ATYCB" bug)
+            fillText('COLLEGE', actualCollege); 
+        } catch (e) { 
+            // If it complains, ignore it. The dropdown loop at the bottom will draw the text anyway!
+            console.log("Ignored COLLEGE dropdown text fill"); 
+        }
+
         fillText('text_2beim', form.employmentStatus);
         fillText('text_4wesx', form.address);
         
@@ -809,6 +823,7 @@ export const viewAtaPdf = async (req, res) => {
         if (adminUnits > 0) {
             fillText('text_36xvyn', adminUnits); 
         }
+        
         try { 
             if (form.term) pdfForm.getDropdown('TERM').select(form.term.replace(" Term", "").toUpperCase()); 
         } catch (e) { console.log("Failed to map TERM"); }
@@ -820,20 +835,17 @@ export const viewAtaPdf = async (req, res) => {
        try { 
             if (form.term) {
                 const cleanTerm = form.term.replace(" Term", "").toUpperCase();
-                // Treat TERM1 as a dropdown!
                 try { pdfForm.getDropdown('TERM1').select(cleanTerm); } 
                 catch (e) { fillText('TERM1', cleanTerm); }
             }
         } catch(e) {}
 
         if (form.academicYear) {
-            const years = form.academicYear.split('-'); // Splits "2026-2027" into ["2026", "2027"]
+            const years = form.academicYear.split('-'); 
             if (years.length === 2) {
-                // Treat YEAR1 as a dropdown (Stamps "2026")
                 try { pdfForm.getDropdown('YEAR1').select(years[0]); } 
                 catch (e) { fillText('YEAR1', years[0]); }
                 
-                // Selects "2027"
                 try { pdfForm.getDropdown('dropdown_87etxp').select(years[1]); } 
                 catch(e) { fillText('dropdown_87etxp', years[1]); }
             }
@@ -915,9 +927,6 @@ export const viewAtaPdf = async (req, res) => {
         
         fillText('text_222pgqw', form.totalRemedialUnits); 
 
-        // ==========================================
-        // 3. OFFICIAL SIGNATURES & STAMPING
-        // ==========================================
         const formattedCreationDate = new Date(form.createdAt).toLocaleDateString('en-US');
         fillText('text_84skhw', `${form.facultyName} | ${formattedCreationDate}`); 
 
@@ -944,7 +953,6 @@ export const viewAtaPdf = async (req, res) => {
             }
         }
 
-        // 👇 BUG FIX: Only grab actual approval signatures, ignore "RETURNED" logs!
         const getSignature = (role) => {
             const validLogs = form.approvalHistory.filter(log => log.approverRole === role && log.approvalStatus !== 'RETURNED');
             return validLogs.length > 0 ? validLogs[validLogs.length - 1] : null;
@@ -962,7 +970,6 @@ export const viewAtaPdf = async (req, res) => {
         const hrLog = form.approvalHistory.find(log => ['HR', 'HRMO'].includes(log.approverRole));
         if (hrLog) fillText('text_82wmdd', `${hrLog.approverName} | ${new Date(hrLog.date).toLocaleDateString('en-US')}`);
 
-        // VIP Stamper Engine
         const stampAdminSignature = async (log, boxName, offsetX = 0, offsetY = 0, customScale = 0.3) => {
             if (log && log.signatureImage && log.signatureImage.startsWith('data:image')) {
                 try {
@@ -987,21 +994,17 @@ export const viewAtaPdf = async (req, res) => {
             }
         };
 
-        // Command big signatures
         if (chairLog) await stampAdminSignature(chairLog, 'text_83xjqp'); 
         if (deanLog) await stampAdminSignature(deanLog, 'text_80trhj', 0, -10);   
         if (vpaaLog) await stampAdminSignature(vpaaLog, 'text_81gbif', 30, -10);
         if (hrLog) await stampAdminSignature(hrLog, 'text_82wmdd', 0, -13);
 
-        // 👇 MULTI-COORDINATOR SMART STAMPER
         if (form.sectionE_Practicum && form.sectionE_Practicum.length > 0) {
             const pracBoxes = ['text_176plma','text_177kwyx','text_178bleo','text_179hjnh','text_180znjo','text_181jcgm','text_182hixs','text_183eow', 'text_184ccue','text_185nzmw'];
-            
             const allPracLogs = form.approvalHistory.filter(log => log.approverRole === 'Practicum-Coordinator');
 
             for (let i = 0; i < form.sectionE_Practicum.length; i++) {
                 const row = form.sectionE_Practicum[i];
-                
                 if (i < 10 && row.coordinator && row.coordinator.trim() !== '') {
                     const matchingLog = allPracLogs.find(log => 
                         log.approverName.toLowerCase() === row.coordinator.trim().toLowerCase()
@@ -1012,52 +1015,25 @@ export const viewAtaPdf = async (req, res) => {
                 }
             }
         }
-        // 👇 MULTI-COORDINATOR SMART STAMPER
-        if (form.sectionE_Practicum && form.sectionE_Practicum.length > 0) {
-            const pracBoxes = ['text_176plma','text_177kwyx','text_178bleo','text_179hjnh','text_180znjo','text_181jcgm','text_182hixs','text_183eow', 'text_184ccue','text_185nzmw'];
-            
-            const allPracLogs = form.approvalHistory.filter(log => log.approverRole === 'Practicum-Coordinator');
-
-            for (let i = 0; i < form.sectionE_Practicum.length; i++) {
-                const row = form.sectionE_Practicum[i];
-                
-                if (i < 10 && row.coordinator && row.coordinator.trim() !== '') {
-                    const matchingLog = allPracLogs.find(log => 
-                        log.approverName.toLowerCase() === row.coordinator.trim().toLowerCase()
-                    );
-                    if (matchingLog) {
-                        await stampAdminSignature(matchingLog, pracBoxes[i], 45, -8, 0.12);
-                    }
-                }
-            }
-        }
-
-        // 👇 NEW: SECTION C AUTO-STAMPER FOR PROGRAM CHAIR
+        
         if (chairLog && form.sectionC_OtherCollege && form.sectionC_OtherCollege.length > 0) {
             const sectionCSigBoxes = [
                 'text_135vkpf', 'text_136xvan', 'text_137jepq', 'text_138qntu', 'text_139xse', 
                 'text_140zwmd', 'text_141xurk', 'text_142xqwx', 'text_143qipa', 'text_144qixn'
             ];
-            
             for (let i = 0; i < form.sectionC_OtherCollege.length; i++) {
                 const row = form.sectionC_OtherCollege[i];
-                
-                // Only stamp if the row actually has a course typed in!
                 if (i < 10 && row.courseCode && row.courseCode.trim() !== '') {
-                    // Stamps the Chair's signature scaled down to 12% to fit the table perfectly
                     await stampAdminSignature(chairLog, sectionCSigBoxes[i], 10, -5, 0.12);
                 }
             }
         }
-        // 👆 END OF SECTION C AUTO-STAMPER
 
-       // PERFECTED OVERLOAD JUSTIFICATION LOGIC
         const regularLoad = form.totalEffectiveUnits || 0;
         const isPartTime = form.employmentType === 'Part-Time';
         const overloadLimit = isPartTime ? 11 : 15;
 
         if (regularLoad > overloadLimit) {
-            // 👇 Look for the dedicated justification field FIRST!
             let finalJustification = "Justification pending Program Chair review.";
             
             if (form.justification && form.justification.trim() !== '') {
@@ -1065,10 +1041,9 @@ export const viewAtaPdf = async (req, res) => {
             } else if (form.chairRemarks && form.chairRemarks.trim() !== '') {
                 finalJustification = form.chairRemarks;
             } else if (chairLog && chairLog.remarks && chairLog.remarks.trim() !== '' && chairLog.remarks !== 'Form Endorsed/Approved') {
-                finalJustification = chairLog.remarks; // Fallback for older forms
+                finalJustification = chairLog.remarks; 
             }
             
-            // 👇 FIXED: We now safely pass finalJustification into the text splitter
             let remainingText = finalJustification;
             let lines = ['', '', ''];
             const MAX_CHARS = 155; 
@@ -1096,6 +1071,7 @@ export const viewAtaPdf = async (req, res) => {
             fillText('text_77ynib', "N/A");
         }
 
+        // 👇 THE CLEAN FINISH: Just enableReadOnly() and handle dropdowns! No flatten!
         const allFields = pdfForm.getFields();
         const firstPage = pdfDoc.getPages()[0];
         
@@ -1104,7 +1080,11 @@ export const viewAtaPdf = async (req, res) => {
         allFields.forEach(field => {
             if (field.constructor.name === 'PDFDropdown') {
                 const selected = field.getSelected();
-                const val = selected && selected.length > 0 ? selected[0] : '';
+                // Override the dropdown value with our actualCollege data!
+                let val = selected && selected.length > 0 ? selected[0] : '';
+                if (field.getName() === 'COLLEGE') {
+                    val = actualCollege;
+                }
                 
                 const widgets = field.acroField.getWidgets();
                 if (widgets && widgets.length > 0) {
@@ -1255,6 +1235,19 @@ export const previewAtaPdf = async (req, res) => {
         const formData = req.body;
         const totals = calculateUnits(formData);
 
+        // 👇 FETCH THE LOGGED-IN USER TO GET THEIR EXACT DEPARTMENT
+        let sessionUserID = "unknown";
+        if (req.user) {
+            if (req.user._id && req.user._id.$oid) sessionUserID = req.user._id.$oid;
+            else if (req.user._id) sessionUserID = req.user._id.toString();
+            else if (req.user.id) sessionUserID = req.user.id;
+            else if (req.user.employeeId) sessionUserID = req.user.employeeId;
+        }
+
+        const User = mainDB.model('User');
+        const liveUser = await User.findById(sessionUserID);
+        const actualCollege = (liveUser ? (liveUser.department || liveUser.college) : formData.college) || "CEA";
+
         const templatePath = path.join(__dirname, '../templates/ATA-College-Blank.pdf'); 
         const existingPdfBytes = fs.readFileSync(templatePath);
         const pdfDoc = await PDFDocument.load(existingPdfBytes);
@@ -1272,13 +1265,21 @@ export const previewAtaPdf = async (req, res) => {
 
         fillText('text_1tvhi', formData.facultyName);
         fillText('text_5jvwx', formData.position);
-        fillText('COLLEGE', formData.college);
+        
+        // 👇 THE FIX: Treat the College Dropdown exactly like a text field!
+        try { 
+            fillText('COLLEGE', actualCollege); 
+        } catch (e) { 
+            console.log("Ignored COLLEGE dropdown text fill"); 
+        }
+
         fillText('text_2beim', formData.employmentStatus);
         fillText('text_4wesx', formData.address);
         const adminUnits = Number(formData.sectionA_AdminUnits) || 0;
         if (adminUnits > 0) {
             fillText('text_36xvyn', adminUnits); 
         }
+        
         try { 
             if (formData.term) pdfForm.getDropdown('TERM').select(formData.term.replace(" Term", "").toUpperCase()); 
         } catch (e) { console.log("Failed to map TERM preview"); }
@@ -1286,6 +1287,7 @@ export const previewAtaPdf = async (req, res) => {
         try { 
             if (formData.academicYear) pdfForm.getDropdown('AY').select(formData.academicYear); 
         } catch (e) { console.log("Failed to map AY preview"); }
+        
         try { 
             if (formData.term) {
                 const cleanTerm = formData.term.replace(" Term", "").toUpperCase();
@@ -1445,6 +1447,7 @@ export const previewAtaPdf = async (req, res) => {
             fillText('text_77ynib', "N/A");
         }
 
+        // 👇 THE CLEAN FINISH: Just enableReadOnly() and handle dropdowns! No flatten!
         const allFields = pdfForm.getFields();
         const firstPage = pdfDoc.getPages()[0];
         
@@ -1453,7 +1456,11 @@ export const previewAtaPdf = async (req, res) => {
         allFields.forEach(field => {
             if (field.constructor.name === 'PDFDropdown') {
                 const selected = field.getSelected();
-                const val = selected && selected.length > 0 ? selected[0] : '';
+                // Override the dropdown value with our actualCollege data!
+                let val = selected && selected.length > 0 ? selected[0] : '';
+                if (field.getName() === 'COLLEGE') {
+                    val = actualCollege;
+                }
                 
                 const widgets = field.acroField.getWidgets();
                 if (widgets && widgets.length > 0) {
@@ -1474,6 +1481,7 @@ export const previewAtaPdf = async (req, res) => {
                 });
             }
         });
+
         const pdfBytes = await pdfDoc.save();
         
         res.setHeader('Content-Type', 'application/pdf');
