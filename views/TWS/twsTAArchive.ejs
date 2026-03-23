@@ -8,8 +8,26 @@
   <link rel="icon" href="/common/img/chalkboardLogo.ico" type="image/x-icon">
 </head>
 <body>
+  <% const role = user.role.toLowerCase(); %>
+
   <aside class="tws-sidebar">
-    <%- include("../partials/sideMenuBar", { currentPageCategory: "tws" }) %>
+    <% if (role.includes("prog")) { %>
+
+      <%- include("../MainPages/progChair/partials/progChairMenuBar", { currentPageCategory: "tws", user }) %>
+
+    <% } else if (role.includes("dean")) { %>
+
+      <%- include("../MainPages/dean/partials/deanMenuBar", { currentPageCategory: "tws", user }) %>
+
+    <% } else if (role.includes("admin")) { %>
+
+      <%- include("../MainPages/admin/partials/adminSideMenuBar", { currentPageCategory: "tws", user }) %>
+
+    <% } else { %>
+
+      <%- include("../partials/sideMenuBar", { currentPageCategory: "tws", user }) %>
+
+    <% } %>
   </aside>
 
   <div class="main">
