@@ -880,8 +880,11 @@ async function executeFinalSubmit(payload) {
                 window.location.href = '/faculty';
             } else if (role === 'program-chair' || role === 'program chair') {
                 window.location.href = '/syllabus/prog-chair';
+            } else if (role === 'hr' || role === 'admin') {
+                window.location.href = '/syllabus/hr';
             } else {
-                window.location.href = '/syllabus';
+                // Default fallback to faculty dashboard to prevent Vercel /login boot loops
+                window.location.href = '/faculty';
             }
         } else {
             alert('Error saving syllabus: ' + (result.error || 'Unknown error'));
