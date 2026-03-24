@@ -9,6 +9,8 @@ import CourseOutcomes from '../../models/Syllabus/courseOutcomes.js';
 import CourseMapping from '../../models/Syllabus/courseMapping.js';
 import WeeklySchedule from '../../models/Syllabus/weeklySchedule.js';
 
+import CourseEvaluationPerCO from '../../models/Syllabus/courseEvaluationPerCO.js';
+
 const adminOverviewRouter = express.Router();
 
 function getLatestRemark(a) {
@@ -158,13 +160,14 @@ adminOverviewRouter.get('/review/:syllabusId', async (req, res) => {
             course = await Syllabus.findById(syllabusId);
         }
 
-        let peos = [], seos = [], cos = [], mappings = [], schedules = [];
+        let peos = [], seos = [], cos = [], mappings = [], schedules = [], evaluations = [];
         if (course) {
             peos = await ProgramEducationObjectives.find({ syllabusID: syllabusId });
             seos = await StudentEducationObjectives.find({ syllabusID: syllabusId });
             cos = await CourseOutcomes.find({ syllabusID: syllabusId });
             mappings = await CourseMapping.find({ syllabusID: syllabusId });
             schedules = await WeeklySchedule.find({ syllabusID: syllabusId }).sort({ week: 1 });
+            evaluations = await CourseEvaluationPerCO.find({ syllabusID: syllabusId }).sort({ moduleCode: 1 });
         }
 
         let viewData = {
@@ -179,6 +182,7 @@ adminOverviewRouter.get('/review/:syllabusId', async (req, res) => {
             cos,
             mappings,
             schedules,
+            evaluations,
             currentStatus: approval ? approval.status : 'Pending',
             currentStatus: approval ? approval.status : 'Pending',
             existingComment: approval ? (approval.HR_Remarks || '') : '',
@@ -190,6 +194,8 @@ adminOverviewRouter.get('/review/:syllabusId', async (req, res) => {
             pcSignatoryName: approval ? (approval.PC_SignatoryName || '') : '',
             deanSignature: approval ? (approval.Dean_Signature || null) : null,
             deanSignatoryName: approval ? (approval.Dean_SignatoryName || '') : '',
+            facultySignature: approval ? (approval.Faculty_Signature || null) : null,
+            facultySignatoryName: approval ? (approval.Faculty_SignatoryName || '') : '',
             syl: course,
             currentPageCategory: 'syllabus',
             user: req.session.user
@@ -207,7 +213,9 @@ adminOverviewRouter.get('/review/:syllabusId', async (req, res) => {
    ----------------------------------------------------------------------- */
 adminOverviewRouter.post('/archive/:syllabusId', async (req, res) => {
     const { syllabusId } = req.params;
-    const { archivedBy, remarks, signature, signatoryName, status } = req.body;
+    const remarks = req.body.remarks || req.body.comment || '';
+    const archivedBy = req.body.archivedBy || req.body.signatoryName || 'HR Admin';
+    const { signature, signatoryName, status } = req.body;
 
     try {
         const record = await SyllabusApprovalStatus.findOne({ syllabusID: syllabusId });

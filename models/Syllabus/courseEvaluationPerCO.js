@@ -9,7 +9,8 @@ const courseEvaluationPerCOSchema = new Schema({
   longExaminationWeight: Number,
   finalProjectWeight: Number,
   moduleWeight: Number,
-  finalWeight: Number
+  finalWeight: Number,
+  mediatingOutcome: String
 });
 
 const CourseEvaluationPerCO = mainDB.models.CourseEvaluationPerCO || mainDB.model("CourseEvaluationPerCO", courseEvaluationPerCOSchema);

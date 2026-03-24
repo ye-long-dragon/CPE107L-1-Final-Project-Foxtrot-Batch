@@ -600,6 +600,8 @@ endorseSyllabusRouter.get('/endorse/:syllabusId', async (req, res) => {
                 optionApproveValue: 'Approved', // Value submitted when endorsed
                 actionTitle: 'Program Chair Endorsement',
                 workflowStep: 'endorsement',
+                facultySignature: approval ? (approval.Faculty_Signature || null) : null,
+                facultySignatoryName: approval ? (approval.Faculty_SignatoryName || '') : '',
                 user: req.session.user
             });
         }
