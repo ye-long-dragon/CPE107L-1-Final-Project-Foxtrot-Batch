@@ -35,6 +35,10 @@ export function validateFacultyInfo(body) {
 
   const validTerms = ["1st Term", "2nd Term", "3rd Term", "Summer"];
   const validStatuses = ["Full-Time", "Part-Time", "Contractual"];
+  const validAcademicYears = [];
+  for (let year = 2025; year <= 2039; year++) {
+    validAcademicYears.push(`${year} - ${year + 1}`);
+  }
 
   if (!selectedProfessorId) {
     errors.push("Please select a professor.");
@@ -68,8 +72,8 @@ export function validateFacultyInfo(body) {
 
   if (!acadYear) {
     errors.push("Academic year is required.");
-  } else if (!isValidAcademicYear(acadYear)) {
-    errors.push("Academic year must follow this format: 2025 - 2026");
+  } else if (!validAcademicYears.includes(acadYear)) {
+    errors.push("Please select a valid academic year.");
   }
 
   if (!term) {
@@ -149,18 +153,25 @@ export function validateCourseAdd(body) {
   const errors = [];
   const code = (body.code || "").trim();
   const title = (body.title || "").trim();
-  const day = (body.day || "").trim();
+
+  const days = Array.isArray(body.days)
+    ? body.days.map((d) => String(d || "").trim()).filter(Boolean)
+    : [String(body.day || "").trim()].filter(Boolean);
+
   const startTime = (body.startTime || "").trim();
   const endTime = (body.endTime || "").trim();
   const units = Number(body.units);
-  const sectionRoom = (body.sectionRoom || "").trim();
+
+  const section = (body.section || "").trim();
+  const classroom = (body.classroom || "").trim();
 
   if (!code) errors.push("Course code is required.");
   if (!title) errors.push("Course title is required.");
-  if (!day) errors.push("Day is required.");
+  if (!days.length) errors.push("Day is required.");
   if (!startTime) errors.push("Start time is required.");
   if (!endTime) errors.push("End time is required.");
-  if (!sectionRoom) errors.push("Section and room are required.");
+  if (!section) errors.push("Section is required.");
+  if (!classroom) errors.push("Classroom is required.");
   if (isNaN(units) || units <= 0) errors.push("Units must be greater than 0.");
 
   const startMinutes = parseTime12HourToMinutes(startTime);

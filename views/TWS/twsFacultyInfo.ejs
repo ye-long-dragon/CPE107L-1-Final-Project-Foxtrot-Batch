@@ -75,19 +75,15 @@
 
     <aside class="tws-sidebar">
       <% if (role.includes("prog")) { %>
-
         <%- include("../MainPages/progChair/partials/progChairMenuBar", { currentPageCategory: "tws", user }) %>
 
       <% } else if (role.includes("dean")) { %>
-
         <%- include("../MainPages/dean/partials/deanMenuBar", { currentPageCategory: "tws", user }) %>
-
+      
       <% } else if (role.includes("admin")) { %>
-
         <%- include("../MainPages/admin/partials/adminSideMenuBar", { currentPageCategory: "tws", user }) %>
 
       <% } else { %>
-
         <%- include("../partials/sideMenuBar", { currentPageCategory: "tws", user }) %>
 
       <% } %>
@@ -164,13 +160,16 @@
               />
 
               <div class="tws-form-label">Academic Year:</div>
-              <input
-                type="text"
-                name="acadYear"
-                placeholder="2025 - 2026"
-                value="<%= tws.faculty?.acadYear || '' %>"
-                class="tws-form-control"
-              />
+              <select name="acadYear" class="tws-form-control tws-field-select" required>
+                <option value="">Select Academic Year</option>
+                <% for (let year = 2025; year <= 2039; year++) { 
+                     const ayValue = `${year} - ${year + 1}`;
+                %>
+                  <option value="<%= ayValue %>" <%= tws.faculty?.acadYear === ayValue ? "selected" : "" %>>
+                    <%= ayValue %>
+                  </option>
+                <% } %>
+              </select>
 
               <div class="tws-form-label">Term:</div>
               <select name="term" class="tws-form-control tws-field-select" required>
@@ -219,7 +218,7 @@
     const programInput = document.querySelector('input[name="program"]');
 
     const professors = JSON.parse(`<%- JSON.stringify(professors || []) %>`);
-    
+
     professorSelect?.addEventListener("change", function () {
       const selected = professors.find((p) => p.id === this.value);
 

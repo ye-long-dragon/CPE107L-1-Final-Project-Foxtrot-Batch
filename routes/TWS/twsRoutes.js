@@ -1526,7 +1526,7 @@ router.post(
       return res.redirect("/tws/dashboard");
     }
 
-    return res.redirect(`/tws/create-teaching-workload/${tws._id}`);
+    return res.redirect(`/tws/created-teaching-workload/${tws._id}`);
   })
 );
 
@@ -1611,11 +1611,38 @@ router.post(
     }
 
     const code = String(req.body.code || "").trim().toUpperCase();
-    const day = String(req.body.day || "").trim();
+
+    const rawDays = Array.isArray(req.body.days)
+      ? req.body.days
+      : req.body.days
+      ? [req.body.days]
+      : req.body.day
+      ? [req.body.day]
+      : [];
+
+    const days = rawDays.map((d) => String(d || "").trim()).filter(Boolean);
+
     const startTime = String(req.body.startTime || "").trim();
     const endTime = String(req.body.endTime || "").trim();
-    const sectionRoom = String(req.body.sectionRoom || "").trim();
-    const scheduleCandidate = buildScheduleCandidateFromInput({ day, startTime, endTime });
+
+    const section = String(req.body.section || "").trim();
+    const classroom = String(req.body.classroom || "").trim();
+    const labRoom = String(req.body.labRoom || "").trim();
+    const pairedRoomEnabled =
+      req.body.pairedRoomEnabled === "true" ||
+      req.body.pairedRoomEnabled === true ||
+      req.body.pairedRoomEnabled === "on";
+
+    const sectionRoom = pairedRoomEnabled && labRoom
+      ? `${section} | ${classroom} | ${labRoom}`
+      : `${section} | ${classroom}`;
+
+    const day = days[0] || "";
+    const scheduleCandidate = {
+      day,
+      startTime,
+      endTime,
+    };
 
     let subject = await Subject.findOne({ code, isActive: true }).lean();
 
@@ -1642,9 +1669,6 @@ router.post(
       return res.status(404).send("Selected subject was not found in the database.");
     }
 
-    const normalizedTimeRange = `${startTime} - ${endTime}`;
-    const normalizedTimeSlot = day ? `${day} ${normalizedTimeRange}` : normalizedTimeRange;
-
     const exists = await Course.findOne({
       twsID: tws._id,
       courseCode: code,
@@ -1652,18 +1676,17 @@ router.post(
 
     if (exists) {
       const message = `Subject ${code} is already added to this workload.`;
-      return res.redirect(`/tws/create-teaching-workload/${tws._id}?error=${encodeURIComponent(message)}`);
+      return res.redirect(`/tws/created-teaching-workload/${tws._id}?error=${encodeURIComponent(message)}`);
     }
 
     const conflict = await findScheduleConflictInTws(tws._id, scheduleCandidate);
     if (conflict) {
       const message = `Schedule conflict detected with ${describeCourseSchedule(conflict)}.`;
-      return res.redirect(`/tws/create-teaching-workload/${tws._id}?error=${encodeURIComponent(message)}`);
+      return res.redirect(`/tws/created-teaching-workload/${tws._id}?error=${encodeURIComponent(message)}`);
     }
 
-    const [section = "", designatedRoom = ""] = sectionRoom
-      .split("|")
-      .map((x) => x.trim());
+    const normalizedTimeRange = `${startTime} - ${endTime}`;
+    const normalizedTimeSlot = day ? `${day} ${normalizedTimeRange}` : normalizedTimeRange;
 
     await Course.create({
       twsID: tws._id,
@@ -1678,13 +1701,16 @@ router.post(
       timeSlot: normalizedTimeSlot,
       sectionRoom,
       section,
-      designatedRoom,
+      classroom,
+      labRoom,
+      pairedRoomEnabled,
+      designatedRoom: classroom,
       department: tws.faculty?.dept || "",
     });
 
     await refreshTwsComputedLoads(tws._id);
 
-    return res.redirect(`/tws/create-teaching-workload/${tws._id}`);
+    return res.redirect(`/tws/created-teaching-workload/${tws._id}`);
   })
 );
 
@@ -1765,7 +1791,7 @@ router.post(
 
     const code = String(req.body?.code || "").trim().toUpperCase();
     if (!code) {
-      return res.redirect(`/tws/create-teaching-workload/${tws._id}`);
+      return res.redirect(`/tws/created-teaching-workload/${tws._id}`);
     }
 
     await Course.deleteOne({
@@ -1775,7 +1801,7 @@ router.post(
 
     await refreshTwsComputedLoads(tws._id);
 
-    return res.redirect(`/tws/create-teaching-workload/${tws._id}`);
+    return res.redirect(`/tws/created-teaching-workload/${tws._id}`);
   })
 );
 
@@ -1789,8 +1815,6 @@ router.get(
   asyncHandler(async (req, res) => {
     const isViewOnly = String(req.query?.mode || "").toLowerCase() === "view";
 
-    // VIEW mode = broader access (Dean / Program Chair dept scope / assigned faculty / owner)
-    // EDIT mode = owner only
     const tws = isViewOnly
       ? await getAccessibleTwsOr404(req, res)
       : await getOwnedTwsOr404(req, res);
@@ -1813,6 +1837,49 @@ router.get(
     const courses = await Course.find({ twsID: tws._id }).sort({ createdAt: 1 }).lean();
     const approval = await TWSApprovalStatus.findOne({ twsID: tws._id }).lean();
 
+    const twsDept = tws.faculty?.dept || "";
+    const twsProgram = tws.faculty?.program || "";
+
+    let subjects = [];
+
+    const ataCurricula = await ATACourse.find(
+      twsProgram ? { program: twsProgram } : {}
+    ).lean();
+
+    if (ataCurricula && ataCurricula.length) {
+      const flattened = ataCurricula.flatMap((curriculum) =>
+        (curriculum.courses || []).map((course) => ({
+          code: String(course.courseCode || "").trim().toUpperCase(),
+          title: String(course.courseTitle || "").trim(),
+          units: Number(course.units || 0),
+          department: twsDept,
+          program: twsProgram,
+          isActive: true,
+        }))
+      );
+
+      const uniqueMap = new Map();
+      flattened.forEach((subject) => {
+        if (subject.code && !uniqueMap.has(subject.code)) {
+          uniqueMap.set(subject.code, subject);
+        }
+      });
+
+      subjects = Array.from(uniqueMap.values()).sort((a, b) => {
+        return a.code.localeCompare(b.code) || a.title.localeCompare(b.title);
+      });
+    }
+
+    if (!subjects.length) {
+      subjects = await Subject.find(
+        twsProgram
+          ? { isActive: true, $or: [{ program: twsProgram }, { program: "" }] }
+          : { isActive: true }
+      )
+        .sort({ code: 1, title: 1 })
+        .lean();
+    }
+
     const { deanName, programChairName } = await resolveSignatoryNames(tws);
 
     const twsView = normalizeTwsForView(tws, courses, approval);
@@ -1821,6 +1888,7 @@ router.get(
 
     res.render("TWS/twsCreatedTeachingWorkload", {
       tws: twsView,
+      subjects,
       isViewOnly,
       viewBackUrl,
       errorMessage,

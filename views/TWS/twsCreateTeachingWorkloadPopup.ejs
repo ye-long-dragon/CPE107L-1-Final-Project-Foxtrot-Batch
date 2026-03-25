@@ -125,6 +125,48 @@
       cursor: not-allowed;
       pointer-events: none;
     }
+
+    .tws-modal-bg {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.38);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 999;
+    }
+
+    .tws-modal {
+      width: min(520px, 94vw);
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      background: #dfe3e8;
+      border-radius: 18px;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .tws-modal-content {
+      overflow-y: auto;
+      max-height: 88vh;
+      padding: 18px 16px;
+      box-sizing: border-box;
+    }
+
+    .tws-modal-content::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .tws-modal-content::-webkit-scrollbar-thumb {
+      background: #b9c0c8;
+      border-radius: 999px;
+    }
+
+    .tws-modal-content::-webkit-scrollbar-track {
+      background: transparent;
+    }
   </style>
 </head>
 
@@ -313,78 +355,80 @@
 <!-- ADD MODAL -->
 <div class="tws-modal-bg" id="addModal">
   <div class="tws-modal">
-    <div class="tws-modal-title" id="addModalTitle">Add Subject</div>
+    <div class="tws-modal-content">
+      <div class="tws-modal-title" id="addModalTitle">Add Subject</div>
 
-    <form method="POST" action="/tws/create-teaching-workload/<%= tws.id %>/add">
-      <input type="hidden" name="code" id="add_code" />
-      <input type="hidden" name="title" id="add_title" />
-      <input type="hidden" name="units" id="add_units" />
+      <form method="POST" action="/tws/create-teaching-workload/<%= tws.id %>/add">
+        <input type="hidden" name="code" id="add_code" />
+        <input type="hidden" name="title" id="add_title" />
+        <input type="hidden" name="units" id="add_units" />
 
-      <label>Choose Day</label>
-      <select name="day" required>
-        <option value="">-- Select --</option>
-        <option value="Mon">Mon</option>
-        <option value="Tue">Tue</option>
-        <option value="Wed">Wed</option>
-        <option value="Thu">Thu</option>
-        <option value="Fri">Fri</option>
-        <option value="Sat">Sat</option>
-        <option value="Sun">Sun</option>
-      </select>
+        <label>Choose Day</label>
+        <select name="day" required>
+          <option value="">-- Select --</option>
+          <option value="Mon">Mon</option>
+          <option value="Tue">Tue</option>
+          <option value="Wed">Wed</option>
+          <option value="Thu">Thu</option>
+          <option value="Fri">Fri</option>
+          <option value="Sat">Sat</option>
+          <option value="Sun">Sun</option>
+        </select>
 
-      <div class="tws-inline-grid">
-        <div>
-          <label>Start Time</label>
-          <select name="startTime" required>
-            <option value="">-- Select Start Time --</option>
-            <option value="7:00 AM">7:00 AM</option>
-            <option value="8:15 AM">8:15 AM</option>
-            <option value="9:30 AM">9:30 AM</option>
-            <option value="10:45 AM">10:45 AM</option>
-            <option value="12:00 PM">12:00 PM</option>
-            <option value="1:15 PM">1:15 PM</option>
-            <option value="2:30 PM">2:30 PM</option>
-            <option value="3:45 PM">3:45 PM</option>
-            <option value="5:00 PM">5:00 PM</option>
-            <option value="6:15 PM">6:15 PM</option>
-            <option value="7:30 PM">7:30 PM</option>
-            <option value="8:45 PM">8:45 PM</option>
-          </select>
+        <div class="tws-inline-grid">
+          <div>
+            <label>Start Time</label>
+            <select name="startTime" required>
+              <option value="">-- Select Start Time --</option>
+              <option value="7:00 AM">7:00 AM</option>
+              <option value="8:15 AM">8:15 AM</option>
+              <option value="9:30 AM">9:30 AM</option>
+              <option value="10:45 AM">10:45 AM</option>
+              <option value="12:00 PM">12:00 PM</option>
+              <option value="1:15 PM">1:15 PM</option>
+              <option value="2:30 PM">2:30 PM</option>
+              <option value="3:45 PM">3:45 PM</option>
+              <option value="5:00 PM">5:00 PM</option>
+              <option value="6:15 PM">6:15 PM</option>
+              <option value="7:30 PM">7:30 PM</option>
+              <option value="8:45 PM">8:45 PM</option>
+            </select>
+          </div>
+
+          <div>
+            <label>End Time</label>
+            <select name="endTime" required>
+              <option value="">-- Select End Time --</option>
+              <option value="8:15 AM">8:15 AM</option>
+              <option value="9:30 AM">9:30 AM</option>
+              <option value="10:45 AM">10:45 AM</option>
+              <option value="12:00 PM">12:00 PM</option>
+              <option value="1:15 PM">1:15 PM</option>
+              <option value="2:30 PM">2:30 PM</option>
+              <option value="3:45 PM">3:45 PM</option>
+              <option value="5:00 PM">5:00 PM</option>
+              <option value="6:15 PM">6:15 PM</option>
+              <option value="7:30 PM">7:30 PM</option>
+              <option value="8:45 PM">8:45 PM</option>
+              <option value="10:00 PM">10:00 PM</option>
+            </select>
+          </div>
         </div>
 
-        <div>
-          <label>End Time</label>
-          <select name="endTime" required>
-            <option value="">-- Select End Time --</option>
-            <option value="8:15 AM">8:15 AM</option>
-            <option value="9:30 AM">9:30 AM</option>
-            <option value="10:45 AM">10:45 AM</option>
-            <option value="12:00 PM">12:00 PM</option>
-            <option value="1:15 PM">1:15 PM</option>
-            <option value="2:30 PM">2:30 PM</option>
-            <option value="3:45 PM">3:45 PM</option>
-            <option value="5:00 PM">5:00 PM</option>
-            <option value="6:15 PM">6:15 PM</option>
-            <option value="7:30 PM">7:30 PM</option>
-            <option value="8:45 PM">8:45 PM</option>
-            <option value="10:00 PM">10:00 PM</option>
-          </select>
+        <label style="margin-top:10px;">Choose Section</label>
+        <select name="sectionRoom" required>
+          <option value="">-- Select --</option>
+          <option value="A1531 | R611">A1531 | R611</option>
+          <option value="A1532 | R612">A1532 | R612</option>
+          <option value="A1533 | R613">A1533 | R613</option>
+        </select>
+
+        <div class="tws-modal-actions">
+          <button class="tws-modal-cancel" type="button" onclick="closeAddModal()">Cancel</button>
+          <button class="tws-modal-add" type="submit">+ Add Subject</button>
         </div>
-      </div>
-
-      <label style="margin-top:10px;">Choose Section</label>
-      <select name="sectionRoom" required>
-        <option value="">-- Select --</option>
-        <option value="A1531 | R611">A1531 | R611</option>
-        <option value="A1532 | R612">A1532 | R612</option>
-        <option value="A1533 | R613">A1533 | R613</option>
-      </select>
-
-      <div class="tws-modal-actions">
-        <button class="tws-modal-cancel" type="button" onclick="closeAddModal()">Cancel</button>
-        <button class="tws-modal-add" type="submit">+ Add Subject</button>
-      </div>
-    </form>
+      </form>
+    </div>
   </div>
 </div>
 
