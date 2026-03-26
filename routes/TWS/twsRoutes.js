@@ -1898,6 +1898,7 @@ router.get(
   })
 );
 
+
 /* ======================================================
    STEP 4 — TEACHING LOAD DETAILS
 ====================================================== */
@@ -2366,6 +2367,46 @@ router.get(
     return res.send(pdfBuffer);
   })
 );
+
+/* ======================================================
+   STEP 6 — CONSULTATION HOURS
+====================================================== */
+
+router.post("/create-teaching-workload/:id/add-consultation", asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { days, startTime, endTime, section, classroom } = req.body;
+
+  const tws = await TWS.findById(id);
+  if (!tws) {
+    return res.status(404).send("TWS not found.");
+  }
+
+  const chosenDays = Array.isArray(days) ? days : (days ? [days] : []);
+
+  if (!chosenDays.length || !startTime || !endTime || !section || !classroom) {
+    return res.redirect(`/tws/created-teaching-workload/${id}`);
+  }
+
+  tws.createdWorkload = tws.createdWorkload || [];
+
+  chosenDays.forEach((day) => {
+    tws.createdWorkload.push({
+      id: new mongoose.Types.ObjectId(),
+      code: "CONSULTATION",
+      title: "Consultation",
+      units: 0,
+      day,
+      startTime,
+      endTime,
+      timeSlot: `${day} ${startTime} - ${endTime}`,
+      sectionRoom: `${section} | ${classroom}`
+    });
+  });
+
+  await tws.save();
+
+  return res.redirect(`/tws/created-teaching-workload/${id}`);
+}));
 
 /* ======================================================
    FACULTY SIGNATURE

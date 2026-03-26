@@ -7,6 +7,153 @@
   <link rel="stylesheet" href="/common/css/variables.css" />
   <link rel="stylesheet" href="/TWS/css/twsDashboard.css" />
   <link rel="icon" href="/common/img/chalkboardLogo.ico" type="image/x-icon">
+
+  <style>
+    .tws-board-caption-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .tws-modal-bg {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.38);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 9999;
+    }
+
+    .tws-modal {
+      width: min(520px, 94vw);
+      max-height: 88vh;
+      background: #dfe3e8;
+      border-radius: 18px;
+      padding: 18px 16px;
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+
+    .tws-form-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .tws-inline-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .tws-modal-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: #10284f;
+      margin-bottom: 14px;
+    }
+
+    .tws-modal label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--tws-text, #1f2937);
+    }
+
+    .tws-modal input[type="text"] {
+      width: 100%;
+      height: 42px;
+      border-radius: 14px;
+      border: 1px solid var(--tws-input-border, #b8c1cc);
+      background: #fff;
+      color: var(--tws-input-text, #1f2937);
+      padding: 0 14px;
+      outline: none;
+      font-size: 13px;
+      box-sizing: border-box;
+    }
+
+    .tws-modal input[type="text"]:focus {
+      border-color: var(--tws-secondary, #0d6efd);
+      box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.08);
+    }
+
+    .tws-modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .tws-modal-cancel,
+    .tws-modal-add {
+      height: 42px;
+      padding: 0 18px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+
+    .tws-modal-cancel {
+      background: #fff;
+      color: #10284f;
+      border-color: #c9d1db;
+    }
+
+    .tws-modal-add {
+      background: #b30000;
+      color: #fff;
+    }
+
+    .tws-btn-red {
+      background: #b30000;
+      color: #fff;
+      border: none;
+      height: 40px;
+      padding: 0 20px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tws-btn-red:hover {
+      background: #8f0000;
+    }
+
+    .tws-modal::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .tws-modal::-webkit-scrollbar-thumb {
+      background: #b9c0c8;
+      border-radius: 999px;
+    }
+
+    .tws-modal::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    @media (max-width: 700px) {
+      .tws-inline-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body class="tws-board-page">
   <%
@@ -96,7 +243,10 @@
             </select>
           </div>
 
-          <div class="tws-board-caption">HR / Admin Archive Dashboard</div>
+          <div class="tws-board-caption-row">
+            <div class="tws-board-caption">HR / Admin Archive Dashboard</div>
+            <button type="button" class="tws-btn-red" id="openAddCourseModalBtn">Add Course +</button>
+          </div>
 
           <div class="tws-board-grid" id="hrActiveGrid">
             <% if (!list || !list.length) { %>
@@ -190,6 +340,36 @@
     </main>
   </div>
 
+  <div class="tws-modal-bg" id="addCourseModal" style="display:none;">
+    <div class="tws-modal">
+      <div class="tws-modal-title">Add Course</div>
+
+      <form class="tws-form-stack" method="POST" action="/tws/admin/add-course">
+        <div class="tws-inline-grid">
+          <div>
+            <label>Course Code</label>
+            <input type="text" name="code" id="addCourseCode" required />
+          </div>
+
+          <div>
+            <label>Units</label>
+            <input type="text" name="units" id="addCourseUnits" required />
+          </div>
+        </div>
+
+        <div>
+          <label>Course Details</label>
+          <input type="text" name="title" id="addCourseDetails" required />
+        </div>
+
+        <div class="tws-modal-actions">
+          <button class="tws-modal-cancel" type="button" onclick="closeAddCourseModal()">Cancel</button>
+          <button class="tws-modal-add" type="submit">Add Course</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
     const hrSearch = document.getElementById('hrSearch');
     const hrDepartmentFilter = document.getElementById('hrDepartmentFilter');
@@ -251,6 +431,26 @@
         card.style.display = matches ? '' : 'none';
       });
     }
+
+    function openAddCourseModal() {
+      const modal = document.getElementById('addCourseModal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function closeAddCourseModal() {
+      const modal = document.getElementById('addCourseModal');
+      if (modal) modal.style.display = 'none';
+    }
+
+    document.getElementById('openAddCourseModalBtn')?.addEventListener('click', function (e) {
+      e.preventDefault();
+      openAddCourseModal();
+    });
+
+    document.addEventListener('click', function (e) {
+      const modal = document.getElementById('addCourseModal');
+      if (e.target === modal) closeAddCourseModal();
+    });
 
     populateHrPrograms();
     populateHrAcademicYears();

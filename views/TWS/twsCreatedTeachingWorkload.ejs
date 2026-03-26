@@ -125,7 +125,7 @@
 
     .tws-picker-row {
       display: grid;
-      grid-template-columns: 1.2fr 2.2fr .7fr .8fr;
+      grid-template-columns: 1.5fr 2.5fr 1fr;
       gap: 12px;
       align-items: center;
       padding: 12px 10px;
@@ -215,6 +215,23 @@
       box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.08);
     }
 
+    .tws-modal-remove {
+      height: 42px;
+      padding: 0 18px;
+      border: 1px solid #b42318;
+      border-radius: 999px;
+      background: #fff;
+      color: #b42318;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .tws-modal-remove:hover {
+      background: #fff0f0;
+    }
+
     .tws-checkbox-line {
       display: flex;
       align-items: center;
@@ -276,6 +293,14 @@
     .tws-modal-lg::-webkit-scrollbar-track,
     .tws-picker-body::-webkit-scrollbar-track {
       background: transparent;
+    }
+
+    .tws-slot {
+      cursor: pointer;
+    }
+
+    .tws-slot:hover {
+      background: rgba(13, 110, 253, 0.08);
     }
 
     @media (max-width: 850px) {
@@ -360,7 +385,13 @@
               %>
                 <div class="tws-cell tws-time" style="--row: <%= row %>;"><%= t %></div>
                 <% for (let c = 0; c < 7; c++) { %>
-                  <div class="tws-cell tws-slot" style="--row: <%= row %>; --col: <%= c + 2 %>;"></div>
+                  <div
+                    class="tws-cell tws-slot"
+                    style="--row: <%= row %>; --col: <%= c + 2 %>;"
+                    data-day="<%= days[c] %>"
+                    data-start="<%= t %>"
+                    data-end="<%= times[rowIndex + 1] || '10:00 PM' %>"
+                  ></div>
                 <% } %>
               <% }) %>
 
@@ -608,7 +639,17 @@
   <% if (!isViewOnly) { %>
     <div class="tws-modal-bg" id="subjectPickerModal" style="display:none;">
       <div class="tws-modal tws-modal-lg">
-        <div class="tws-modal-title">Add Subject</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+          <div class="tws-modal-title" style="margin-bottom:0;">Add Subject</div>
+
+          <button
+            type="button"
+            class="tws-btn-white"
+            id="openConsultationModalBtn"
+          >
+            Add Consultation
+          </button>
+        </div>
 
         <div class="tws-search-wrap">
           <input
@@ -624,7 +665,6 @@
           <div class="tws-picker-row tws-picker-head">
             <div>Course Code</div>
             <div>Course Title</div>
-            <div>Units</div>
             <div>Add</div>
           </div>
 
@@ -640,7 +680,6 @@
               >
                 <div><%= subject.code %></div>
                 <div><%= subject.title %></div>
-                <div><%= Number(subject.units || 0).toFixed(2) %></div>
                 <div>
                   <button
                     type="button"
@@ -665,6 +704,101 @@
         <div class="tws-modal-actions">
           <button class="tws-modal-cancel" type="button" onclick="closeSubjectPickerModal()">Close</button>
         </div>
+      </div>
+    </div>
+
+    <div class="tws-modal-bg" id="consultationModal" style="display:none;">
+      <div class="tws-modal">
+        <div class="tws-modal-title">Add Consultation</div>
+
+        <form method="POST" action="/tws/create-teaching-workload/<%= tws.id %>/add-consultation" class="tws-form-stack">
+          <input type="hidden" name="code" value="CONSULTATION" />
+          <input type="hidden" name="title" value="Consultation" />
+          <input type="hidden" name="units" value="0" />
+
+          <div>
+            <label>Choose Day(s)</label>
+            <div class="tws-day-checkboxes">
+              <label><input type="checkbox" name="days" value="Mon"> Mon</label>
+              <label><input type="checkbox" name="days" value="Tue"> Tue</label>
+              <label><input type="checkbox" name="days" value="Wed"> Wed</label>
+              <label><input type="checkbox" name="days" value="Thu"> Thu</label>
+              <label><input type="checkbox" name="days" value="Fri"> Fri</label>
+              <label><input type="checkbox" name="days" value="Sat"> Sat</label>
+              <label><input type="checkbox" name="days" value="Sun"> Sun</label>
+            </div>
+          </div>
+
+          <div class="tws-inline-grid">
+            <div>
+              <label>Start Time</label>
+              <select name="startTime" id="consultation_startTime" required>
+                <option value="">-- Select Start Time --</option>
+                <option value="7:00 AM">7:00 AM</option>
+                <option value="8:15 AM">8:15 AM</option>
+                <option value="9:30 AM">9:30 AM</option>
+                <option value="10:45 AM">10:45 AM</option>
+                <option value="12:00 PM">12:00 PM</option>
+                <option value="1:15 PM">1:15 PM</option>
+                <option value="2:30 PM">2:30 PM</option>
+                <option value="3:45 PM">3:45 PM</option>
+                <option value="5:00 PM">5:00 PM</option>
+                <option value="6:15 PM">6:15 PM</option>
+                <option value="7:30 PM">7:30 PM</option>
+                <option value="8:45 PM">8:45 PM</option>
+              </select>
+            </div>
+
+            <div>
+              <label>End Time</label>
+              <select name="endTime" id="consultation_endTime" required>
+                <option value="">-- Select End Time --</option>
+                <option value="8:15 AM">8:15 AM</option>
+                <option value="9:30 AM">9:30 AM</option>
+                <option value="10:45 AM">10:45 AM</option>
+                <option value="12:00 PM">12:00 PM</option>
+                <option value="1:15 PM">1:15 PM</option>
+                <option value="2:30 PM">2:30 PM</option>
+                <option value="3:45 PM">3:45 PM</option>
+                <option value="5:00 PM">5:00 PM</option>
+                <option value="6:15 PM">6:15 PM</option>
+                <option value="7:30 PM">7:30 PM</option>
+                <option value="8:45 PM">8:45 PM</option>
+                <option value="10:00 PM">10:00 PM</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="tws-inline-grid">
+            <div>
+              <label>Section</label>
+              <input
+                type="text"
+                name="section"
+                id="consultation_section"
+                value="Consultation"
+                placeholder="Enter section"
+                required
+              />
+            </div>
+
+            <div>
+              <label>Classroom</label>
+              <input
+                type="text"
+                name="classroom"
+                id="consultation_classroom"
+                placeholder="Enter classroom"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="tws-modal-actions">
+            <button class="tws-modal-cancel" type="button" onclick="closeConsultationModal()">Cancel</button>
+            <button class="tws-modal-add" type="submit">+ Add Consultation</button>
+          </div>
+        </form>
       </div>
     </div>
 
@@ -885,6 +1019,9 @@
 
           <div class="tws-modal-actions">
             <button class="tws-modal-cancel" type="button" onclick="closeEditModal()">Cancel</button>
+            <button class="tws-modal-remove" type="button" id="removeSubjectBtn">
+              Remove
+            </button>
             <button class="tws-modal-add" type="submit">Save Changes</button>
           </div>
         </form>
@@ -988,6 +1125,7 @@
     }
 
     const pageIsViewOnly = document.body.dataset.viewOnly === "true";
+    let selectedSlot = null;
 
     document.getElementById("openSubjectPickerBtn")?.addEventListener("click", function () {
       if (pageIsViewOnly) return;
@@ -997,11 +1135,74 @@
     document.querySelectorAll(".js-pick-subject").forEach((btn) => {
       btn.addEventListener("click", function () {
         closeSubjectPickerModal();
+
         openAddModal(
           this.dataset.code || "",
           this.dataset.title || "",
           this.dataset.units || ""
         );
+
+        if (selectedSlot) {
+          document.getElementById("add_startTime").value = selectedSlot.start || "";
+          document.getElementById("add_endTime").value = selectedSlot.end || "";
+
+          document.querySelectorAll('#addModal input[name="days"]').forEach((cb) => {
+            cb.checked = cb.value === selectedSlot.day;
+          });
+
+          selectedSlot = null;
+        }
+      });
+    });
+
+    function openConsultationModal() {
+      const modal = document.getElementById("consultationModal");
+      if (modal) modal.style.display = "flex";
+    }
+
+    function closeConsultationModal() {
+      const modal = document.getElementById("consultationModal");
+      if (modal) modal.style.display = "none";
+    }
+
+    function resetConsultationModalFields() {
+      document.querySelectorAll('#consultationModal input[name="days"]').forEach((cb) => {
+        cb.checked = false;
+      });
+
+      const ids = [
+        "consultation_startTime",
+        "consultation_endTime",
+        "consultation_classroom"
+      ];
+
+      ids.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) el.value = "";
+      });
+
+      const sectionEl = document.getElementById("consultation_section");
+      if (sectionEl) sectionEl.value = "Consultation";
+    }
+
+    document.getElementById("openConsultationModalBtn")?.addEventListener("click", function () {
+      if (pageIsViewOnly) return;
+      resetConsultationModalFields();
+      openConsultationModal();
+    });
+
+    document.querySelectorAll(".tws-slot").forEach((slot) => {
+      slot.addEventListener("click", function (e) {
+        if (pageIsViewOnly) return;
+        if (e.target.closest(".tws-block")) return;
+
+        selectedSlot = {
+          day: this.dataset.day || "",
+          start: this.dataset.start || "",
+          end: this.dataset.end || ""
+        };
+
+        openSubjectPickerModal();
       });
     });
 
@@ -1046,16 +1247,18 @@
 
     document.addEventListener("click", function (e) {
       const subjectPickerModal = document.getElementById("subjectPickerModal");
+      const consultationModal = document.getElementById("consultationModal");
       const addModal = document.getElementById("addModal");
       const editModal = document.getElementById("editModal");
 
       if (e.target === subjectPickerModal) closeSubjectPickerModal();
+      if (e.target === consultationModal) closeConsultationModal();
       if (e.target === addModal) closeAddModal();
       if (e.target === editModal) closeEditModal();
     });
 
-    function toggleLabScheduleFields() {
-    const pairedCheckbox = document.getElementById("add_pairedRoomEnabled");
+  function toggleLabScheduleFields() {
+  const pairedCheckbox = document.getElementById("add_pairedRoomEnabled");
   const labFields = document.getElementById("labScheduleFields");
 
   if (!pairedCheckbox || !labFields) return;
@@ -1078,6 +1281,23 @@
   }
 
   document.getElementById("add_pairedRoomEnabled")?.addEventListener("change", toggleLabScheduleFields);
+
+  document.getElementById("removeSubjectBtn")?.addEventListener("click", function () {
+    const courseId = document.getElementById("edit_courseId")?.value || "";
+    const code = document.getElementById("edit_code")?.value || "";
+    const title = document.getElementById("edit_title")?.value || "";
+
+    if (!courseId) {
+      alert("Unable to remove subject. Missing course ID.");
+      return;
+    }
+
+    const confirmed = confirm(`Remove subject: ${code} - ${title}?`);
+    if (!confirmed) return;
+
+    document.getElementById("delete_courseId").value = courseId;
+    document.getElementById("deleteSubjectForm").submit();
+  });
   </script>
 </body>
 </html>
