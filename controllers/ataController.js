@@ -443,8 +443,12 @@ export const approveATA = async (req, res) => {
 
                 case 'PENDING_DEAN':
                     if (primaryRole === 'Dean' && action === 'APPROVE') {
-                        newStatus = 'PENDING_VPAA';
-                        historyStatus = 'APPROVED';
+                        // newStatus = 'PENDING_VPAA';
+                        // historyStatus = 'APPROVED';
+                        newStatus = 'FINALIZED'; 
+                        historyStatus = 'FINALIZED'; 
+                        form.archivedAt   = new Date();
+                        form.archivedById = sessionUserID;
                     } else return res.status(403).json({ error: "Invalid action for Dean." });
                     break;
 
