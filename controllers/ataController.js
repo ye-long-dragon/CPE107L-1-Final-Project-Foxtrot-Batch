@@ -1176,40 +1176,44 @@ export const renderDashboard = async (req, res) => {
             effectiveUnits = (latestForm.totalEffectiveUnits || 0) + (latestForm.totalRemedialUnits || 0);
         }
 
-        // 👇 PHASE 1, TASK 1: THE CHOKE POINT AGGREGATION
+        // 👇 THE NEW SMART PIPELINE ENGINE
         let pipelineData = [];
         
-        // Only run this heavy query for roles that actually need the global chart
-        if (['Admin', 'HR', 'HRMO'].includes(liveRole)) {
-            const rawCounts = await ATAForm.aggregate([
-                {
-                    $match: {
-                        // Ignore Drafts, Finalized, and Archived forms. We only want active bottlenecks.
-                        status: { $nin: ['DRAFT', 'FINALIZED', 'ARCHIVED'] }
-                    }
-                },
-                {
-                    $group: {
-                        _id: '$status',
-                        count: { $sum: 1 }
-                    }
-                }
-            ]);
+        // Includes Dean and Program-Chair so they can see the chart!
+        if (['Admin', 'HR', 'HRMO', 'Dean', 'Program-Chair'].includes(liveRole)) {
+            let baseQuery = {}; 
 
-            // Enforce the exact order of the State Machine so the chart flows logically
-            const statusOrder = ['PENDING_CHAIR', 'PENDING_PRACTICUM', 'PENDING_DEAN', 'PENDING_VPAA', 'PENDING_HR'];
-            
-            pipelineData = statusOrder.map(status => {
-                const found = rawCounts.find(item => item._id === status);
-                return {
-                    // Strips 'PENDING_' so the chart labels are clean (e.g., 'DEAN', 'CHAIR')
-                    label: status.replace('PENDING_', ''), 
-                    count: found ? found.count : 0
-                };
-            });
+            // Filter for Program Chairs
+            if (liveRole === 'Program-Chair') {
+                baseQuery.college = liveUser.program || liveUser.department;
+            } 
+            // Filter for Deans
+            else if (liveRole === 'Dean') {
+                baseQuery.college = { $in: ["AR", "ChE", "CE", "CpE", "EE", "ECE", "IE", "ME"] };
+            }
+
+            // Securely count the first 3 stages
+            const chairCount = await ATAForm.countDocuments({ ...baseQuery, status: 'PENDING_CHAIR' });
+            const pracCount = await ATAForm.countDocuments({ ...baseQuery, status: 'PENDING_PRACTICUM' });
+            const deanCount = await ATAForm.countDocuments({ ...baseQuery, status: 'PENDING_DEAN' });
+
+            // Base 3 columns for EVERYONE (Chairs, Deans, Admin, HR)
+            pipelineData = [
+                { label: 'CHAIR', count: chairCount },
+                { label: 'PRACTICUM', count: pracCount },
+                { label: 'DEAN', count: deanCount }
+            ];
+
+            // 👇 ONLY add VPAA and HR columns if the user is Admin or HR!
+            if (['Admin', 'HR', 'HRMO'].includes(liveRole)) {
+                const vpaaCount = await ATAForm.countDocuments({ ...baseQuery, status: 'PENDING_VPAA' });
+                const hrCount = await ATAForm.countDocuments({ ...baseQuery, status: 'PENDING_HR' });
+                
+                pipelineData.push({ label: 'VPAA', count: vpaaCount });
+                pipelineData.push({ label: 'HR', count: hrCount });
+            }
         }
 
-        // 👇 PHASE 1, TASK 2: PASS THE PIPELINE DATA TO EJS
         res.render('ATA/dashboard_window', {
             user: liveUser,
             role: liveRole, 
@@ -1221,7 +1225,7 @@ export const renderDashboard = async (req, res) => {
             lastStatus,
             totalUnits,
             effectiveUnits,
-            pipelineData, // <-- Successfully injected!
+            pipelineData, // <-- Passed directly to the frontend!
             currentPageCategory: 'ata' 
         });
 
@@ -1230,7 +1234,6 @@ export const renderDashboard = async (req, res) => {
         res.status(500).send("Failed to load dashboard.");
     }
 };
-
 // ==========================================
 // 🩻 8. GENERATE LIVE PDF PREVIEW 
 // ==========================================
@@ -1501,18 +1504,44 @@ export const previewAtaPdf = async (req, res) => {
 // ==========================================
 export const getArchivedATAs = async (req, res) => {
     try {
-        // Since we will use requireAuth middleware, req.user is guaranteed to exist!
         const sessionData = req.user; 
+        const userRole = sessionData.role;
+        const userProgram = sessionData.program || sessionData.department;
         
-        // Fetch ALL forms that have been finalized by HR
-        const archivedForms = await ATAForm.find({ status: 'FINALIZED' })
+        // Base query: Get finalized forms
+        let dbQuery = { status: 'FINALIZED' };
+
+        // 👇 FUTURE-PROOF DICTIONARY: Maps the Dean's department to all its possible form tags
+        const collegeMap = {
+            "CEA": ["CEA", "AR", "ChE", "CE", "CpE", "EE", "ECE", "IE", "ME"],
+            "CCIS": ["CCIS", "CS", "EMC", "IS"],
+            "CAS": ["CAS", "COMM", "MMA"],
+            "ATYCB": ["ATYCB", "ENTREP", "MA", "REM", "TM", "BSA", "AIS"],
+            "CHS": ["CHS", "BIO", "PHARM", "PSYCH", "PT", "MEDTECH"]
+        };
+
+        // 👇 ROLE-BASED FILTERING LOGIC
+        if (userRole === 'Program-Chair') {
+            // Chairs ONLY see forms matching their specific program (e.g., "CpE")
+            dbQuery.college = userProgram; 
+        } else if (userRole === 'Dean') {
+            // Deans securely see their own forms AND all programs under their specific Department!
+            const deanDept = sessionData.department; // e.g., "CEA"
+            
+            if (collegeMap[deanDept]) {
+                dbQuery.college = { $in: collegeMap[deanDept] };
+            } else {
+                dbQuery.college = deanDept; // Safe fallback just in case
+            }
+        }
+
+        const archivedForms = await ATAForm.find(dbQuery)
             .sort({ updatedAt: -1 }) 
             .lean();
 
-        // Render the Archive Page
         res.render('ATA/archived-atas', {
             user: sessionData, 
-            role: sessionData.role,
+            role: userRole,
             forms: archivedForms,
             totalCount: archivedForms.length,
             currentPageCategory: 'ata' 
