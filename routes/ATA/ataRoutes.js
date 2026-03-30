@@ -37,7 +37,7 @@ router.get('/pdf/:id', requireAuth, viewAtaPdf);
 router.get('/new', requireAuth, renderNewATA);
 
 // Archived ATAs (HR, HRMO, and Admin)
-router.get('/archived-atas', requireAuth, checkRole('HR', 'HRMO', 'Admin'), getArchivedATAs);
+router.get('/archived-atas', requireAuth, checkRole('HR', 'HRMO', 'Admin', 'Dean', 'Program-Chair'), getArchivedATAs);
 
 router.get('/pdf-xray', discoverPdfFields);
 

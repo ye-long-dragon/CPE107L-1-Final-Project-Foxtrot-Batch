@@ -63,7 +63,7 @@
                 
                 // 3. Who can see the Master Archive
                 // -> HR, HRMO, and Admin
-                const canViewArchived = ['HR', 'HRMO', 'Admin'].includes(currentRole);
+                const canViewArchived = ['HR', 'HRMO', 'Admin', 'Dean', 'Program-Chair'].includes(currentRole);
             %>
 
             <div class="bb-grid">
@@ -138,7 +138,7 @@
 
             <% 
                 // STRICT SECURITY: Only Admin and HR can see the Pipeline
-                const canViewPipeline = ['Admin', 'HR', 'HRMO'].includes(currentRole);
+                const canViewPipeline = ['Admin', 'HR', 'HRMO', 'Dean', 'Program-Chair'].includes(currentRole);
             %>
             
             <% if (canViewPipeline && typeof pipelineData !== 'undefined' && pipelineData.length > 0) { %>
@@ -179,7 +179,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         // Only inject the data into the browser if the user has permission
-        const pipelineChartData = <%- (typeof currentRole !== 'undefined' && ['Admin', 'HR', 'HRMO'].includes(currentRole) && typeof pipelineData !== 'undefined') ? JSON.stringify(pipelineData) : '[]' %>;
+        const pipelineChartData = <%- (typeof currentRole !== 'undefined' && ['Admin', 'HR', 'HRMO', 'Dean', 'Program-Chair'].includes(currentRole) && typeof pipelineData !== 'undefined') ? JSON.stringify(pipelineData) : '[]' %>;
     </script>
     <script src="/ATA/js/ata_client.js"></script>
     <script src="/ATA/js/dashboard-window.js"></script>
